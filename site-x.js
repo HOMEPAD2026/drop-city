@@ -154,6 +154,7 @@ export function paintRanks(coins, openCoin, openCreator) {
 export const gradeChip = (g) => (g ? `<span class="grade g${esc(g)}" title="Safety grade (what the chain shows, not a promise)">${esc(g)}</span>` : "");
 export function gradeBox(d) {
   if (!d || !d.grade) return "";
+  if (d.partial) return `<div class="cm-grade"><span class="big grade">…</span><span><b>Safety check — partial</b><small>The holders couldn't be read just now; the grade shows once they are.</small></span></div>`;
   return `<div class="cm-grade"><span class="big grade g${esc(d.grade)}">${esc(d.grade)}</span><span><b>Safety ${d.score}/100</b><small>What the chain shows right now — not a promise.</small></span></div>
     <div class="parts" style="display:grid;gap:5px">${d.parts.map((p) => `<div class="pt" style="display:grid;grid-template-columns:1fr 90px 40px;gap:8px;align-items:center;font-size:12px;color:var(--dim)"><span>${esc(p.note)}</span><span class="pb" style="height:5px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden"><i style="display:block;height:100%;width:${(p.got / p.max) * 100}%;background:var(--hot)"></i></span><span>${p.got}/${p.max}</span></div>`).join("")}</div>`;
 }
