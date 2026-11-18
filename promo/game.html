@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1920">
+<title>The game — 2-minute motion graphic</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@500;600;700;800;900&family=JetBrains+Mono:wght@600;700;800&display=swap" rel="stylesheet">
+<!--
+  game.html — a 2-minute motion graphic that plays like an open-world game: a loading screen, a title flyover,
+  three missions in a neon city (the hourly drop, launching your own, following the fees) and a montage, then the
+  end card. Every frame is a function of time: window.render(t) (t in seconds, 0–120), so it can be recorded frame
+  by frame. ?name= the wordmark · ?suffix= the CA's ending (empty → three glowing marks) · ?url= the end card's
+  address · ?play=1 plays it in real time (with ?audio=<file> to play a soundtrack along).
+-->
+<link rel="stylesheet" href="game.css">
+</head>
+<body>
+<div id="stage">
+  <canvas id="gl" width="1920" height="1080"></canvas>
+  <canvas id="fx" width="1920" height="1080"></canvas>
+
+  <!-- the game's HUD -->
+  <div id="hud">
+    <div class="radar" id="radar"><canvas id="rc" width="300" height="300"></canvas><i class="rn">N</i></div>
+    <div class="tr" id="hudtr">
+      <div class="clock"><span id="hclk">11:59</span><small id="hsec">:20</small></div>
+      <div class="cash" id="hcash">◎ 0.000</div>
+      <div class="hype" id="hype"><small>HYPE</small><i></i><i></i><i></i><i></i><i></i></div>
+    </div>
+    <div class="radio" id="radio"><b>PUMP FM</b><span>“Top of the Hour”</span></div>
+    <div class="obj" id="obj"></div>
+    <div class="sub" id="sub"></div>
+  </div>
+
+  <!-- the speed streaks while driving -->
+  <div id="lbox"><i></i><i></i></div>
+
+  <!-- the loading screen -->
+  <div class="scr" id="load">
+    <div class="ld-logo"><div class="k">A LAUNCHPAD YOU CAN PLAY</div><div class="wm" data-name></div></div>
+    <div class="ld-tip" id="ldtip"><b>TIP</b><span id="ldtipt"></span></div>
+    <div class="ld-bar"><i id="ldbar"></i></div>
+    <div class="ld-spin"></div>
+  </div>
+
+  <!-- the title -->
+  <div class="scr" id="title">
+    <div class="tt-k" id="ttk">WELCOME TO THE CITY</div>
+    <div class="tt-n" id="ttn"><span data-name></span></div>
+    <div class="tt-l" id="ttl">ONE DROP. <em>EVERY HOUR.</em></div>
+    <div class="tt-p" id="ttp">PRESS START</div>
+  </div>
+
+  <!-- a mission's card -->
+  <div class="scr" id="mcard"><div class="mc-in"><div class="mc-k" id="mck">MISSION 01</div><div class="mc-t" id="mct">THE HOURLY DROP</div><div class="mc-line"></div></div></div>
+
+  <!-- the in-game phone -->
+  <div class="phone" id="phone">
+    <div class="ph-top"><span id="phclk">11:59</span><span>▮▮▮ 5G</span></div>
+    <div class="ph-scr" id="phmsg">
+      <div class="ph-app">MESSAGES</div>
+      <div class="ph-from"><img src="/images/agent/boss-1.webp" alt=""><div><b>THE AGENT</b><small>now</small></div></div>
+      <div class="bub" id="bub1">New coin drops at the top of the hour.</div>
+      <div class="bub" id="bub2">Clock Plaza. Be there.</div>
+      <div class="bub me" id="bub3">On my way 🏁</div>
+    </div>
+    <div class="ph-scr" id="phapp">
+      <div class="ph-app">LAUNCHPAD</div>
+      <div class="la-logo"><img src="/images/agent/shark-1.webp" alt=""><span>LOGO ✓</span></div>
+      <div class="la-f"><small>NAME</small><b id="lan"></b></div>
+      <div class="la-f"><small>TICKER</small><b id="lat"></b></div>
+      <div class="la-f"><small>CONTRACT ADDRESS</small><b class="la-ca" id="laca"></b></div>
+      <div class="la-btn" id="labtn">LAUNCH ON PUMP.FUN</div>
+      <div class="la-ok" id="laok">✓ SIGNED IN YOUR WALLET</div>
+    </div>
+  </div>
+
+  <!-- the drop's reveal -->
+  <div class="scr" id="drop">
+    <div class="dr-k">NEW DROP</div><div class="dr-n" id="drn">$FOX</div>
+    <div class="dr-ca" id="drca"></div><div class="dr-s" id="drs"></div>
+  </div>
+  <div class="scr" id="count"><div id="cnum">3</div></div>
+
+  <!-- a mission's result -->
+  <div class="scr" id="res">
+    <div class="rs-in"><div class="rs-t" id="rst">DROP SECURED</div>
+      <div class="rs-rows" id="rsr"></div></div>
+  </div>
+
+  <!-- labels pinned to the 3D world -->
+  <div id="pins"></div>
+
+  <!-- the coin's window (fees) -->
+  <div class="scr" id="feewin">
+    <div class="fw">
+      <div class="fw-h"><img src="/images/agent/shark-1.webp" alt=""><div><b>Neon Shark</b><small>$SHARK · your coin</small></div></div>
+      <div class="fw-k">CREATOR FEES</div>
+      <div class="fw-big"><b id="fwsum">0.000</b> <small>SOL waiting</small></div>
+      <div class="fw-r"><span>You <em>60%</em></span><b id="fw0">0.000 SOL</b></div>
+      <div class="fw-r"><span>THE VAULT <em>30%</em></span><b id="fw1">0.000 SOL</b></div>
+      <div class="fw-r"><span>Buys the main coin <em>10%</em></span><b id="fw2">0.000 SOL</b></div>
+      <div class="fw-btn" id="fwbtn">PAY OUT TO EVERY SHARE</div>
+      <div class="fw-n" id="fwn">Locked on chain. Anyone can press it — each share goes where it should.</div>
+    </div>
+  </div>
+
+  <!-- the montage -->
+  <div class="scr" id="vote">
+    <div class="sh-k">VOTE THE NEXT DROP</div>
+    <div class="vt">
+      <div class="vc" id="vc0"><img src="/images/agent/cat-1.webp" alt=""><b>Alley Cat</b><span>$ALLEY</span><div class="vb"><i></i></div><small></small></div>
+      <div class="vc" id="vc1"><img src="/images/agent/racer-1.webp" alt=""><b>Street Racer</b><span>$RACER</span><div class="vb"><i></i></div><small></small></div>
+      <div class="vc" id="vc2"><img src="/images/agent/flamingo-1.webp" alt=""><b>Neon Flamingo</b><span>$FLAMI</span><div class="vb"><i></i></div><small></small></div>
+    </div>
+  </div>
+  <div class="scr" id="live">
+    <div class="sh-k">LIVE ON THE STREETS</div>
+    <div class="lv" id="lv"></div>
+  </div>
+  <div class="scr" id="safe">
+    <div class="sh-k">KNOW WHO YOU'RE DEALING WITH</div>
+    <div class="sf">
+      <div class="sf-g" id="sfg">A</div>
+      <div class="sf-l" id="sfl">
+        <div><i>✓</i>Fee split locked on chain</div><div><i>✓</i>Mint &amp; freeze revoked</div><div><i>✓</i>Holders spread out</div><div><i>✓</i>Dev didn't dump</div>
+      </div>
+    </div>
+  </div>
+  <div class="scr" id="tg">
+    <div class="sh-k">THE CITY TALKS TO YOU</div>
+    <div class="tgp">
+      <div class="tgn" id="tg0"><b>🚨 NEW DROP</b><span>$ALLEY just dropped on Clock Plaza</span></div>
+      <div class="tgn" id="tg1"><b>🐋 BIG BUY</b><span>2.4 SOL into $SHARK</span></div>
+      <div class="tgn" id="tg2"><b>🎓 GRADUATED</b><span>$FOX made it to PumpSwap</span></div>
+    </div>
+  </div>
+  <div class="scr" id="grad"><div class="gr-t" id="grt">MADE IT.</div><div class="gr-s" id="grs">GRADUATED TO PUMPSWAP</div></div>
+
+  <!-- the closing lines -->
+  <div class="scr" id="ring"><div class="rg-n" id="rgn">24</div><div class="rg-t" id="rgt">DROPS A DAY</div><div class="rg-s" id="rgs">ONE EVERY HOUR · YOURS ANY TIME</div></div>
+  <div class="scr" id="end">
+    <div class="en-k">THE GAME LAUNCHPAD ON SOLANA</div>
+    <div class="en-n" id="enn"><span data-name></span></div>
+    <div class="en-ca" id="enca"></div>
+    <div class="en-u" id="enu"></div>
+    <div class="en-r">Launch free on pump.fun · Meme coins are risky — play smart.</div>
+  </div>
+
+  <div id="flash"></div>
+  <div id="vig"></div>
+  <div id="grain"></div>
+</div>
+<script type="module" src="game.js"></script>
+</body>
+</html>
