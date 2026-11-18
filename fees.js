@@ -13,7 +13,7 @@ export function feeBox(c, CFG) {
   const rows = c.noSplit || main ? `<div class="fb-r"><span>${main ? "The dev (100%)" : "The creator (100%)"}</span><b data-fb="all">…</b></div>`
     : [[c.kind === "drop" ? "The agent → THE VAULT" : "The creator", s.creator], ["THE VAULT", s.vault], [`Buys $${esc(CFG.ticker || "")}`, s.buyer]].map(([n, b], i) => `<div class="fb-r"><span>${n} <small>${b / 100}%</small></span><b data-fb="p${i}">…</b></div>`).join("");
   return `<div class="fbox" data-fbox><div class="fb-h"><span class="mc-k">CREATOR FEES</span><button type="button" class="fb-re" data-fb="re" title="Read again">↻</button></div>
-    <div class="fb-big"><b data-fb="sum">…</b> <small>SOL waiting</small></div>
+    <div class="fb-big"><b data-fb="sum">…</b> <small>${c.quote ? esc(c.quote.id) : "SOL"} waiting</small></div>
     <div class="fb-rows">${rows}</div>
     <button type="button" class="btn hot fb-go" data-fb="go" disabled>${c.noSplit || main ? "Claim (creator only)" : "Pay out to every share"}</button>
     <p class="fb-n" data-fb="n">${c.noSplit || main ? "Only the creator's wallet can claim these fees (pump.fun keeps one fee vault per creator, so it holds the fees of all their coins without a split)." : "Anyone may press it — the split is locked, so each share goes where it should."}${c.graduated ? " Fees earned on PumpSwap after graduation are swept in at payout." : ""}</p></div>`;
@@ -23,16 +23,19 @@ export function feeBox(c, CFG) {
 export async function wireFees(root, c, CFG, onDone) {
   const box = root.querySelector("[data-fbox]"); if (!box) return;
   const q = (k) => box.querySelector(`[data-fb="${k}"]`), s = CFG.split || { creator: 6000, vault: 3000, buyer: 1000 }, solo = c.noSplit || c.mint === CFG.main;
+  // a token pair's fees wait in the vault's account for that token (whole units here), SOL ones as lamports
+  const U = c.quote ? c.quote.id : "SOL", D = c.quote ? 10 ** c.quote.decimals : 1e9;
   const paint = (lam) => {
-    const v = Math.max(0, lam) / 1e9; q("sum").textContent = fmt(v);
-    if (solo) q("all").textContent = fmt(v) + " SOL";
-    else [s.creator, s.vault, s.buyer].forEach((b, i) => (q("p" + i).textContent = fmt((v * b) / 10000) + " SOL"));
+    const v = Math.max(0, lam) / D; q("sum").textContent = fmt(v);
+    if (solo) q("all").textContent = fmt(v) + " " + U;
+    else [s.creator, s.vault, s.buyer].forEach((b, i) => (q("p" + i).textContent = fmt((v * b) / 10000) + " " + U));
     q("go").disabled = !(v > 0.00001); box.classList.toggle("has", v > 0.00001);
   };
   const read = async () => {
-    if (DEMO) return paint(Math.round((c.feesWaitingSol || 0.0123) * 1e9));
-    try { const K = await kit(), cn = await conn(); paint((await cn.getBalance(new K.PublicKey(c.vault))) - RENT); }
-    catch { paint(Math.round((c.feesWaitingSol || 0) * 1e9)); }
+    if (DEMO) return paint(Math.round(((c.quote ? c.feesWaiting : c.feesWaitingSol) || 0.0123) * D));
+    try { const K = await kit(), cn = await conn(), v = new K.PublicKey(c.vault);
+      paint(c.quote ? await cn.getTokenAccountBalance(v).then((r) => Number(r.value.amount)).catch(() => 0) : (await cn.getBalance(v)) - RENT); }
+    catch { paint(Math.round(((c.quote ? c.feesWaiting : c.feesWaitingSol) || 0) * D)); }
   };
   q("re").onclick = read;
   q("go").onclick = async () => {
@@ -49,7 +52,7 @@ export async function wireFees(root, c, CFG, onDone) {
         tx.add(await K.PUMP_SDK.offlinePumpProgram.methods.collectCreatorFee().accountsPartial({ creator: me }).instruction());
       } else {
         const acc = await cn.getAccountInfo(K.feeSharingConfigPda(m)); if (!acc) throw new Error("this coin has no fee split on chain");
-        tx = await K.distributeTx({ payer: me, mint: m, sharingConfig: K.PUMP_SDK.decodeSharingConfig(acc), graduated: !!c.graduated, blockhash: bh.blockhash });
+        tx = await K.distributeTx({ payer: me, mint: m, sharingConfig: K.PUMP_SDK.decodeSharingConfig(acc), graduated: !!c.graduated, blockhash: bh.blockhash, quote: c.quote ? { mint: c.quote.mint, program: c.quote.program } : null });
       }
       const [signed] = typeof W.p.signAllTransactions === "function" ? await W.p.signAllTransactions([tx]) : [await W.p.signTransaction(tx)];
       const sig = await cn.sendRawTransaction(signed.serialize(), { preflightCommitment: "confirmed", maxRetries: 3 });

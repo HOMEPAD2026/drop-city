@@ -29,7 +29,7 @@ export function openDrop(o = {}) {
   const CFG = o.cfg || {};
   const sh = $("sheet"); sh.hidden = false;
   const f = { dev: 0, logo: "", logoData: "", quote: null };
-  const QS = (CFG.quotes || []).filter((x) => x && x.mint);
+  const QS = (CFG.quotes || []).filter((x) => x && x.mint && x.live !== false);
   sh.innerHTML = `<div role="dialog" aria-label="Launch a coin" class="wide"><button type="button" class="sheet-x" data-f="x" aria-label="Close">×</button><h2>LAUNCH A COIN</h2><p class="sub">Any time, as many as you like. On pump.fun, from your own wallet.</p>
     <div class="lf"><div class="form">
       <label class="w logo-pick"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden data-f="file"><span class="pv" data-f="pv">+</span><span>Logo<br><small data-f="lmsg">square image, 512 px is plenty</small></span></label>
