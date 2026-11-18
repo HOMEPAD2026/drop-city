@@ -50,7 +50,7 @@ function paintMain() {
     <div class="mc-n"><div><b>${usd(c && c.mcapUsd)}</b><small>Market cap</small></div><div><b>${c && c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>Price</small></div><div><b>${c ? (c.graduated ? "MADE" : prog.toFixed(1) + "%") : "–"}</b><small>${c && c.graduated ? "Graduated" : "Bonding curve"}</small></div></div>
     <div class="bar"><i style="width:${Math.max(2, prog)}%"></i></div>
     <button type="button" class="mc-ca" id="mc-ca" title="Copy the address">${caHtml(m)}<span>COPY</span></button>
-    <p class="mc-p">${(CFG.split.buyer / 100)}% of every coin's creator fees buys $${esc(sym)}.</p>
+    <p class="mc-p">${(CFG.split.buyer / 100)}% of the creator fees of every coin launched on the platform buys $${esc(sym)}. The main coin is the dev's own: its creator fees go 100% to the dev.</p>
     <div class="mc-a"><a class="btn hot" href="https://pump.fun/coin/${esc(m)}" target="_blank" rel="noopener">Buy $${esc(sym)}</a><a class="btn ghost" href="https://dexscreener.com/solana/${esc(m)}" target="_blank" rel="noopener">Chart</a><a class="btn ghost" href="/city?coin=${esc(m)}${DEMO ? "&demo=1" : ""}">In the city</a></div>`;
   $("mc-ca").onclick = async () => { try { await navigator.clipboard.writeText(m); note("Address copied."); } catch { note(m, 6000); } };
 }

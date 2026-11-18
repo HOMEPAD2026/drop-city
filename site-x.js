@@ -171,7 +171,7 @@ export function initCheck(CFG, openCoin) {
       out.innerHTML = `<div class="ck"><h3>${v.symbol ? "$" + esc(v.symbol) + " — " + esc(v.name || "") : esc(short(m))}</h3>
         ${row(v.suffix, v.suffixWant ? `The address ends in ${v.suffixWant}` : "No suffix rule")}
         ${row(v.listed, v.listed ? (v.kind === "drop" ? "An hourly drop from the city's agent" : "Launched in this city") : "Not on this city's list")}
-        ${row(v.split, v.split ? "Fee split locked on chain (60 / 30 / 10)" : v.noSplit ? "Listed without a fee split" : "No locked fee split: " + (v.splitWhy || ""))}
+        ${v.mint === CFG.main ? row(true, "The main coin — the dev's own; its creator fees go 100% to the dev") : row(v.split, v.split ? "Fee split locked on chain (60 / 30 / 10)" : v.noSplit ? "Listed without a fee split" : "No locked fee split: " + (v.splitWhy || ""))}
         ${row(v.curve, v.graduated ? "Graduated from its pump.fun curve" : v.curve ? "On its pump.fun bonding curve" : "No pump.fun curve found")}
         ${d && !d.error ? gradeBox(d) : ""}
         ${v.listed ? `<div><button type="button" class="btn ghost" id="ck-open">Open the coin</button></div>` : ""}
