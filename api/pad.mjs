@@ -3,6 +3,7 @@
 //   GET  ?list          every coin launched here, live (price, market cap, curve %)
 //   GET  ?slot          this hour's drop: dropped / dropping / waiting, and when the next hour opens
 //   GET  ?tick          wakes the agent: drops this hour's coin if it hasn't yet (safe to call any number of times)
+//   GET  ?check=<mint>  what the chain says about a coin; lists it if it passes (a launch whose page closed early)
 //   GET  ?agent         the agent: its wallet, this hour, today's drops and transfers to THE VAULT
 //   POST ?solrpc        the browser's Solana RPC relay (only the calls a launch makes)
 //   POST {action}       register · meta · logo
@@ -28,6 +29,10 @@ export async function GET(req) {
     if (q.has("list")) return json(200, await pad().list(), "public, max-age=10, s-maxage=20");
     if (q.has("slot")) return json(200, { ...(await pad().slot()), cfg: publicCfg() }, "no-store");
     if (q.has("agent")) return json(200, await agent().status(), "public, max-age=10");
+    if (q.has("check")) {
+      if (limited("check:" + ipOf(req), 20, 60e3)) return json(429, { error: "slow down" });
+      const r = await pad().check(q.get("check")); return json(r.status, r.body, "no-store");
+    }
     if (q.has("tick")) {
       if (limited("tick:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" });
       return json(200, await agent().tick(), "no-store");
