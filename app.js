@@ -4,6 +4,7 @@ import { makeCity } from "/city.js";
 import { $, esc, short, usd, hh, note, DEMO, loadCfg, loadCoins, loadSlot as getSlot, stars, ini, pic, sol, dropState, poke } from "/common.js";
 import { walletButton } from "/wallet.js";
 import { openDrop as drop, grind } from "/launch.js";
+import { feeBox, wireFees } from "/fees.js";
 import { showDrop, takeoverTick, initSound } from "/site-x.js";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } };
@@ -82,8 +83,10 @@ function openCard(mint, quiet) {
     <div class="kv"><div><b>${usd(c.mcapUsd)}</b><small>Market cap</small></div><div><b>${c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>Price</small></div><div><b>${c.hour ? c.hour.slice(11, 13) + ":00" : "–"}</b><small>Dropped</small></div></div>
     <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? "MADE — graduated to PumpSwap" : `bonding curve ${(c.progress || 0).toFixed(1)}%`}</small>
     ${c.description ? `<p style="color:var(--dim);font-size:13px">${esc(c.description)}</p>` : ""}
+    ${feeBox(c, CFG)}
     <div class="links"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade on pump.fun</a><a href="https://solscan.io/token/${esc(c.mint)}" target="_blank" rel="noopener">Solscan</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">Chart</a></div>`;
   el.querySelector(".x").onclick = () => { el.hidden = true; sel = null; };
+  wireFees(el, c, CFG, loadList);
   if (!quiet) city.flyTo(mint);
 }
 

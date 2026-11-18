@@ -3,6 +3,7 @@
 import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, dropState, poke, getJ } from "/common.js";
 import { walletButton } from "/wallet.js";
 import { openDrop, finishSplit, why, logsBox } from "/launch.js";
+import { feeBox, wireFees } from "/fees.js";
 import { t, initLang, initSound, tone, roll, paintVote, tickVote, paintLive, paintRanks, initCheck, paintWallets, openCreator, gradeChip, gradeBox, takeoverTick, showDrop, confetti } from "/site-x.js";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } }, coins = [], slot = null;
@@ -183,12 +184,13 @@ function openCoin(mint) {
     <p class="addr">${caHtml(c.mint)}</p>
     <div class="kv"><div><b>${usd(c.mcapUsd)}</b><small>Market cap</small></div><div><b>${c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>Price</small></div><div><b>${c.hour ? c.hour.slice(5, 10).replace("-", "/") + " " + c.hour.slice(11, 13) + ":00" : "–"}</b><small>Dropped (UTC)</small></div><div><b>${c.kind === "drop" ? "AGENT" : c.creator ? `<button type="button" class="creator-link" data-creator="${esc(c.creator)}">${esc(short(c.creator))}</button>` : "–"}</b><small>${c.kind === "drop" ? "The hourly drop" : "Creator"}</small></div></div>
     <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? "MADE — graduated to PumpSwap" : `bonding curve ${(c.progress || 0).toFixed(1)}%`}</small>
-    ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}<div id="cm-x"></div>
+    ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}${feeBox(c, CFG)}<div id="cm-x"></div>
     <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">Chart</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">Tower</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">Share</a><button type="button" data-copy>Copy CA</button></div>
     ${[c.twitter, c.telegram, c.website].filter(Boolean).length ? `<p style="margin:12px 0 0;font-size:13px">${[["X", c.twitter], ["Telegram", c.telegram], ["Website", c.website]].filter((x) => x[1]).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n} ↗</a>`).join(" · ")}</p>` : ""}</div></div>`;
   el.hidden = false;
   const close = () => { el.hidden = true; document.removeEventListener("keydown", k); }, k = (e) => { if (e.key === "Escape") close(); };
   document.addEventListener("keydown", k);
   el.onclick = async (e) => { if (e.target === el || e.target.closest(".wm-x")) return close(); const cr = e.target.closest("[data-creator]"); if (cr) return openCreator(cr.dataset.creator, coins, openCoin); if (e.target.closest("[data-copy]")) { try { await navigator.clipboard.writeText(c.mint); note("Address copied"); } catch {} } };
+  wireFees(el, c, CFG, refresh);
   if (!DEMO) getJ("?coin=" + encodeURIComponent(c.mint)).then((d) => { const x = $("cm-x"); if (!x || !d || d.error) return; x.innerHTML = gradeBox(d) + (d.trades && d.trades.length ? `<div class="cm-tr">${d.trades.slice(0, 6).map((r) => `<div class="tr ${r.side}"><span class="sd">${r.side.toUpperCase()}</span><span><b>${r.sol.toFixed(3)} SOL</b></span><small>${esc(short(r.who))}</small></div>`).join("")}</div>` : ""); }).catch(() => {});
 }
