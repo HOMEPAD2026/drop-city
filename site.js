@@ -51,7 +51,7 @@ function paintMain() {
     <div class="bar"><i style="width:${Math.max(2, prog)}%"></i></div>
     <button type="button" class="mc-ca" id="mc-ca" title="Copy the address">${caHtml(m)}<span>COPY</span></button>
     <p class="mc-p">${(CFG.split.buyer / 100)}% of the creator fees of every coin launched on the platform buys $${esc(sym)}. The main coin is the dev's own: its creator fees go 100% to the dev.</p>
-    <div class="mc-a"><a class="btn hot" href="https://pump.fun/coin/${esc(m)}" target="_blank" rel="noopener">Buy $${esc(sym)}</a><a class="btn ghost" href="https://dexscreener.com/solana/${esc(m)}" target="_blank" rel="noopener">Chart</a><a class="btn ghost" href="/city?coin=${esc(m)}${DEMO ? "&demo=1" : ""}">In the city</a></div>`;
+    <div class="mc-a"><a class="btn hot" href="https://pump.fun/coin/${esc(m)}" target="_blank" rel="noopener">Buy $${esc(sym)}</a><a class="btn ghost" href="https://dexscreener.com/solana/${esc(m)}" target="_blank" rel="noopener">Chart</a><a class="btn ghost" href="/city?coin=${esc(m)}${DEMO ? "&demo=1" : ""}">City</a></div>`;
   $("mc-ca").onclick = async () => { try { await navigator.clipboard.writeText(m); note("Address copied."); } catch { note(m, 6000); } };
 }
 
@@ -71,7 +71,7 @@ async function readVault() { if (!CFG.vault) return; try { const K = await kit()
 function paintStats() {
   const today = new Date().toISOString().slice(0, 10), t = coins.filter((c) => c.hour && c.hour.startsWith(today)).length;
   const mc = coins.reduce((a, c) => a + (c.mcapUsd || 0), 0), made = coins.filter((c) => c.graduated).length;
-  const rows = [["n", coins.length, (v) => String(Math.round(v)), "coins launched"], ["t", t, (v) => `${Math.round(v)}/24`, "hourly drops today"], ["mc", mc, usd, "total market cap"], ["made", made, (v) => String(Math.round(v)), "made it (graduated)"], ...(vaultSol != null ? [["v", vaultSol, (v) => v.toFixed(2) + " SOL", "in THE VAULT"]] : [])];
+  const rows = [["n", coins.length, (v) => String(Math.round(v)), "coins"], ["t", t, (v) => `${Math.round(v)}/24`, "drops today"], ["mc", mc, usd, "total mcap"], ["made", made, (v) => String(Math.round(v)), "graduated"], ...(vaultSol != null ? [["v", vaultSol, (v) => v.toFixed(2) + " SOL", "the vault"]] : [])];
   const el = $("stats");
   if (el.children.length !== rows.length) el.innerHTML = rows.map(([k, , , l]) => `<div><b data-k="${k}">–</b><small>${esc(l)}</small></div>`).join("");
   for (const [k, v, f] of rows) roll(el.querySelector(`[data-k="${k}"]`), v, f);
@@ -99,7 +99,7 @@ function card(c, i) {
     <div class="body"><h3>${esc(c.name)}</h3><span class="sym">$${esc(c.symbol)}</span>${gradeChip(c.grade)} <span class="stars${up ? " up" : ""}">${st}</span>
       <div class="row"><b>${usd(c.mcapUsd)}</b><small>${c.hour ? "dropped " + esc(c.hour.slice(5, 10).replace("-", "/")) + " " + esc(c.hour.slice(11, 13)) + ":00" : c.launchedAt ? "launched " + esc(new Date(c.launchedAt * 1000).toISOString().slice(5, 16).replace("-", "/").replace("T", " ")) : ""}</small></div>
       <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? "graduated to PumpSwap" : `curve ${(c.progress || 0).toFixed(0)}%`}</small>
-      <div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">In the city</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">Chart</a></div></div></article>`;
+      <div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">City</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">Chart</a></div></div></article>`;
 }
 
 // ---------------- TODAY'S 24
@@ -180,11 +180,11 @@ function openCoin(mint) {
   const el = $("cmodal"), share = encodeURIComponent(`$${c.symbol} — ${c.kind === "drop" ? `the ${c.hour.slice(11, 13)}:00 drop` : "launched"} in the city. CA ends in ${CFG.suffix || ""}.\n`), link = encodeURIComponent(`${location.origin}/coin/${c.mint}`);
   el.innerHTML = `<div class="cm-card"><button type="button" class="wm-x" aria-label="Close">×</button><div class="poster"><span class="tag">${c.mint === CFG.main ? "THE MAIN COIN" : c.kind === "drop" ? "HOURLY DROP" : "WANTED"}</span>${pic(c)}</div><div class="cm-in">
     <h2>${esc(c.name)}</h2><span class="sym" style="color:var(--hot);font:700 13px var(--mono)">$${esc(c.symbol)}</span> <span class="stars">${stars(c)}</span>
-    <p class="addr">${esc(c.mint)}</p>
+    <p class="addr">${caHtml(c.mint)}</p>
     <div class="kv"><div><b>${usd(c.mcapUsd)}</b><small>Market cap</small></div><div><b>${c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>Price</small></div><div><b>${c.hour ? c.hour.slice(5, 10).replace("-", "/") + " " + c.hour.slice(11, 13) + ":00" : "–"}</b><small>Dropped (UTC)</small></div><div><b>${c.kind === "drop" ? "AGENT" : c.creator ? `<button type="button" class="creator-link" data-creator="${esc(c.creator)}">${esc(short(c.creator))}</button>` : "–"}</b><small>${c.kind === "drop" ? "The hourly drop" : "Creator"}</small></div></div>
     <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? "MADE — graduated to PumpSwap" : `bonding curve ${(c.progress || 0).toFixed(1)}%`}</small>
     ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}<div id="cm-x"></div>
-    <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade on pump.fun</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">See its tower</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">Share on X</a><button type="button" data-copy>Copy address</button></div>
+    <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">Chart</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">Tower</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">Share</a><button type="button" data-copy>Copy CA</button></div>
     ${[c.twitter, c.telegram, c.website].filter(Boolean).length ? `<p style="margin:12px 0 0;font-size:13px">${[["X", c.twitter], ["Telegram", c.telegram], ["Website", c.website]].filter((x) => x[1]).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n} ↗</a>`).join(" · ")}</p>` : ""}</div></div>`;
   el.hidden = false;
   const close = () => { el.hidden = true; document.removeEventListener("keydown", k); }, k = (e) => { if (e.key === "Escape") close(); };

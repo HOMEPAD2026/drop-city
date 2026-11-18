@@ -29,7 +29,7 @@ export function openDrop(o = {}) {
   const CFG = o.cfg || {};
   const sh = $("sheet"); sh.hidden = false;
   const f = { dev: 0, logo: "", logoData: "" };
-  sh.innerHTML = `<div role="dialog" aria-label="Launch a coin" class="wide"><h2>LAUNCH A COIN</h2><p class="sub">Any time, as many as you like. On pump.fun, from your own wallet.</p>
+  sh.innerHTML = `<div role="dialog" aria-label="Launch a coin" class="wide"><button type="button" class="sheet-x" data-f="x" aria-label="Close">×</button><h2>LAUNCH A COIN</h2><p class="sub">Any time, as many as you like. On pump.fun, from your own wallet.</p>
     <div class="lf"><div class="form">
       <label class="w logo-pick"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden data-f="file"><span class="pv" data-f="pv">+</span><span>Logo<br><small data-f="lmsg">square image, 512 px is plenty</small></span></label>
       <label>Name<input data-f="name" maxlength="32" placeholder="Night Owl"></label>
@@ -50,7 +50,9 @@ export function openDrop(o = {}) {
     q("prev").innerHTML = `<article class="cc"><div class="poster"><span class="tag">WANTED</span><span class="badge new">NEW</span>${f.logoData ? `<img src="${f.logoData}" alt="">` : `<span class="ini">${esc(sym.slice(0, 3))}</span>`}<span class="bounty">BOUNTY $0</span></div><div class="body"><h3>${esc(nm)}</h3><span class="sym">$${esc(sym)}</span> <span class="stars">★☆☆☆☆</span><div class="bar"><i style="width:2%"></i></div><small style="color:var(--dim)">${CFG.suffix ? `CA …${esc(CFG.suffix)}` : "curve 0%"}</small></div></article>`; };
   sh.addEventListener("input", prev); prev();
   const err = (s) => { q("err").hidden = !s; q("err").textContent = s || ""; };
-  q("close").onclick = () => { try { grind.stop && grind.stop(); } catch {} sh.hidden = true; };
+  q("close").onclick = q("x").onclick = () => { try { grind.stop && grind.stop(); } catch {} sh.hidden = true; document.removeEventListener("keydown", esc0); };
+  const esc0 = (e) => { if (e.key === "Escape" && !busy) q("close").onclick(); }; document.addEventListener("keydown", esc0);
+  sh.onclick = (e) => { if (e.target === sh && !busy) q("close").onclick(); };
   q("devsol").oninput = (e) => { const v = Math.max(0, Math.min(50, parseFloat(e.target.value) || 0)); f.dev = Math.round(v * 1e4) / 1e4;
     q("buyline").textContent = f.dev > 0 ? `≈ ${pctForSol(f.dev).toFixed(2)}% of the supply for ${f.dev} SOL, the moment it launches.` : "Leave it empty for no first buy."; };
   q("symbol").oninput = (e) => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); };

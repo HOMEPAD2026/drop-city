@@ -186,7 +186,7 @@ export function initCheck(CFG, openCoin) {
 // ---------------- the wallets out in the open
 export async function paintWallets(CFG) {
   const el = $("walletsbox"); if (!el) return;
-  const list = [[t("wVault", "THE VAULT"), CFG.vault, t("wVaultP", "30 % of every coin's creator fees — the city fund.")], [t("wBuyer", "Buys the main coin"), CFG.buyer, t("wBuyerP", "10 % of every coin's fees — it buys the main coin.")], [t("wAgent", "The agent"), CFG.agent, t("wAgentP", "Drops a coin every hour. Keeps 0.5 SOL for launches; the rest goes to THE VAULT.")]].filter((x) => x[1]);
+  const list = [[t("wVault", "THE VAULT"), CFG.vault, t("wVaultP", "30 % of the creator fees of every coin launched on the platform — the city fund.")], [t("wBuyer", "Buys the main coin"), CFG.buyer, t("wBuyerP", "10 % of the creator fees of every coin launched on the platform — it buys the main coin.")], [t("wAgent", "The agent"), CFG.agent, t("wAgentP", "Drops a coin every hour. Keeps 0.5 SOL for launches; the rest goes to THE VAULT.")]].filter((x) => x[1]);
   let bal = {};
   if (!DEMO) try { const K = await kit(), c = await conn(); const r = await c.getMultipleAccountsInfo(list.map((x) => new K.PublicKey(x[1]))); list.forEach((x, i) => (bal[x[1]] = r[i] ? r[i].lamports / 1e9 : 0)); } catch {}
   el.innerHTML = list.map(([k, w, p]) => `<div class="wl"><span class="k">${esc(k)}</span><b>${bal[w] != null ? bal[w].toFixed(3) + " SOL" : "–"}</b><p>${esc(p)}</p><a href="https://solscan.io/account/${esc(w)}" target="_blank" rel="noopener">${esc(w)} ↗</a></div>`).join("");

@@ -336,3 +336,33 @@ a { color: var(--hot2); }
 @media (max-width: 760px) { .lprev { display: none; } .lf { display: block; } }
 #lang2 { background: rgba(255, 255, 255, 0.04); color: var(--ink); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 999px; padding: 7px 12px; font: 600 12px var(--body); }
 .to-a a, .mc-a a { text-decoration: none; }
+
+/* ---------------- fit (2026-11-18): nothing short wraps, the nav thins out, the launch window's × */
+.nav { flex-wrap: nowrap; } .nav * { white-space: nowrap; }
+.logo, .logo b, .brand b, .btn, .seg button, .cc .acts a, .mc-a .btn, .chip, .tag, .bounty, .ln-k, .count .lbl, .count .lbl2, .stats small, .mc-n small, .kv small, .tr .sd { white-space: nowrap; }
+.addr b, .mc-ca b, .slot b, .suffixline b { white-space: nowrap; color: var(--hot); }
+.navlinks { gap: 16px; min-width: 0; }
+@media (max-width: 1440px) { .navlinks a[href="#live"], .navlinks a[href="#creators"] { display: none; } }
+@media (max-width: 1300px) { .navlinks a[href="#check"], .navlinks a[href="#main-coin"] { display: none; } .nav-r select { display: none; } }
+@media (max-width: 1100px) {
+  .navlinks { display: none; position: absolute; top: 100%; left: 0; right: 0; flex-direction: column; padding: 14px 24px; background: rgba(7, 7, 8, 0.97); margin: 0; }
+  .navlinks.open { display: flex; } .navlinks.open a { display: block !important; padding: 6px 0; } .burger { display: block; }
+}
+@media (min-width: 761px) { .nav-r .btn.hot { display: inline-flex; } }
+.seg { overflow-x: auto; scrollbar-width: none; max-width: 100%; } .seg::-webkit-scrollbar { display: none; } .seg button { flex: none; }
+.tools { flex-wrap: wrap; }
+.cm-in .links { display: grid !important; grid-template-columns: repeat(5, auto); }
+.cm-in .links a, .cm-in .links button { white-space: nowrap; padding: 10px 12px; }
+.mc-a { grid-template-columns: 1.3fr 1fr 1fr; } .mc-a .btn { padding: 10px 6px; font-size: 12px; justify-content: center; }
+.sheet-x { position: sticky; top: -6px; float: right; z-index: 3; width: 40px; height: 40px; margin: -6px -6px 0 0; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(14, 13, 15, 0.92); color: var(--ink); font-size: 24px; line-height: 1; display: grid; place-items: center; }
+.sheet-x:hover { border-color: var(--hot); color: var(--hot); }
+@media (max-width: 760px) {
+  .cm-in .links { grid-template-columns: repeat(3, 1fr); } .cm-in .links .pri { grid-column: 1 / -1; }
+  .cm-card .poster { padding-top: 46px; }
+  .count .lbl, .count .lbl2 { letter-spacing: 0.1em; }
+  .stats small { letter-spacing: 0.06em; }
+  .cc .acts a { padding: 8px 2px; font-size: 11.5px; }
+  .seg button { padding: 8px 10px; }
+}
+.rk-col li > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; } .rk-col li small { white-space: nowrap; }
+@media (max-width: 760px) { .cm-in .links { grid-template-columns: repeat(2, 1fr); } }
