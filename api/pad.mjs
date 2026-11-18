@@ -46,9 +46,11 @@ let QUOTES = null;
 async function quotes() {
   if (QUOTES && Date.now() - QUOTES.at < 600e3) return QUOTES.v;
   const K = await import("../lib/_agentkit.mjs"), conn = new K.Connection(process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com", "confirmed"), sdk = new K.OnlinePumpSdk(conn);
-  const g = await sdk.fetchGlobal(), qc = await sdk.fetchQuoteControl().catch(() => null);
+  const g = await sdk.fetchGlobal(), qc = await Promise.race([sdk.fetchQuoteControl().catch(() => null), new Promise((r) => setTimeout(() => r(null), 15e3))]);
   const list = [...(g.whitelistedQuoteMints || []).map((m) => ({ mint: String(m), via: "global" })), ...((qc && qc.mints) || []).map((m) => ({ mint: String(m.mint), via: "control", vqr: String(m.initialVirtualQuoteReserves) }))].filter((x) => x.mint !== "11111111111111111111111111111111");
-  for (const x of list) try { const a = await conn.getParsedAccountInfo(new K.PublicKey(x.mint)); const d = a.value && a.value.data && a.value.data.parsed && a.value.data.parsed.info; x.program = a.value && String(a.value.owner); if (d) { x.decimals = d.decimals; const md = (d.extensions || []).find((e) => e.extension === "tokenMetadata"); if (md) { x.name = md.state.name; x.symbol = md.state.symbol; } } } catch {}
+  const named = async () => { for (let i = 0; i < list.length; i += 100) { const part = list.slice(i, i + 100), r = await conn.getMultipleParsedAccounts(part.map((x) => new K.PublicKey(x.mint)));
+    r.value.forEach((a, j) => { const x = part[j], d = a && a.data && a.data.parsed && a.data.parsed.info; if (!a) return; x.program = String(a.owner); if (d) { x.decimals = d.decimals; const md = (d.extensions || []).find((e) => e.extension === "tokenMetadata"); if (md) { x.name = md.state.name; x.symbol = md.state.symbol; } } }); } };
+  await Promise.race([named().catch(() => {}), new Promise((r) => setTimeout(r, 15e3))]);
   const v = { at: Date.now(), list, createV2: g.createV2Enabled ?? null };
   QUOTES = { at: Date.now(), v }; return v;
 }
