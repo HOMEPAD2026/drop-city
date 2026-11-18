@@ -66,7 +66,7 @@ async function simQuote(id, dev) {
   const shares = [{ address: creator, shareBps: c.split.creator }, { address: new K.PublicKey(c.vault), shareBps: c.split.vault }, { address: new K.PublicKey(c.buyer), shareBps: c.split.buyer }];
   const bh = await conn.getLatestBlockhash("confirmed"), o = { global, feeConfig, creator, mint, name: "Simulated Pair Coin Long Name 32", symbol: "SIMPAIRCOI", uri: "https://tpt4oh98wh6pordk.public.blob.vercel-storage.com/meta/f794454d11ab95a483d07728.json", devBuyLamports: 0, treasury: new K.PublicKey(c.vault), shares, quote, quoteControl, blockhash: bh.blockhash };
   let lut = null; if (blobEnabled()) try { const d = await pad().store.get("agent/lut.json"); if (d && d.address) lut = await K.lutOf(conn, d.address); } catch {}
-  const out = { pair: qt.id, creator: c.agent };
+  const out = { pair: qt.id, creator: c.agent, lut: lut ? lut.state.addresses.length : null, lutHas: lut ? [qt.mint, String(K.QUOTE_CONTROL_PDA)].map((a) => lut.state.addresses.some((x) => String(x) === a)) : null };
   try {
     if (lut) { const v = await K.launchV0({ lut, ...o }); out.v0 = { size: v.size }; const r = await conn.simulateTransaction(v.txs[0], { sigVerify: false, replaceRecentBlockhash: true }); out.v0.err = r.value.err; out.v0.logs = (r.value.logs || []).slice(-14); out.v0.units = r.value.unitsConsumed; }
     else { const r = await K.launchTxs(o); out.legacy = { txs: r.txs.length }; const s = await K.simulate(conn, r.txs[0]); out.legacy.err = s.err; out.legacy.logs = s.logs.slice(-14); }
