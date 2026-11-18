@@ -9,4 +9,7 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   the agent's hourly drops (its 60 % goes on to THE VAULT, keeping a 0.5 SOL reserve) and everyone's own launches.
 - Replies to the owner are in Korean; bot messages, site copy and tweets are in English.
 - The site's name, ticker and CA suffix come from config (Vercel env); code and generated promo material stay name-neutral.
+- **Pairs (the owner, 2026-11-18):** a launch can pick SOL or TTWO (Backpack's tokenized Take-Two share,
+  TTWofwAge91oFhZs7kpQdyrVRkmevgM88xijGvQFbKo, on pump.fun's QuoteControl list) as its pair — pad-config.js `quotes`. A TTWO
+  coin's first buy and creator fees are in TTWO; the 60 / 30 / 10 split is the same. Agent drops stay SOL.
 - The agent's logos come from images/agent (the owner's mascot art); a drop's name is picked from those subjects.
