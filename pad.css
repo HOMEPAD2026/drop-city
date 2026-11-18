@@ -149,3 +149,21 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .clock { background: rgba(10, 10, 11, 0.86); border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: inset 0 0 0 1px rgba(255, 46, 136, 0.12); }
 .clock b { color: #fff; } .clock .st.open { color: var(--hot); } .clock .st.held { color: var(--hot2); } .clock .st.done { color: #fff; }
 ::selection { background: rgba(255, 46, 136, 0.5); color: #fff; }
+
+.lprev { display: none; } .lf { display: block; }
+
+/* the drop takeover */
+.takeover { position: fixed; inset: 0; z-index: 40; display: grid; place-items: center; background: radial-gradient(circle at 50% 45%, rgba(255, 46, 136, 0.28), rgba(0, 0, 0, 0.92) 60%); backdrop-filter: blur(6px); overflow: hidden; }
+.takeover::before, .takeover::after { content: ""; position: absolute; top: -20%; width: 40vw; height: 140%; opacity: 0.4; filter: blur(30px); animation: beam 1.2s ease-in-out infinite alternate; }
+.takeover::before { left: -10%; background: linear-gradient(180deg, transparent, #ff2e88, transparent); transform: rotate(18deg); }
+.takeover::after { right: -10%; background: linear-gradient(180deg, transparent, #fff, transparent); transform: rotate(-18deg); animation-delay: 0.6s; }
+@keyframes beam { to { opacity: 0.08; } }
+.to-in { position: relative; text-align: center; z-index: 1; }
+.to-k { font: 700 12px var(--mono); letter-spacing: 0.4em; color: var(--hot); } .to-n { font: 400 clamp(120px, 26vw, 260px)/0.9 var(--head); font-style: italic; color: #fff; text-shadow: 0 0 40px var(--hot); animation: tonum 1s ease both; }
+@keyframes tonum { from { transform: scale(1.6); opacity: 0; } to { transform: none; opacity: 1; } }
+.to-coin { width: 180px; height: 180px; margin: 10px auto; border-radius: 50%; border: 4px solid #fff; box-shadow: 0 0 60px var(--hot), 0 0 0 10px rgba(255, 46, 136, 0.25); object-fit: cover; animation: tofall 0.9s cubic-bezier(0.3, 1.5, 0.5, 1) both; display: grid; place-items: center; background: #111; font: 400 48px var(--head); color: var(--hot); }
+@keyframes tofall { from { transform: translateY(-80vh) rotate(-30deg) scale(0.6); } to { transform: none; } }
+.to-t { font: 400 clamp(36px, 7vw, 72px)/1 var(--head); font-style: italic; color: #fff; margin: 8px 0 4px; } .to-s { color: var(--dim); font: 600 13px var(--mono); }
+.to-a { display: flex; gap: 10px; justify-content: center; margin-top: 18px; flex-wrap: wrap; }
+.confetti { position: fixed; inset: 0; pointer-events: none; z-index: 41; }
+.btn.big { padding: 14px 22px; font-size: 14px; }

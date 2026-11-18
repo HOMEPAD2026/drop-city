@@ -1,25 +1,41 @@
 // site.js — the website: the hour, the numbers, EXPLORE (every drop as a card), TODAY'S 24, the launch, FEES and the
 // creators' space (your drops, the fees they've earned, paying them out). The drop itself is launch.js.
-import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, dropState, poke } from "/common.js";
+import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, dropState, poke, getJ } from "/common.js";
 import { walletButton } from "/wallet.js";
 import { openDrop, finishSplit, why, logsBox } from "/launch.js";
+import { t, initLang, initSound, tone, roll, paintVote, tickVote, paintLive, paintRanks, initCheck, paintWallets, openCreator, gradeChip, gradeBox, takeoverTick, showDrop, confetti } from "/site-x.js";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } }, coins = [], slot = null;
-const S = { q: "", sort: "wanted", filt: "all" };
+const S = { q: "", sort: "wanted", filt: "all", quiet: false };
+const tiers = new Map(); // a coin's wanted stars last time, to flash a new one
 const drop = () => openDrop({ cfg: CFG, onDone: refresh, paintWallet: () => paintWallet() });
 document.querySelectorAll("[data-drop]").forEach((b) => (b.onclick = drop));
 $("burger").onclick = () => $("links").classList.toggle("open");
 $("links").addEventListener("click", () => $("links").classList.remove("open"));
 
-async function refresh() { [coins, slot] = await Promise.all([loadCoins(), loadSlot()]); paintAll(); }
+async function refresh() {
+  const was = slot;
+  [coins, slot] = await Promise.all([loadCoins(), loadSlot()]);
+  paintAll();
+  // a new hourly drop while the page is open → the takeover
+  if (was && slot && slot.state === "dropped" && slot.drop && (!was.drop || was.drop.mint !== slot.drop.mint)) { const c = coins.find((x) => x.mint === slot.drop.mint); if (c) showDrop(c); }
+}
 async function start() {
   CFG = await loadCfg();
   document.querySelectorAll("[data-name]").forEach((e) => (e.textContent = CFG.name));
   document.title = `${CFG.name} — one drop every hour`;
+  initLang(() => { paintAll(); paintVote(CFG); paintWallets(CFG); }); initSound();
   await refresh(); paintFees(); paintMe(); readVault(); setInterval(readVault, 60e3);
+  initCheck(CFG, openCoin); paintWallets(CFG); setInterval(() => paintWallets(CFG), 60e3);
+  paintVote(CFG); setInterval(() => paintVote(CFG), 20e3);
+  paintLive(coins, flashTrade); setInterval(() => paintLive(coins, flashTrade), DEMO ? 3000 : 8000);
+  if (window.__COIN) setTimeout(() => openCoin(window.__COIN), 300);
+  const q = new URLSearchParams(location.search).get("coin"); if (q) setTimeout(() => openCoin(q), 300);
 }
-setInterval(refresh, 20e3); setInterval(paintHour, 1000);
-function paintAll() { paintHour(); paintMain(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker(); }
+setInterval(refresh, 20e3); setInterval(() => { paintHour(); tickVote(); takeoverTick(slot, coins); }, 1000);
+/// a trade lands: its card pulses
+function flashTrade(x) { const el = document.querySelector(`.cc[data-m="${CSS.escape(x.mint)}"]`); if (!el) return; el.classList.remove("ping"); void el.offsetWidth; el.classList.add("ping"); }
+function paintAll() { paintHour(); paintMain(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker(); paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); const sl = $("suffixline"); if (CFG.suffix) { sl.hidden = false; sl.innerHTML = `${esc(t("caEnds", "Every coin's CA ends in"))} <b>${esc(CFG.suffix)}</b>`; } }
 
 // ---------------- THE MAIN COIN (beside the hero)
 /// the address with its suffix lit
@@ -44,7 +60,7 @@ function paintHour() {
   const now = Date.now(); $("h-h").textContent = hh(now).slice(0, 2) + ":00 UTC";
   const st = $("h-s"); st.className = "st";
   const left = slot ? Math.max(0, slot.next - now) : 0, mm = String(Math.floor(left / 60e3)).padStart(2, "0"), ss = String(Math.floor((left % 60e3) / 1000)).padStart(2, "0");
-  if (slot) digits(mm + ss);
+  if (slot) { digits(mm + ss); const rv = $("ringv"); if (rv) rv.style.strokeDashoffset = String(Math.max(0, Math.min(100, (left / 3600e3) * 100))); }
   const [txt, cls] = dropState(slot, CFG); st.textContent = txt; if (cls) st.classList.add(cls);
   poke(slot);
 }
@@ -55,7 +71,10 @@ async function readVault() { if (!CFG.vault) return; try { const K = await kit()
 function paintStats() {
   const today = new Date().toISOString().slice(0, 10), t = coins.filter((c) => c.hour && c.hour.startsWith(today)).length;
   const mc = coins.reduce((a, c) => a + (c.mcapUsd || 0), 0), made = coins.filter((c) => c.graduated).length;
-  $("stats").innerHTML = [[coins.length, "coins launched"], [`${t}/24`, "hourly drops today"], [usd(mc), "total market cap"], [made, "made it (graduated)"], ...(vaultSol != null ? [[vaultSol.toFixed(2) + " SOL", "in THE VAULT"]] : [])].map(([v, l]) => `<div><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("");
+  const rows = [["n", coins.length, (v) => String(Math.round(v)), "coins launched"], ["t", t, (v) => `${Math.round(v)}/24`, "hourly drops today"], ["mc", mc, usd, "total market cap"], ["made", made, (v) => String(Math.round(v)), "made it (graduated)"], ...(vaultSol != null ? [["v", vaultSol, (v) => v.toFixed(2) + " SOL", "in THE VAULT"]] : [])];
+  const el = $("stats");
+  if (el.children.length !== rows.length) el.innerHTML = rows.map(([k, , , l]) => `<div><b data-k="${k}">–</b><small>${esc(l)}</small></div>`).join("");
+  for (const [k, v, f] of rows) roll(el.querySelector(`[data-k="${k}"]`), v, f);
 }
 
 // ---------------- EXPLORE
@@ -68,13 +87,16 @@ function paintGrid() {
   if (S.filt === "users") list = list.filter((c) => c.kind !== "drop");
   if (S.filt === "curve") list = list.filter((c) => !c.graduated);
   if (S.filt === "made") list = list.filter((c) => c.graduated);
+  // quiet coins (a day old, under $5K) wait behind a switch so the streets stay lively
+  if (!S.quiet && !S.q) list = list.filter((c) => c.mint === CFG.main || !(c.launchedAt && Date.now() / 1000 - c.launchedAt > 86400 && (c.mcapUsd || 0) < 5000 && !c.graduated));
   list.sort(S.sort === "new" ? (a, b) => (b.launchedAt || 0) - (a.launchedAt || 0) || String(b.hour).localeCompare(String(a.hour)) : S.sort === "curve" ? (a, b) => (b.graduated ? 100 : b.progress || 0) - (a.graduated ? 100 : a.progress || 0) : (a, b) => (b.mcapUsd || 0) - (a.mcapUsd || 0));
   $("grid").innerHTML = list.length ? list.map((c, i) => card(c, i)).join("") : `<div class="empty"><b>${coins.length ? "NOTHING MATCHES" : "THE STREETS ARE QUIET"}</b>${coins.length ? "Try another search." : "No coins yet — launch the first, or wait for the agent’s next drop."}</div>`;
 }
 function card(c, i) {
   const fresh = c.launchedAt && Date.now() / 1000 - c.launchedAt < 3600;
-  return `<article class="cc${c.graduated ? " made" : ""}${c.mint === CFG.main ? " main" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">${c.mint === CFG.main ? "THE MAIN COIN" : c.kind === "drop" ? "HOURLY DROP" : "WANTED"}</span>${c.graduated ? `<span class="badge">MADE</span>` : fresh ? `<span class="badge new">NEW</span>` : ""}${pic(c)}</div>
-    <div class="body"><h3>${esc(c.name)}</h3><span class="sym">$${esc(c.symbol)}</span> <span class="stars">${stars(c)}</span>
+  const st = stars(c), was = tiers.get(c.mint), up = was != null && was !== st && st.indexOf("☆") > was.indexOf("☆"); tiers.set(c.mint, st);
+  return `<article class="cc${c.graduated ? " made" : ""}${c.mint === CFG.main ? " main" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">${c.mint === CFG.main ? "THE MAIN COIN" : c.kind === "drop" ? "HOURLY DROP" : "WANTED"}</span>${c.graduated ? `<span class="badge">MADE</span>` : fresh ? `<span class="badge new">NEW</span>` : ""}${pic(c)}<span class="bounty">BOUNTY ${usd(c.mcapUsd)}</span></div>
+    <div class="body"><h3>${esc(c.name)}</h3><span class="sym">$${esc(c.symbol)}</span>${gradeChip(c.grade)} <span class="stars${up ? " up" : ""}">${st}</span>
       <div class="row"><b>${usd(c.mcapUsd)}</b><small>${c.hour ? "dropped " + esc(c.hour.slice(5, 10).replace("-", "/")) + " " + esc(c.hour.slice(11, 13)) + ":00" : c.launchedAt ? "launched " + esc(new Date(c.launchedAt * 1000).toISOString().slice(5, 16).replace("-", "/").replace("T", " ")) : ""}</small></div>
       <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? "graduated to PumpSwap" : `curve ${(c.progress || 0).toFixed(0)}%`}</small>
       <div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">In the city</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">Chart</a></div></div></article>`;
@@ -101,7 +123,8 @@ function paintFees() {
 
 // ---------------- CREATORS: your drops and their fees
 let paintWallet = async () => {};
-walletButton($("wallet"), () => { paintMe(); }).then((f) => (paintWallet = f));
+walletButton($("wallet"), () => { paintMe(); paintVote(CFG); }).then((f) => (paintWallet = f));
+$("quiet").onchange = (e) => { S.quiet = e.target.checked; paintGrid(); };
 async function paintMe() {
   const W = await sol(), el = $("me");
   if (!W || !W.key) { el.innerHTML = `<div class="me-box"><p style="color:var(--dim);margin:0 0 12px">Connect the wallet you launch from to see your drops and the fees they've earned.</p><button type="button" class="btn hot" id="me-c">Connect wallet</button></div>`; $("me-c").onclick = () => $("wallet").click(); return; }
@@ -154,17 +177,18 @@ $("grid").addEventListener("pointerout", (e) => { const c = e.target.closest(".c
 $("grid").addEventListener("click", (e) => { if (e.target.closest("a")) return; const c = e.target.closest(".cc"); if (c) openCoin(c.dataset.m); });
 function openCoin(mint) {
   const c = coins.find((x) => x.mint === mint); if (!c) return;
-  const el = $("cmodal"), share = encodeURIComponent(`$${c.symbol} — dropped in the city at ${c.hour ? c.hour.slice(11, 13) + ":00" : "its hour"}.\n`), link = encodeURIComponent(`${location.origin}/city?coin=${c.mint}`);
+  const el = $("cmodal"), share = encodeURIComponent(`$${c.symbol} — ${c.kind === "drop" ? `the ${c.hour.slice(11, 13)}:00 drop` : "launched"} in the city. CA ends in ${CFG.suffix || ""}.\n`), link = encodeURIComponent(`${location.origin}/coin/${c.mint}`);
   el.innerHTML = `<div class="cm-card"><button type="button" class="wm-x" aria-label="Close">×</button><div class="poster"><span class="tag">${c.mint === CFG.main ? "THE MAIN COIN" : c.kind === "drop" ? "HOURLY DROP" : "WANTED"}</span>${pic(c)}</div><div class="cm-in">
     <h2>${esc(c.name)}</h2><span class="sym" style="color:var(--hot);font:700 13px var(--mono)">$${esc(c.symbol)}</span> <span class="stars">${stars(c)}</span>
     <p class="addr">${esc(c.mint)}</p>
-    <div class="kv"><div><b>${usd(c.mcapUsd)}</b><small>Market cap</small></div><div><b>${c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>Price</small></div><div><b>${c.hour ? c.hour.slice(5, 10).replace("-", "/") + " " + c.hour.slice(11, 13) + ":00" : "–"}</b><small>Dropped (UTC)</small></div><div><b>${c.kind === "drop" ? "AGENT" : c.creator ? esc(short(c.creator)) : "–"}</b><small>${c.kind === "drop" ? "The hourly drop" : "Creator"}</small></div></div>
+    <div class="kv"><div><b>${usd(c.mcapUsd)}</b><small>Market cap</small></div><div><b>${c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>Price</small></div><div><b>${c.hour ? c.hour.slice(5, 10).replace("-", "/") + " " + c.hour.slice(11, 13) + ":00" : "–"}</b><small>Dropped (UTC)</small></div><div><b>${c.kind === "drop" ? "AGENT" : c.creator ? `<button type="button" class="creator-link" data-creator="${esc(c.creator)}">${esc(short(c.creator))}</button>` : "–"}</b><small>${c.kind === "drop" ? "The hourly drop" : "Creator"}</small></div></div>
     <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? "MADE — graduated to PumpSwap" : `bonding curve ${(c.progress || 0).toFixed(1)}%`}</small>
-    ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}
+    ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}<div id="cm-x"></div>
     <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade on pump.fun</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">See its tower</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">Share on X</a><button type="button" data-copy>Copy address</button></div>
     ${[c.twitter, c.telegram, c.website].filter(Boolean).length ? `<p style="margin:12px 0 0;font-size:13px">${[["X", c.twitter], ["Telegram", c.telegram], ["Website", c.website]].filter((x) => x[1]).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n} ↗</a>`).join(" · ")}</p>` : ""}</div></div>`;
   el.hidden = false;
   const close = () => { el.hidden = true; document.removeEventListener("keydown", k); }, k = (e) => { if (e.key === "Escape") close(); };
   document.addEventListener("keydown", k);
-  el.onclick = async (e) => { if (e.target === el || e.target.closest(".wm-x")) return close(); if (e.target.closest("[data-copy]")) { try { await navigator.clipboard.writeText(c.mint); note("Address copied"); } catch {} } };
+  el.onclick = async (e) => { if (e.target === el || e.target.closest(".wm-x")) return close(); const cr = e.target.closest("[data-creator]"); if (cr) return openCreator(cr.dataset.creator, coins, openCoin); if (e.target.closest("[data-copy]")) { try { await navigator.clipboard.writeText(c.mint); note("Address copied"); } catch {} } };
+  if (!DEMO) getJ("?coin=" + encodeURIComponent(c.mint)).then((d) => { const x = $("cm-x"); if (!x || !d || d.error) return; x.innerHTML = gradeBox(d) + (d.trades && d.trades.length ? `<div class="cm-tr">${d.trades.slice(0, 6).map((r) => `<div class="tr ${r.side}"><span class="sd">${r.side.toUpperCase()}</span><span><b>${r.sol.toFixed(3)} SOL</b></span><small>${esc(short(r.who))}</small></div>`).join("")}</div>` : ""); }).catch(() => {});
 }

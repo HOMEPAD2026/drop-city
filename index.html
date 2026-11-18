@@ -15,49 +15,69 @@
 <body>
 <nav class="nav" id="nav">
   <a class="logo" href="/"><b data-name>DROP CITY</b></a>
-  <div class="navlinks" id="links"><a href="#explore">Explore</a><a href="#launch">Launch</a><a href="/city">Play the city</a><a href="#fees">Fees</a><a href="#creators">Creators</a><a href="#about">About</a></div>
-  <div class="nav-r"><button type="button" class="btn ghost" id="wallet">Connect</button><button type="button" class="btn hot" data-drop>Launch a coin</button><button type="button" class="burger" id="burger" aria-label="Menu">☰</button></div>
+  <div class="navlinks" id="links"><a href="#main-coin" data-i18n="nMain">Main coin</a><a href="#explore" data-i18n="nExplore">Explore</a><a href="#vote" data-i18n="nVote">Vote</a><a href="#live" data-i18n="nLive">Live</a><a href="#launch" data-i18n="nLaunch">Launch</a><a href="/city" data-i18n="nCity">Play the city</a><a href="#check" data-i18n="nCheck">Check a CA</a><a href="#creators" data-i18n="nCreators">Creators</a></div>
+  <div class="nav-r"><select id="lang" aria-label="Language"><option value="en">EN</option><option value="ko">한국어</option><option value="zh">中文</option><option value="tr">TR</option></select><button type="button" class="snd" id="snd" aria-label="Sound" title="Sound">♪</button><button type="button" class="btn ghost" id="wallet">Connect</button><button type="button" class="btn hot" data-drop>Launch a coin</button><button type="button" class="burger" id="burger" aria-label="Menu">☰</button></div>
 </nav>
 <div class="ticker" aria-label="Latest drops"><div class="tk-in" id="ticker"></div></div>
 
 <header class="hero">
   <div class="hero-bg" aria-hidden="true"></div><div class="grain" aria-hidden="true"></div>
   <div class="hero-in">
-    <p class="kicker">A launchpad on pump.fun · Solana</p>
+    <p class="kicker" data-i18n="kicker">A launchpad on pump.fun · Solana</p>
     <h1><em class="w1">ONE DROP.</em><br><span class="flick">EVERY HOUR.</span></h1>
-    <p class="lead">At the top of every hour the city's agent drops a new coin on Clock Plaza. Everyone else launches whenever they like — no limit. Every coin rises as a tower, its fees split on chain the moment it launches, and the city vault fights for the hottest.</p>
-    <div class="cta"><button type="button" class="btn hot big" data-drop>Launch a coin</button><a class="btn ghost big" href="#explore">Explore coins</a><a class="btn cy big" href="/city">Enter the city ▸</a></div>
-    <div class="count" id="hour"><div class="c-top"><span class="lbl">THIS HOUR</span><b id="h-h">--:00</b><span id="h-s" class="st">…</span></div><div class="c-dig" aria-live="off"><span class="lbl2">NEXT DROP IN</span><div class="digs"><i id="d-m1">0</i><i id="d-m2">0</i><u>:</u><i id="d-s1">0</i><i id="d-s2">0</i></div></div></div>
+    <div class="lanes">
+      <div class="lane l1"><span class="ln-k" data-i18n="l1k">EVERY HOUR</span><b data-i18n="l1h">The agent drops a coin</b><p data-i18n="l1p">At the top of every hour the city's agent launches a new coin on Clock Plaza. You vote on what it drops next.</p></div>
+      <div class="lane l2"><span class="ln-k" data-i18n="l2k">ANY TIME</span><b data-i18n="l2h">You launch yours</b><p data-i18n="l2p">No limit, no waiting. Your wallet, pump.fun, the fee split locked on chain — and a tower in the city.</p></div>
+    </div>
+    <p class="suffixline" id="suffixline" hidden></p>
+    <div class="cta"><button type="button" class="btn hot big" data-drop data-i18n="launch">Launch a coin</button><a class="btn ghost big" href="#explore" data-i18n="explore">Explore coins</a><a class="btn cy big" href="/city" data-i18n="enter">Enter the city ▸</a></div>
+    <div class="count" id="hour"><svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19"/><circle id="ringv" cx="22" cy="22" r="19" pathLength="100"/></svg><div class="c-top"><span class="lbl">THIS HOUR</span><b id="h-h">--:00</b><span id="h-s" class="st">…</span></div><div class="c-dig" aria-live="off"><span class="lbl2">NEXT DROP IN</span><div class="digs"><i id="d-m1">0</i><i id="d-m2">0</i><u>:</u><i id="d-s1">0</i><i id="d-s2">0</i></div></div></div>
   </div>
-  <aside class="mainc" id="mainc" hidden aria-label="The main coin"></aside>
+  <aside class="mainc" id="mainc" hidden aria-label="The main coin"></aside><span id="main-coin" class="anchor"></span>
   <div class="stats" id="stats"></div>
 </header>
 
 <main>
   <section id="explore" class="sec" data-rv>
-    <div class="sec-h"><h2>EXPLORE</h2><p>Every coin launched here — the agent’s hourly drops and everyone’s own. Tap a card to trade it, or see its tower in the city.</p></div>
+    <div class="sec-h"><h2 data-i18n="hExplore">EXPLORE</h2><p data-i18n="pExplore">Every coin launched here — the agent’s hourly drops and everyone’s own. Tap a card to trade it, or see its tower in the city.</p></div>
     <div class="tools">
       <input id="q" type="search" placeholder="Search name, ticker or address" autocomplete="off">
       <div class="seg" id="sort"><button type="button" data-s="wanted" class="on">Most wanted</button><button type="button" data-s="new">Newest</button><button type="button" data-s="curve">Curve</button></div>
       <div class="seg" id="filt"><button type="button" data-f="all" class="on">All</button><button type="button" data-f="drops">Hourly drops</button><button type="button" data-f="users">Community</button><button type="button" data-f="curve">On the curve</button><button type="button" data-f="made">Made</button></div>
     </div>
+    <label class="quiet"><input type="checkbox" id="quiet"> <span data-i18n="quiet">Show quiet coins (a day old, under $5K)</span></label>
     <div class="grid" id="grid"></div>
   </section>
 
+  <section id="vote" class="sec" data-rv>
+    <div class="sec-h"><h2 data-i18n="hVote">VOTE THE NEXT DROP</h2><p data-i18n="pVote">Pick what the agent drops at the top of the next hour. One vote a wallet, signed — no fee.</p></div>
+    <div id="votebox" class="votebox"></div>
+  </section>
+
+  <section id="live" class="sec" data-rv>
+    <div class="sec-h"><h2 data-i18n="hLive">LIVE ON THE CURVES</h2><p data-i18n="pLive">Every buy and sell on the city's coins, as it lands.</p></div>
+    <div id="livebox" class="livebox"></div>
+  </section>
+
+  <section id="ranks" class="sec" data-rv>
+    <div class="sec-h"><h2 data-i18n="hRanks">LEADERBOARDS</h2><p data-i18n="pRanks">The city's most wanted, its biggest creators and the coins that made it.</p></div>
+    <div id="ranksbox" class="ranks"></div>
+  </section>
+
   <section id="today" class="sec" data-rv>
-    <div class="sec-h"><h2>TODAY'S 24</h2><p>The agent's hourly drops (UTC). Each one takes its hour's lot in Clock Plaza.</p></div>
+    <div class="sec-h"><h2 data-i18n="hToday">TODAY'S 24</h2><p data-i18n="pToday">The agent's hourly drops (UTC). Each one takes its hour's lot in Clock Plaza.</p></div>
     <div class="hours" id="hours"></div>
   </section>
 
   <section id="launch" class="sec" data-rv>
-    <div class="sec-h"><h2>LAUNCH</h2><p>Your coin, your wallet, any time. No limit.</p></div>
+    <div class="sec-h"><h2 data-i18n="hLaunch">LAUNCH</h2><p data-i18n="pLaunch">Your coin, your wallet, any time. No limit.</p></div>
     <ol class="how">
       <li><b>1</b><h3>Find your address</h3><p id="how-suffix">Your browser makes the coin's address. The key never leaves it.</p></li>
       <li><b>2</b><h3>Add the details</h3><p>Logo, name, ticker, story and links — hosted for pump.fun to read.</p></li>
       <li><b>3</b><h3>Drop it on pump.fun</h3><p>An ordinary pump.fun coin from your own wallet, with the fee split locked in the same signing.</p></li>
       <li><b>4</b><h3>Rise in the city</h3><p>Your coin gets a tower in the districts around Clock Plaza and grows a floor as the curve fills.</p></li>
     </ol>
-    <div class="launch-cta"><button type="button" class="btn hot big" data-drop>Launch a coin now</button><span id="l-hint"></span></div>
+    <div class="launch-cta"><button type="button" class="btn hot big" data-drop data-i18n="launchNow">Launch a coin now</button><span id="l-hint"></span></div>
   </section>
 
   <section id="play" class="sec play" data-rv>
@@ -66,19 +86,29 @@
   </section>
 
   <section id="fees" class="sec" data-rv>
-    <div class="sec-h"><h2>FEES</h2><p>pump.fun pays every coin's creator a share of its trading fees. Here that share is split three ways — locked on chain forever when the coin launches.</p></div>
+    <div class="sec-h"><h2 data-i18n="hFees">FEES</h2><p>pump.fun pays every coin's creator a share of its trading fees. Here that share is split three ways — locked on chain forever when the coin launches.</p></div>
     <div class="splitbar" id="splitbar"></div>
     <div class="fee-cards" id="feecards"></div>
     <p class="fine">No launch fee from us — you pay about 0.03 SOL of Solana network and rent costs, plus any first buy you choose. pump.fun's own trading fees apply as on pump.fun.</p>
   </section>
 
+  <section id="check" class="sec" data-rv>
+    <div class="sec-h"><h2 data-i18n="hCheck">CHECK A CA</h2><p id="checkp" data-i18n="pCheck">Paste a coin's address: is it from this city, is its fee split locked, and how safe does the chain say it is?</p></div>
+    <div class="checkbox"><div class="fix-row"><input id="ck-m" placeholder="Coin address" autocomplete="off"><button type="button" class="btn hot" id="ck-go" data-i18n="checkBtn">Check</button></div><div id="ck-out"></div></div>
+  </section>
+
+  <section id="wallets" class="sec" data-rv>
+    <div class="sec-h"><h2 data-i18n="hWallets">OUT IN THE OPEN</h2><p data-i18n="pWallets">Every wallet the city runs on, with its live balance. Every move is a public transaction.</p></div>
+    <div id="walletsbox" class="wallets"></div>
+  </section>
+
   <section id="creators" class="sec" data-rv>
-    <div class="sec-h"><h2>CREATORS</h2><p>Your coins and the fees they've earned.</p></div>
+    <div class="sec-h"><h2 data-i18n="hCreators">CREATORS</h2><p data-i18n="pCreators">Your coins and the fees they've earned.</p></div>
     <div id="me"></div>
   </section>
 
   <section id="about" class="sec" data-rv>
-    <div class="sec-h"><h2>ABOUT</h2></div>
+    <div class="sec-h"><h2 data-i18n="hAbout">ABOUT</h2></div>
     <div class="faq">
       <details open><summary>What is this?</summary><p>A launchpad that turns pump.fun launches into a city. The city's own agent drops one coin at the top of every hour, and anyone can launch their own coins any time.</p></details>
       <details><summary>Who holds my coin or my keys?</summary><p>Nobody but you. You launch from your own wallet; the coin's address key is made in your browser and used once to create the coin. Our server hosts the logo and details and checks the chain.</p></details>
@@ -90,10 +120,12 @@
     </div>
   </section>
 </main>
-<footer class="sitefoot"><b data-name>DROP CITY</b><span>Built on pump.fun · Solana. Not affiliated with pump.fun.</span><span><a href="/city">The city</a> · <a href="#fees">Fees</a> · <a href="https://github.com/HOMEPAD2026/drop-city" rel="noopener">Source</a></span></footer>
+<footer class="sitefoot"><b data-name>DROP CITY</b><span>Built on pump.fun · Solana. Not affiliated with pump.fun.</span><span><a href="/city">The city</a> · <a href="#fees">Fees</a> · <a href="https://github.com/HOMEPAD2026/drop-city" rel="noopener">Source</a></span><select id="lang2" aria-label="Language"><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文</option><option value="tr">Türkçe</option></select></footer>
 <div class="sheet" id="sheet" hidden></div>
 <div class="cmodal" id="cmodal" hidden></div>
 <div class="toast" id="toast" hidden></div>
+<div class="takeover" id="takeover" hidden></div>
+<nav class="bbar" aria-label="Quick"><button type="button" data-drop data-i18n="bLaunch">Launch</button><a href="#explore" data-i18n="bExplore">Explore</a><a href="#vote" data-i18n="bVote">Vote</a><a href="/city" data-i18n="bCity">City</a></nav>
 <script src="/solwallet.js" defer></script>
 <script type="module" src="/site.js"></script>
 </body>

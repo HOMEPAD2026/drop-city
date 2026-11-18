@@ -29,8 +29,8 @@ export function openDrop(o = {}) {
   const CFG = o.cfg || {};
   const sh = $("sheet"); sh.hidden = false;
   const f = { dev: 0, logo: "", logoData: "" };
-  sh.innerHTML = `<div role="dialog" aria-label="Launch a coin"><h2>LAUNCH A COIN</h2><p class="sub">Any time, as many as you like. On pump.fun, from your own wallet.</p>
-    <div class="form">
+  sh.innerHTML = `<div role="dialog" aria-label="Launch a coin" class="wide"><h2>LAUNCH A COIN</h2><p class="sub">Any time, as many as you like. On pump.fun, from your own wallet.</p>
+    <div class="lf"><div class="form">
       <label class="w logo-pick"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden data-f="file"><span class="pv" data-f="pv">+</span><span>Logo<br><small data-f="lmsg">square image, 512 px is plenty</small></span></label>
       <label>Name<input data-f="name" maxlength="32" placeholder="Night Owl"></label>
       <label>Ticker<input data-f="symbol" maxlength="13" placeholder="OWL"></label>
@@ -40,11 +40,15 @@ export function openDrop(o = {}) {
       <label class="w">Website<input data-f="website" placeholder="https://…"></label>
       <label class="w buyset"><span class="lbl">Your first buy (optional) — bought in the same signing, before anyone else</span>
         <span class="custom"><input data-f="devsol" inputmode="decimal" placeholder="0" style="max-width:180px"> SOL</span><small class="buyline" data-f="buyline">Leave it empty for no first buy.</small></label>
-    </div>
+    </div><div class="lprev"><p class="cap">PREVIEW</p><div data-f="prev"></div></div></div>
     <div class="note"><b>Fees, locked on chain:</b> ${(CFG.split.creator / 100)}% you · ${(CFG.split.vault / 100)}% THE VAULT · ${(CFG.split.buyer / 100)}% buys $${esc(CFG.ticker)}.${CFG.suffix ? ` <b>Your coin's address will end in ${esc(CFG.suffix)}</b> — found in this browser, the key never leaves it.` : ""} No launch fee; about 0.03 SOL of network costs.</div>
     <ol class="steps" data-f="steps" hidden></ol><p class="err" data-f="err" hidden></p>
     <div class="foot"><button type="button" class="btn ghost" data-f="close">Close</button><button type="button" class="btn hot" data-f="go">Launch on pump.fun</button></div></div>`;
   const q = (k) => sh.querySelector(`[data-f="${k}"]`);
+  // the card as it will look in Explore, while you type
+  const prev = () => { const v = (k) => String((q(k) && q(k).value) || "").trim(), sym = v("symbol") || "TICKER", nm = v("name") || "Your coin";
+    q("prev").innerHTML = `<article class="cc"><div class="poster"><span class="tag">WANTED</span><span class="badge new">NEW</span>${f.logoData ? `<img src="${f.logoData}" alt="">` : `<span class="ini">${esc(sym.slice(0, 3))}</span>`}<span class="bounty">BOUNTY $0</span></div><div class="body"><h3>${esc(nm)}</h3><span class="sym">$${esc(sym)}</span> <span class="stars">★☆☆☆☆</span><div class="bar"><i style="width:2%"></i></div><small style="color:var(--dim)">${CFG.suffix ? `CA …${esc(CFG.suffix)}` : "curve 0%"}</small></div></article>`; };
+  sh.addEventListener("input", prev); prev();
   const err = (s) => { q("err").hidden = !s; q("err").textContent = s || ""; };
   q("close").onclick = () => { try { grind.stop && grind.stop(); } catch {} sh.hidden = true; };
   q("devsol").oninput = (e) => { const v = Math.max(0, Math.min(50, parseFloat(e.target.value) || 0)); f.dev = Math.round(v * 1e4) / 1e4;
@@ -57,7 +61,7 @@ export function openDrop(o = {}) {
       const m = Math.min(img.width, img.height), d = Math.min(512, m), c = document.createElement("canvas"); c.width = c.height = d;
       c.getContext("2d").drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, d, d);
       let data = c.toDataURL("image/webp", 0.86); if (!data.startsWith("data:image/webp")) data = c.toDataURL("image/png");
-      f.logoData = data; q("pv").innerHTML = `<img src="${data}" alt="">`; q("lmsg").textContent = "ready"; err("");
+      f.logoData = data; q("pv").innerHTML = `<img src="${data}" alt="">`; q("lmsg").textContent = "ready"; err(""); prev();
     } catch (x) { err(String((x && x.message) || x)); }
   };
   const STEPS = [["find", CFG.suffix ? `Find an address ending in ${CFG.suffix}` : "Make the coin's address"], ["host", "Host the logo and details"], ["sign", "Sign the launch"], ["launch", "Launch on pump.fun"], ["split", "Lock the fee split"], ["list", "Move into the city"]];
@@ -83,8 +87,11 @@ export function openDrop(o = {}) {
     try {
       // 1. the address
       step("find", "doing"); const t0 = Date.now(), want = 58 ** (CFG.suffix || "").length;
-      const g = g0 = await grind(CFG.suffix || "", (n) => { const rate = n / Math.max(0.5, (Date.now() - t0) / 1000); step("find", "doing", `${Math.round(n).toLocaleString()} tried · ${Math.round(rate).toLocaleString()}/s${want > 1 ? ` · ~${Math.max(1, Math.round((want - n) / Math.max(rate, 1)))} s` : ""}`); });
-      step("find", "ok", `<code>${esc(g.pub)}</code>`);
+      // the slot machine: addresses spin past, the suffix's letters light up as they come
+      const B = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz", sx = CFG.suffix || "", rnd = (n) => Array.from({ length: n }, () => B[(Math.random() * 58) | 0]).join("");
+      let spin = 0, info = ""; const reel = setInterval(() => { spin++; step("find", "doing", `<div class="slot">${rnd(44 - sx.length)}<b>${esc(sx)}</b></div>${info}`); }, 70);
+      let g; try { g = g0 = await grind(sx, (n) => { const rate = n / Math.max(0.5, (Date.now() - t0) / 1000); info = `${Math.round(n).toLocaleString()} tried · ${Math.round(rate).toLocaleString()}/s${want > 1 ? ` · ~${Math.max(1, Math.round((want - n) / Math.max(rate, 1)))} s` : ""}`; }); } finally { clearInterval(reel); }
+      step("find", "ok", `<div class="slot">${esc(g.pub.slice(0, g.pub.length - sx.length))}<b class="lock">${esc(sx)}</b></div>`);
       // 3. the details
       cur = "host"; step("host", "doing");
       const lg = await post({ action: "logo", image: f.logoData }); if (!lg.ok) throw new Error(lg.j.error || "couldn't host the logo");

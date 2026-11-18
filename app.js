@@ -4,6 +4,7 @@ import { makeCity } from "/city.js";
 import { $, esc, short, usd, hh, note, DEMO, loadCfg, loadCoins, loadSlot as getSlot, stars, ini, pic, sol, dropState, poke } from "/common.js";
 import { walletButton } from "/wallet.js";
 import { openDrop as drop, grind } from "/launch.js";
+import { showDrop, takeoverTick, initSound } from "/site-x.js";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } };
 let coins = [], slot = null, tab = "wanted", sel = new URLSearchParams(location.search).get("coin");
@@ -17,9 +18,17 @@ async function load() {
   if (sel) { city.flyTo(sel); openCard(sel, true); }
 }
 async function loadList() { coins = await loadCoins(); city.setCoins(coins, new Date().getUTCHours()); paintPhone(); if (sel) openCard(sel, true); }
-async function loadSlot() { slot = await getSlot(); paintClock(); }
+async function loadSlot() {
+  const was = slot; slot = await getSlot(); paintClock();
+  // a new hourly drop while the city is open: fly there, fireworks, the takeover
+  if (was && slot && slot.state === "dropped" && slot.drop && (!was.drop || was.drop.mint !== slot.drop.mint)) {
+    await loadList(); const c = coins.find((x) => x.mint === slot.drop.mint);
+    if (c) { city.flyTo(c.mint); const t = city.towers.get(c.mint); if (t) setTimeout(() => city.burst(t.group.position.x, t.h + 14, t.group.position.z, 1.6), 1200); showDrop(c); }
+  }
+}
 setInterval(loadList, 20e3); setInterval(loadSlot, 15e3);
-setInterval(() => { paintClock(); $("ph-time").textContent = hh(Date.now()) + " UTC"; }, 1000);
+setInterval(() => { paintClock(); takeoverTick(slot, coins); $("ph-time").textContent = hh(Date.now()) + " UTC"; }, 1000);
+initSound();
 
 // ---------------- the top bar: this hour's drop
 function paintClock() {

@@ -190,6 +190,22 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
     body.userData.mint = coin.mint; sign.userData.mint = coin.mint;
     return { group: g, body, sign, coin, h };
   };
+  // ---------------- motion: towers rise when they're new, graduations fire off, the helicopter follows the newest
+  const born = new Map(), wasMade = new Set(); let firstSet = true, newest = null;
+  const bursts = [];
+  function burst(x, y, z, big = 1) {
+    const n = Math.round((PHONE ? 90 : 160) * big), pos = new Float32Array(n * 3), vel = [], col = new Float32Array(n * 3), cc = [[1, 0.18, 0.53], [1, 1, 1], [1, 0.44, 0.68]];
+    for (let i = 0; i < n; i++) { pos.set([x, y, z], i * 3); const a = Math.random() * 6.283, b = Math.acos(2 * Math.random() - 1), sp = (12 + Math.random() * 18) * big; vel.push([Math.sin(b) * Math.cos(a) * sp, Math.cos(b) * sp * 0.8 + 6, Math.sin(b) * Math.sin(a) * sp]); col.set(cc[i % 3], i * 3); }
+    const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(pos, 3)); g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    const p = new THREE.Points(g, new THREE.PointsMaterial({ size: 2.2, vertexColors: true, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
+    scene.add(p); bursts.push({ p, vel, life: 0 });
+  }
+  function stepBursts(dt) {
+    for (let k = bursts.length - 1; k >= 0; k--) { const b = bursts[k]; b.life += dt; const a = b.p.geometry.attributes.position;
+      for (let i = 0; i < b.vel.length; i++) { const v = b.vel[i]; v[1] -= 18 * dt; v[0] *= 0.985; v[2] *= 0.985; a.array[i * 3] += v[0] * dt; a.array[i * 3 + 1] += v[1] * dt; a.array[i * 3 + 2] += v[2] * dt; }
+      a.needsUpdate = true; b.p.material.opacity = Math.max(0, 1 - b.life / 2.4);
+      if (b.life > 2.4) { scene.remove(b.p); b.p.geometry.dispose(); b.p.material.dispose(); bursts.splice(k, 1); } }
+  }
   function setCoins(coins, hourNow) {
     for (const t of towers.values()) scene.remove(t.group); towers.clear();
     hand.rotation.y = -((hourNow / 24) * Math.PI * 2 - Math.PI / 2) - Math.PI / 2;
@@ -204,6 +220,16 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
     older.sort((a, b) => (b.mcapUsd || 0) - (a.mcapUsd || 0)).forEach((c, i) => {
       const a = i * 2.39996, r = RING + 34 + Math.sqrt(i) * 16; const t = towerOf(c, Math.cos(a) * r, Math.sin(a) * r, 0.85); scene.add(t.group); towers.set(c.mint, t);
     });
+    // new towers rise (all of them, one after another, the first time); a coin that just graduated fires off
+    let i0 = 0;
+    for (const [m, t] of towers) {
+      if (!born.has(m)) born.set(m, firstSet ? T + 0.2 + (i0++) * 0.05 : T);
+      if (!firstSet && !born.get(m + ":seen")) { born.set(m + ":seen", 1); if (Date.now() / 1000 - (t.coin.launchedAt || 0) < 3600) setTimeout(() => burst(t.group.position.x, t.h + 10, t.group.position.z, 1.2), 900); }
+      if (firstSet) born.set(m + ":seen", 1);
+      if (t.coin.graduated && !wasMade.has(m)) { wasMade.add(m); if (!firstSet) for (let k = 0; k < 4; k++) setTimeout(() => burst(t.group.position.x + (Math.random() - 0.5) * 20, t.h + 20 + k * 8, t.group.position.z + (Math.random() - 0.5) * 20, 1.4), k * 450); }
+    }
+    newest = coins.slice().sort((a, b) => (b.launchedAt || 0) - (a.launchedAt || 0))[0] || null;
+    firstSet = false;
     ghosts.forEach((g, h) => { g.visible = !used.has(h); g.material.color.setHex(h === hourNow ? 0xffffff : 0xff2e88); g.material.opacity = h === hourNow ? 0.95 : 0.25; });
   }
 
@@ -237,7 +263,12 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
     if (document.hidden) { requestAnimationFrame(frame); return; }
     sea.material.uniforms.t.value = T;
     placeCars(dt); cars.instanceMatrix.needsUpdate = heads.instanceMatrix.needsUpdate = tails.instanceMatrix.needsUpdate = true;
-    const a = T * 0.18; heli.position.set(Math.cos(a) * 70, 62 + Math.sin(T * 0.7) * 2, Math.sin(a) * 70); heli.rotation.y = -a; heli.userData.rotor.rotation.y = T * 30;
+    // the helicopter circles the newest tower (the plaza when there's none)
+    const nt = newest && towers.get(newest.mint), hc = heli.userData.c || (heli.userData.c = { x: 0, z: 0 });
+    hc.x += ((nt ? nt.group.position.x : 0) - hc.x) * Math.min(1, dt * 0.5); hc.z += ((nt ? nt.group.position.z : 0) - hc.z) * Math.min(1, dt * 0.5);
+    const a = T * 0.18, hr = nt ? 34 : 70; heli.position.set(hc.x + Math.cos(a) * hr, Math.max(62, (nt ? nt.h : 0) + 40) + Math.sin(T * 0.7) * 2, hc.z + Math.sin(a) * hr); heli.rotation.y = -a; heli.userData.rotor.rotation.y = T * 30;
+    stepBursts(dt);
+    for (const [m, t] of towers) { const k = Math.max(0, Math.min(1, (T - (born.get(m) || 0)) / 1.4)); t.group.scale.y = k < 1 ? Math.max(0.001, 1 - Math.pow(1 - k, 3) + Math.sin(k * Math.PI) * 0.08) : 1; }
     heli.userData.blink.visible = (T % 1) < 0.15; heli.userData.beam.rotation.z = Math.sin(T * 0.6) * 0.35; heli.userData.beam.rotation.x = Math.cos(T * 0.45) * 0.3;
     for (const t of towers.values()) t.sign.position.y = t.h + 6 + Math.sin(T * 2 + t.h) * 0.6;
     if (goal) { for (const k of ["tx", "tz", "ty", "dist"]) orbit[k] += (goal[k] - orbit[k]) * Math.min(1, dt * 2.5); }
@@ -246,7 +277,7 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
-  return { setCoins, flyTo, scene, cam, towers };
+  return { setCoins, flyTo, scene, cam, towers, burst };
 }
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const hash = (s) => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
