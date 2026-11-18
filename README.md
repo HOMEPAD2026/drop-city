@@ -17,6 +17,10 @@ One drop an hour on pump.fun, in a neon coast city.
 | vault | PAD_VAULT | THE VAULT wallet (30 %) — launching stays closed until it's set |
 | buyer | PAD_BUYER | the wallet that buys the main coin (10 %) |
 
+| quotes | — | other pairs a coin can launch with besides SOL (each `{ id, mint, program, decimals, live }`; TTWO = Backpack's tokenized Take-Two share). pump.fun must admit the token as a quote (`/api/pad?quotes` lists them); `/api/pad?simquote=TTWO` simulates a launch with it (nothing is sent). `live: false` keeps it out of the launch form. |
+
+A token-pair launch is create + the locked split as one v0 transaction through the city's lookup table (the agent adds the pairs' shared accounts to it on its next tick), then the first buy as a second transaction; its creator fees wait in the token and are paid out in it.
+
 Other env: `BLOB_READ_WRITE_TOKEN` (a connected Vercel Blob store), `SOLANA_RPC_URL` (optional, a paid RPC).
 
 `?demo=1` shows a made-up city. Tests: `npm test`.
