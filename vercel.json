@@ -1,7 +1,8 @@
 {
   "functions": {
     "api/pad.mjs": {
-      "maxDuration": 60
+      "maxDuration": 60,
+      "includeFiles": "index.html"
     }
   },
   "headers": [
@@ -28,5 +29,11 @@
       ]
     }
   ],
-  "cleanUrls": true
+  "cleanUrls": true,
+  "rewrites": [
+    {
+      "source": "/coin/:mint",
+      "destination": "/api/pad?page=:mint"
+    }
+  ]
 }

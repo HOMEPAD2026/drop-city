@@ -11,12 +11,19 @@ import { makePad, publicCfg, cfg } from "../lib/_pad.mjs";
 import { proxy } from "../lib/_chain.mjs";
 import { blobStore, blobEnabled } from "../lib/_blob.mjs";
 import { makeAgent } from "../lib/_agent.mjs";
+import { makeExtra } from "../lib/_extra.mjs";
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const json = (status, body, cache = "no-store") => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": cache, "access-control-allow-origin": "*" } });
 let PAD = null;
 const pad = () => (PAD = PAD || makePad({ store: blobStore() }));
 let AG = null;
-const agent = () => (AG = AG || makeAgent({ pad: pad() }));
+let EX = null;
+const extra = () => (EX = EX || makeExtra({ pad: pad() }));
+const agent = () => (AG = AG || makeAgent({ pad: pad(), extra: extra() }));
+let HTML = null;
+const html = (status, body) => new Response(body, { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=60, s-maxage=300" } });
 const hits = new Map();
 function limited(key, n, ms) { const t = Date.now(), a = (hits.get(key) || []).filter((x) => t - x < ms); a.push(t); hits.set(key, a); if (hits.size > 5000) hits.clear(); return a.length > n; }
 const ipOf = (req) => String(req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "anon";
@@ -39,6 +46,15 @@ export async function GET(req) {
     if (q.has("list")) return json(200, await pad().list(), "public, max-age=10, s-maxage=20");
     if (q.has("slot")) return json(200, { ...(await pad().slot()), cfg: publicCfg() }, "no-store");
     if (q.has("agent")) return json(200, await agent().status(), "public, max-age=10");
+    if (q.has("verify")) { if (limited("v:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); const r = await extra().verify(q.get("verify")); return json(r.status, r.body, "public, max-age=15"); }
+    if (q.has("coin")) { if (limited("c:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); const r = await extra().detail(q.get("coin")); return json(r.status, r.body, "public, max-age=30"); }
+    if (q.has("trades")) return json(200, await extra().trades(), "public, max-age=6, s-maxage=8");
+    if (q.has("vote")) return json(200, await extra().voteView(q.get("wallet") || ""), "no-store");
+    if (q.has("page")) {
+      HTML = HTML || readFileSync(join(process.cwd(), "index.html"), "utf8");
+      const m = String(q.get("page") || ""), coin = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(m) ? await pad().store.get(`coins/${m}.json`).catch(() => null) : null;
+      const u = new URL(req.url); return html(200, extra().page(HTML, coin, `${u.protocol}//${req.headers.get("host") || u.host}`));
+    }
     if (q.has("check")) {
       if (limited("check:" + ipOf(req), 20, 60e3)) return json(429, { error: "slow down" });
       const r = await pad().check(q.get("check"));
@@ -52,7 +68,7 @@ export async function GET(req) {
       return json(200, await agent().tick(), "no-store");
     }
   } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 160) }); }
-  return json(400, { error: "use ?cfg, ?list, ?slot, ?agent or ?tick" });
+  return json(400, { error: "use ?cfg, ?list, ?slot, ?agent, ?tick, ?check, ?verify, ?coin, ?trades, ?vote or ?page" });
 }
 export async function POST(req) {
   const ip = ipOf(req);
@@ -63,9 +79,9 @@ export async function POST(req) {
   }
   if (!blobEnabled()) return json(503, { error: "the store isn't connected yet" });
   let b; try { b = (await req.json()) || {}; } catch { return json(400, { error: "bad JSON" }); }
-  const lim = { register: 30, meta: 20, logo: 20 }[b.action];
+  const lim = { register: 30, meta: 20, logo: 20, vote: 10 }[b.action];
   if (!lim) return json(400, { error: "unknown action" });
   if (limited(b.action + ":" + ip, lim, 60e3)) return json(429, { error: "slow down" });
-  try { const r = await pad()[b.action](b); return json(r.status, r.body); }
+  try { const r = b.action === "vote" ? await extra().vote(b) : await pad()[b.action](b); return json(r.status, r.body); }
   catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 160) }); }
 }
