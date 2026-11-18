@@ -2,7 +2,7 @@
   "functions": {
     "api/pad.mjs": {
       "maxDuration": 60,
-      "includeFiles": "index.html"
+      "includeFiles": "{index.html,images/agent/**}"
     }
   },
   "headers": [
