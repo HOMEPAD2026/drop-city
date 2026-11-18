@@ -2,7 +2,7 @@
 // creators' space (your drops, the fees they've earned, paying them out). The drop itself is launch.js.
 import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, dropState, poke } from "/common.js";
 import { walletButton } from "/wallet.js";
-import { openDrop } from "/launch.js";
+import { openDrop, finishSplit, why, logsBox } from "/launch.js";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } }, coins = [], slot = null;
 const S = { q: "", sort: "wanted", filt: "all" };
@@ -91,8 +91,16 @@ async function paintMe() {
   const earned = mine.reduce((a, c) => a + (c.feesWaitingSol || 0), 0);
   el.innerHTML = `<div class="me-box"><div class="stats" style="padding:0;max-width:none"><div><b>${mine.length}</b><small>your drops</small></div><div><b>${earned.toFixed(4)} SOL</b><small>fees waiting (all shares)</small></div><div><b>${(CFG.split.creator / 100)}%</b><small>your share</small></div><div><b>OPEN</b><small>launching</small></div></div>
     ${mine.length ? `<div class="my">${mine.map((c) => `<div class="r">${pic(c)}<span><b>$${esc(c.symbol)}</b> ${esc(c.name)}<br><small>${usd(c.mcapUsd)} · ${c.graduated ? "made" : `curve ${(c.progress || 0).toFixed(0)}%`} · ${(c.feesWaitingSol || 0).toFixed(4)} SOL waiting</small></span><button type="button" class="btn cy" data-pay="${esc(c.mint)}" ${(c.feesWaitingSol || 0) > 0.0001 ? "" : "disabled"}>Pay out fees</button><a class="btn ghost" href="/city?coin=${esc(c.mint)}" style="text-decoration:none">In the city</a></div>`).join("")}</div>` : `<p style="color:var(--dim)">No coins from this wallet yet. Launch one any time.</p><button type="button" class="btn hot" data-drop2>Drop a coin</button>`}
+    <div class="fix"><b>Launched but not in the city?</b> If the page closed or the fee split didn't lock, paste the coin's address — the wallet that launched it finishes the split and lists it.<div class="fix-row"><input id="fix-m" placeholder="Coin address" autocomplete="off"><button type="button" class="btn ghost" id="fix-go">Check & finish</button></div><p class="err" id="fix-err" hidden></p></div>
     <p class="fine">Paying out sends every share at once — ${(CFG.split.creator / 100)}% to you, ${(CFG.split.vault / 100)}% to the vault, ${(CFG.split.buyer / 100)}% to the buyer — straight from pump.fun's fee program. Anyone may press it; the split can't change.</p></div>`;
   el.querySelectorAll("[data-pay]").forEach((b) => (b.onclick = () => payOut(b.dataset.pay, b)));
+  const fx = $("fix-go"); if (fx) fx.onclick = async () => {
+    const m = String($("fix-m").value || "").trim(), e = $("fix-err"); e.hidden = true; e.innerHTML = "";
+    if (!m) return; fx.disabled = true; fx.textContent = "Checking…";
+    try { const r = await finishSplit({ mint: m, S: W, CFG }); if (r.listed) { note("Done — it's in the city."); refresh(); } else { e.hidden = false; e.textContent = r.why || "Not listed."; } }
+    catch (x) { e.hidden = false; e.textContent = why(x); logsBox(e, x); }
+    fx.disabled = false; fx.textContent = "Check & finish";
+  };
   const d2 = el.querySelector("[data-drop2]"); if (d2) d2.onclick = drop;
 }
 async function payOut(mint, btn) {

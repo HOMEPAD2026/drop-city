@@ -3,9 +3,9 @@
 // paying out its coins' waiting creator fees, and sending SOL on to THE VAULT.
 // Built with HOMEPAD's tools/pump-kit (its node_modules): copy this file there and run
 //   esbuild agent-entry.mjs --bundle --minify --format=esm --platform=node --target=node20 --outfile=<dropcity>/lib/_agentkit.mjs (+ the createRequire banner)
-import { Connection, PublicKey, Keypair, Transaction, SystemProgram, ComputeBudgetProgram } from "@solana/web3.js";
+import { Connection, PublicKey, Keypair, Transaction, VersionedTransaction, SystemProgram, ComputeBudgetProgram } from "@solana/web3.js";
 import { OnlinePumpSdk, PUMP_SDK, feeSharingConfigPda } from "@pump-fun/pump-sdk";
-import { launchTxs, distributeTx } from "./entry.mjs";
+import { launchTxs, distributeTx, splitTx } from "./entry.mjs";
 
 export async function sharingOf(connection, mint) {
   const a = await connection.getAccountInfo(feeSharingConfigPda(new PublicKey(mint)));
@@ -26,4 +26,10 @@ export function sendSolTx({ from, to, lamports, blockhash }) {
   t.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50000 }), SystemProgram.transfer({ fromPubkey: from, toPubkey: to, lamports }));
   return t;
 }
-export { Connection, PublicKey, Keypair, OnlinePumpSdk, launchTxs, distributeTx };
+/// a transaction's simulation without signatures → { err, logs }
+export async function simulate(connection, tx) {
+  const v = new VersionedTransaction(tx.compileMessage());
+  const r = await connection.simulateTransaction(v, { sigVerify: false, replaceRecentBlockhash: true });
+  return { err: r.value.err, logs: r.value.logs || [] };
+}
+export { Connection, PublicKey, Keypair, OnlinePumpSdk, launchTxs, distributeTx, splitTx, PUMP_SDK, feeSharingConfigPda };

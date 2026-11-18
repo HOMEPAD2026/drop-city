@@ -7,7 +7,7 @@
 //   GET  ?agent         the agent: its wallet, this hour, today's drops and transfers to THE VAULT
 //   POST ?solrpc        the browser's Solana RPC relay (only the calls a launch makes)
 //   POST {action}       register · meta · logo
-import { makePad, publicCfg } from "../lib/_pad.mjs";
+import { makePad, publicCfg, cfg } from "../lib/_pad.mjs";
 import { proxy } from "../lib/_chain.mjs";
 import { blobStore, blobEnabled } from "../lib/_blob.mjs";
 import { makeAgent } from "../lib/_agent.mjs";
@@ -21,6 +21,16 @@ const hits = new Map();
 function limited(key, n, ms) { const t = Date.now(), a = (hits.get(key) || []).filter((x) => t - x < ms); a.push(t); hits.set(key, a); if (hits.size > 5000) hits.clear(); return a.length > n; }
 const ipOf = (req) => String(req.headers.get("x-forwarded-for") || "").split(",")[0].trim() || "anon";
 
+async function simSplit(mint, ch) {
+  const K = await import("../lib/_agentkit.mjs"), c = cfg();
+  const conn = new K.Connection(process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com", "confirmed");
+  const creator = new K.PublicKey(ch.sharing ? ch.sharing.admin : ch.curveCreator), m = new K.PublicKey(mint);
+  let sc = null; if (ch.sharing) { const a = await conn.getAccountInfo(K.feeSharingConfigPda(m)); sc = a ? K.PUMP_SDK.decodeSharingConfig(a) : null; }
+  const shares = [{ address: creator, shareBps: c.split.creator }, { address: new K.PublicKey(c.vault), shareBps: c.split.vault }, { address: new K.PublicKey(c.buyer), shareBps: c.split.buyer }];
+  const bh = await conn.getLatestBlockhash("confirmed");
+  const tx = await K.splitTx({ creator, mint: m, treasury: new K.PublicKey(c.vault), shares, blockhash: bh.blockhash, sharingConfig: sc });
+  return { as: creator.toBase58(), ...(await K.simulate(conn, tx)) };
+}
 export async function GET(req) {
   const q = new URL(req.url).searchParams;
   if (q.has("cfg")) return json(200, publicCfg(), "public, max-age=30");
@@ -31,7 +41,11 @@ export async function GET(req) {
     if (q.has("agent")) return json(200, await agent().status(), "public, max-age=10");
     if (q.has("check")) {
       if (limited("check:" + ipOf(req), 20, 60e3)) return json(429, { error: "slow down" });
-      const r = await pad().check(q.get("check")); return json(r.status, r.body, "no-store");
+      const r = await pad().check(q.get("check"));
+      // not locked yet: simulate the split its creator would sign, so the reason shows (nothing is sent)
+      const ch = r.body && r.body.chain;
+      if (ch && ch.curve && !(ch.sharing && ch.sharing.locked)) r.body.splitSim = await simSplit(r.body.mint, ch).catch((e) => ({ error: String((e && e.message) || e).slice(0, 300) }));
+      return json(r.status, r.body, "no-store");
     }
     if (q.has("tick")) {
       if (limited("tick:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" });

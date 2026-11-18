@@ -79,11 +79,11 @@ export function openDrop(o = {}) {
     if (role) return err(`This is ${role} — it already gets a share of every coin, so it can't be the creator too. Switch to another wallet (a new account in Phantom works) and launch from there.`);
     busy = true; err(""); q("go").disabled = true; q("steps").hidden = false;
     q("steps").innerHTML = STEPS.map(([k, t]) => `<li data-s="${k}"><i></i><span>${esc(t)}<small></small></span></li>`).join("");
-    let cur = "find";
+    let cur = "find", g0 = null;
     try {
       // 1. the address
       step("find", "doing"); const t0 = Date.now(), want = 58 ** (CFG.suffix || "").length;
-      const g = await grind(CFG.suffix || "", (n) => { const rate = n / Math.max(0.5, (Date.now() - t0) / 1000); step("find", "doing", `${Math.round(n).toLocaleString()} tried · ${Math.round(rate).toLocaleString()}/s${want > 1 ? ` · ~${Math.max(1, Math.round((want - n) / Math.max(rate, 1)))} s` : ""}`); });
+      const g = g0 = await grind(CFG.suffix || "", (n) => { const rate = n / Math.max(0.5, (Date.now() - t0) / 1000); step("find", "doing", `${Math.round(n).toLocaleString()} tried · ${Math.round(rate).toLocaleString()}/s${want > 1 ? ` · ~${Math.max(1, Math.round((want - n) / Math.max(rate, 1)))} s` : ""}`); });
       step("find", "ok", `<code>${esc(g.pub)}</code>`);
       // 3. the details
       cur = "host"; step("host", "doing");
@@ -116,10 +116,42 @@ export function openDrop(o = {}) {
       sh.querySelector(".sub").innerHTML = `<b style="color:var(--lime)">$${esc(F.symbol)} is live.</b> Its tower is going up in the city.`; burst(sh.firstChild);
       note(`$${F.symbol} launched — welcome to the city.`, 5000); o.onDone && o.onDone();
     } catch (x) {
-      step(cur, "bad"); err(why(x));
+      step(cur, "bad"); err(why(x)); logsBox(q("err"), x);
       busy = false; q("go").disabled = false;
+      // the coin is out but its split didn't lock: offer to finish it (the same wallet signs the split alone)
+      if (cur === "split" || cur === "list") {
+        q("go").textContent = "Finish the fee split"; q("go").onclick = async () => {
+          q("go").disabled = true; err(""); step("split", "doing");
+          try { const r = await finishSplit({ mint: g0.pub, S, CFG }); step("split", "ok", r.sig ? scan(r.sig) : "already locked"); step("list", r.listed ? "ok" : "bad", r.listed ? "" : esc(r.why || "")); if (r.listed) { q("go").outerHTML = `<a class="btn hot" href="/city?coin=${esc(g0.pub)}">See its tower</a>`; o.onDone && o.onDone(); } else q("go").disabled = false; }
+          catch (y) { step("split", "bad"); err(why(y)); logsBox(q("err"), y); q("go").disabled = false; }
+        };
+      }
     }
   };
+}
+/// a launch whose split didn't land: the creator's wallet signs the split alone, then the coin registers
+export async function finishSplit({ mint, S, CFG }) {
+  const K = await kit(), c = await conn(), me = new K.PublicKey(S.key), m = new K.PublicKey(mint);
+  const [acc, cv] = await Promise.all([c.getAccountInfo(K.feeSharingConfigPda(m)), c.getAccountInfo(K.bondingCurvePda(m))]);
+  if (!cv) throw new Error("this coin has no pump.fun bonding curve");
+  const sc = acc ? K.PUMP_SDK.decodeSharingConfig(acc) : null;
+  let sig = null;
+  if (!(sc && sc.adminRevoked)) {
+    if (sc && !sc.admin.equals(me)) throw new Error("Connect the wallet that launched this coin.");
+    const shares = [{ address: me, shareBps: CFG.split.creator }, { address: new K.PublicKey(CFG.vault), shareBps: CFG.split.vault }, { address: new K.PublicKey(CFG.buyer), shareBps: CFG.split.buyer }];
+    const bh = await c.getLatestBlockhash("confirmed");
+    const tx = await K.splitTx({ creator: me, mint: m, treasury: new K.PublicKey(CFG.vault), shares, blockhash: bh.blockhash, sharingConfig: sc });
+    const [signed] = typeof S.p.signAllTransactions === "function" ? await S.p.signAllTransactions([tx]) : [await S.p.signTransaction(tx)];
+    sig = await send(c, signed, bh.lastValidBlockHeight);
+  }
+  let r = null; for (let i = 0; i < 6; i++) { if (i) await sleep(2000 + i * 800); r = await post({ action: "register", mint, sig: sig || "" }); if (r.ok || r.status !== 404) break; }
+  return { sig, listed: !!(r && r.ok), why: r && r.j && r.j.error };
+}
+/// the transaction's logs under the error, to copy
+export function logsBox(el, x) {
+  const logs = ((x && (x.logs || x.transactionLogs)) || []).join("\n") || (/Logs:/.test(String((x && x.message) || "")) ? String(x.message) : "");
+  if (!el || !logs) return;
+  el.insertAdjacentHTML("beforeend", `<details style="margin-top:6px;font:500 11px var(--mono);color:var(--dim)"><summary>Details (copy this if you ask for help)</summary><pre style="white-space:pre-wrap;max-height:180px;overflow:auto;user-select:all">${esc(logs)}</pre></details>`);
 }
 // pump.fun's errors in words (the full logs go to the console)
 const PUMP_ERR = { TooMuchSolRequired: "The first buy's price moved — try again, or a little less SOL.", NotEnoughTokensToBuy: "The first buy is too big for a new coin.", NameTooLong: "The name is too long (32 letters at most).", SymbolTooLong: "The ticker is too long (13 letters at most).", CreateV2Disabled: "pump.fun has paused new coins for a moment — try again later.", 6077: "pump.fun isn't taking custom creator fees right now.", 6082: "pump.fun no longer creates cashback coins." };
