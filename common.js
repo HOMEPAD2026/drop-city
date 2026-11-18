@@ -23,7 +23,14 @@ export function dropState(slot, cfg) {
 }
 /// wake the agent once when this hour has no drop yet (the server makes sure it drops only once)
 let poked = "";
-export function poke(slot) { if (DEMO || !slot || slot.state !== "waiting" || poked === slot.hour || new Date().getUTCMinutes() < 1) return; poked = slot.hour; fetch(API + "?tick=1", { cache: "no-store" }).catch(() => {}); }
+/// (a failed try is retried too, at most every 4 minutes from one page — the server allows 3 tries an hour)
+let pokedAt = 0;
+export function poke(slot) {
+  if (DEMO || !slot || new Date().getUTCMinutes() < 1 || new Date().getUTCMinutes() >= 55) return;
+  const want = slot.state === "waiting" || (slot.state === "failed" && (slot.tries || 0) < 3);
+  if (!want || (poked === slot.hour && Date.now() - pokedAt < 4 * 60e3)) return;
+  poked = slot.hour; pokedAt = Date.now(); fetch(API + "?tick=1", { cache: "no-store" }).catch(() => {});
+}
 
 export const DEMO = new URLSearchParams(location.search).get("demo") === "1";
 export const DEFAULT_CFG = { name: "DROP CITY", ticker: "DROP", suffix: "", split: { creator: 6000, vault: 3000, buyer: 1000 }, open: false };
