@@ -108,8 +108,12 @@ export function openDrop(o = {}) {
       const [global, feeConfig, bh, bal] = await Promise.all([sdk.fetchGlobal(), sdk.fetchFeeConfig().catch(() => null), c.getLatestBlockhash("confirmed"), c.getBalance(me)]);
       if (global.createV2Enabled === false) throw new Error("pump.fun has paused new coins for a moment — try again later.");
       if (bal / 1e9 < 0.03 + f.dev) throw new Error(`Not enough SOL — about ${(0.03 + f.dev).toFixed(2)} SOL is needed.`);
-      const b = await K.launchTxs({ global, feeConfig, creator: me, mint: mint.publicKey, name: F.name, symbol: F.symbol, uri: md.j.uri, devBuyLamports: Math.round(f.dev * 1e9), treasury: V, shares, blockhash: bh.blockhash, slipBps: 300 });
-      b.txs[0].partialSign(mint);
+      // one transaction (create → split → first buy) through the city's lookup table, so nothing trades in between; else the old steps
+      const lut = CFG.lut ? await K.lutOf(c, CFG.lut).catch(() => null) : null;
+      let b = null;
+      if (lut) b = await K.launchV0({ lut, global, feeConfig, creator: me, mint: mint.publicKey, name: F.name, symbol: F.symbol, uri: md.j.uri, devBuyLamports: Math.round(f.dev * 1e9), treasury: V, shares, blockhash: bh.blockhash, slipBps: 300 }).catch(() => null);
+      if (b) b.txs[0].sign([mint]);
+      else { b = await K.launchTxs({ global, feeConfig, creator: me, mint: mint.publicKey, name: F.name, symbol: F.symbol, uri: md.j.uri, devBuyLamports: Math.round(f.dev * 1e9), treasury: V, shares, blockhash: bh.blockhash, slipBps: 300 }); b.txs[0].partialSign(mint); }
       const signed = typeof S.p.signAllTransactions === "function" ? await S.p.signAllTransactions(b.txs) : await Promise.all(b.txs.map((t) => S.p.signTransaction(t)));
       step("sign", "ok");
       // the coin, then its split, then the first buy (one, two or three transactions — see the kit's launchTxs)

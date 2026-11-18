@@ -43,7 +43,7 @@ async function simSplit(mint, ch) {
 }
 export async function GET(req) {
   const q = new URL(req.url).searchParams;
-  if (q.has("cfg")) return json(200, publicCfg(), "public, max-age=30");
+  if (q.has("cfg")) { let lut = null; if (blobEnabled()) try { const d = await pad().store.get("agent/lut.json"); lut = d && d.address; } catch {} return json(200, { ...publicCfg(), lut }, "public, max-age=30"); }
   if (!blobEnabled()) return json(503, { error: "the store isn't connected yet" });
   try {
     if (q.has("list")) return json(200, await pad().list(), "public, max-age=10, s-maxage=20");
