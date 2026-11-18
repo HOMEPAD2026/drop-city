@@ -1,0 +1,11 @@
+{
+  "name": "drop-city",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node tests/pad.test.mjs" },
+  "dependencies": {
+    "@noble/curves": "2.4.0",
+    "@noble/hashes": "2.4.0",
+    "@vercel/blob": "2.0.0"
+  }
+}

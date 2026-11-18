@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>DROP CITY</title>
+<meta name="description" content="One drop an hour. AI bosses pitch the coins, the city picks them, pump.fun launches them — and the city vault buys back the hottest.">
+<meta name="theme-color" content="#140a22">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/pad.css">
+</head>
+<body>
+<canvas id="city" aria-label="The city"></canvas>
+<header class="top">
+  <div class="brand"><b data-name>DROP CITY</b><small>one drop an hour · on pump.fun</small></div>
+  <div class="clock" id="clock"><span class="lbl">HOUR</span><b id="clk-h">--:00</b><span id="clk-s" class="st">…</span></div>
+  <div class="acts"><button type="button" class="btn ghost" id="wallet">Connect</button><button type="button" class="btn hot" id="drop">DROP A COIN</button></div>
+</header>
+<aside class="phone" id="phone">
+  <div class="ph-bar"><span id="ph-time">--:--</span><span class="ph-sig">▮▮▮▯ PUMP FM</span></div>
+  <nav class="ph-tabs" role="tablist">
+    <button type="button" data-t="wanted" class="on">MOST WANTED</button><button type="button" data-t="today">TODAY</button><button type="button" data-t="vault">THE VAULT</button><button type="button" data-t="rules">RULES</button>
+  </nav>
+  <div class="ph-body" id="ph-body"></div>
+</aside>
+<section class="card" id="card" hidden></section>
+<div class="sheet" id="sheet" hidden></div>
+<div class="toast" id="toast" hidden></div>
+<script src="/solwallet.js" defer></script>
+<script type="module" src="/app.js"></script>
+</body>
+</html>
