@@ -1,4 +1,4 @@
-# Wakes the city's agent a few times every hour. The server drops at most one coin an hour, so extra calls are harmless.
+# Wakes the city's agent a few times every hour, then lets the Telegram bot post what's new. The server drops at most one coin an hour, so extra calls are harmless.
 # Set the repository variable SITE_URL to the site's address if it isn't the default below.
 name: hourly drop
 on:
@@ -11,6 +11,8 @@ jobs:
     timeout-minutes: 3
     steps:
       - name: wake the agent
-        run: curl -sSL --max-time 90 "${SITE_URL}/api/pad?tick=1" || true
+        run: |
+          curl -sSL --max-time 90 "${SITE_URL}/api/pad?tick=1" || true
+          curl -sSL --max-time 70 "${SITE_URL}/api/tg?poll=1" || true
         env:
           SITE_URL: ${{ vars.SITE_URL || 'https://drop-city.vercel.app' }}

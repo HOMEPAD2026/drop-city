@@ -36,3 +36,15 @@ Vercel environment variables (Sensitive where marked):
 - `OPENAI_API_KEY` (optional) — logos from an image model; without it a neon badge with the ticker.
 - `PAD_AGENT_BUY` (optional) — the agent's first buy in SOL (0–1, default 0).
 - `PAD_MAIN` — the main coin's address once it's launched.
+
+## The Telegram bot
+
+1. Make a bot with @BotFather and put its token in the Vercel env `TG_BOT_TOKEN` (Sensitive).
+2. Add the bot to your channel or group (as an admin in a channel). Send `/id` there — the bot answers with the chat's id.
+   Put it (or several, comma-separated) in `TG_CHAT_ID`. Redeploy.
+3. Open `https://<site>/api/tg?setup=1` once: it points the webhook here and sets the command list.
+
+It answers /drop /new /top /main /coin /check /vote /fees /launch /gta6 /news /links /help, welcomes new members, and posts
+the agent's hourly drops, new launches, graduations, big buys (`TG_WHALE_SOL`, default 2), GTA VI news (`TG_NEWS=0` turns it
+off) and a daily countdown to GTA VI (`GTA6_DATE`, default 2026-11-19). The scheduler (.github/workflows/drop.yml) calls
+`/api/tg?poll=1` after each agent tick.

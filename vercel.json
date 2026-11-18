@@ -3,6 +3,9 @@
     "api/pad.mjs": {
       "maxDuration": 60,
       "includeFiles": "{index.html,images/agent/**}"
+    },
+    "api/tg.mjs": {
+      "maxDuration": 60
     }
   },
   "headers": [

@@ -12,6 +12,7 @@ import { proxy } from "../lib/_chain.mjs";
 import { blobStore, blobEnabled } from "../lib/_blob.mjs";
 import { makeAgent } from "../lib/_agent.mjs";
 import { makeExtra } from "../lib/_extra.mjs";
+import { makeTg } from "../lib/_tg.mjs";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -21,7 +22,7 @@ const pad = () => (PAD = PAD || makePad({ store: blobStore() }));
 let AG = null;
 let EX = null;
 const extra = () => (EX = EX || makeExtra({ pad: pad() }));
-const agent = () => (AG = AG || makeAgent({ pad: pad(), extra: extra() }));
+const agent = () => (AG = AG || makeAgent({ pad: pad(), extra: extra(), tg: makeTg({ pad: pad(), extra: extra() }) }));
 let HTML = null;
 const html = (status, body) => new Response(body, { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=60, s-maxage=300" } });
 const hits = new Map();
