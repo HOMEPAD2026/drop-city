@@ -1,6 +1,6 @@
 // site.js — the website: the hour, the numbers, EXPLORE (every drop as a card), TODAY'S 24, the launch, FEES and the
 // creators' space (your drops, the fees they've earned, paying them out). The drop itself is launch.js.
-import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn } from "/common.js";
+import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, dropState, poke } from "/common.js";
 import { walletButton } from "/wallet.js";
 import { openDrop } from "/launch.js";
 
@@ -25,13 +25,10 @@ function paintAll() { paintHour(); paintStats(); paintGrid(); paintHours(); pain
 function paintHour() {
   const now = Date.now(); $("h-h").textContent = hh(now).slice(0, 2) + ":00 UTC";
   const st = $("h-s"); st.className = "st";
-  if (!CFG.open && !DEMO) { st.textContent = "THE CITY OPENS SOON"; return; }
-  if (!slot) { st.textContent = "…"; return; }
-  const left = Math.max(0, slot.next - now), mm = String(Math.floor(left / 60e3)).padStart(2, "0"), ss = String(Math.floor((left % 60e3) / 1000)).padStart(2, "0");
-  digits(mm + ss);
-  if (slot.free) { st.textContent = "OPEN — TAKE IT"; st.classList.add("open"); }
-  else if (slot.taken && slot.taken.state === "held") { st.textContent = `HELD BY ${short(slot.taken.wallet)} UNTIL ${hh(slot.taken.until)}`; st.classList.add("held"); }
-  else { st.textContent = `DROPPED${slot.taken && slot.taken.symbol ? " $" + slot.taken.symbol : ""}`; st.classList.add("done"); }
+  const left = slot ? Math.max(0, slot.next - now) : 0, mm = String(Math.floor(left / 60e3)).padStart(2, "0"), ss = String(Math.floor((left % 60e3) / 1000)).padStart(2, "0");
+  if (slot) digits(mm + ss);
+  const [txt, cls] = dropState(slot, CFG); st.textContent = txt; if (cls) st.classList.add(cls);
+  poke(slot);
 }
 const lastDig = {};
 function digits(str) { ["d-m1", "d-m2", "d-s1", "d-s2"].forEach((id, i) => { const el = $(id); if (!el || lastDig[id] === str[i]) return; lastDig[id] = str[i]; el.textContent = str[i]; el.classList.remove("tick"); void el.offsetWidth; el.classList.add("tick"); }); }
@@ -40,7 +37,7 @@ async function readVault() { if (!CFG.vault) return; try { const K = await kit()
 function paintStats() {
   const today = new Date().toISOString().slice(0, 10), t = coins.filter((c) => c.hour && c.hour.startsWith(today)).length;
   const mc = coins.reduce((a, c) => a + (c.mcapUsd || 0), 0), made = coins.filter((c) => c.graduated).length;
-  $("stats").innerHTML = [[coins.length, "coins dropped"], [`${t}/24`, "dropped today"], [usd(mc), "total market cap"], [made, "made it (graduated)"], ...(vaultSol != null ? [[vaultSol.toFixed(2) + " SOL", "in THE VAULT"]] : [])].map(([v, l]) => `<div><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("");
+  $("stats").innerHTML = [[coins.length, "coins launched"], [`${t}/24`, "hourly drops today"], [usd(mc), "total market cap"], [made, "made it (graduated)"], ...(vaultSol != null ? [[vaultSol.toFixed(2) + " SOL", "in THE VAULT"]] : [])].map(([v, l]) => `<div><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("");
 }
 
 // ---------------- EXPLORE
@@ -49,17 +46,18 @@ for (const [id, k, a] of [["sort", "sort", "s"], ["filt", "filt", "f"]]) $(id).o
 function paintGrid() {
   const today = new Date().toISOString().slice(0, 10);
   let list = coins.filter((c) => !S.q || [c.name, c.symbol, c.mint].some((v) => String(v || "").toLowerCase().includes(S.q)));
-  if (S.filt === "today") list = list.filter((c) => c.hour && c.hour.startsWith(today));
+  if (S.filt === "drops") list = list.filter((c) => c.kind === "drop");
+  if (S.filt === "users") list = list.filter((c) => c.kind !== "drop");
   if (S.filt === "curve") list = list.filter((c) => !c.graduated);
   if (S.filt === "made") list = list.filter((c) => c.graduated);
   list.sort(S.sort === "new" ? (a, b) => (b.launchedAt || 0) - (a.launchedAt || 0) || String(b.hour).localeCompare(String(a.hour)) : S.sort === "curve" ? (a, b) => (b.graduated ? 100 : b.progress || 0) - (a.graduated ? 100 : a.progress || 0) : (a, b) => (b.mcapUsd || 0) - (a.mcapUsd || 0));
-  $("grid").innerHTML = list.length ? list.map((c, i) => card(c, i)).join("") : `<div class="empty"><b>${coins.length ? "NOTHING MATCHES" : "THE STREETS ARE QUIET"}</b>${coins.length ? "Try another search." : "No drops yet — the first coin takes the first hour."}</div>`;
+  $("grid").innerHTML = list.length ? list.map((c, i) => card(c, i)).join("") : `<div class="empty"><b>${coins.length ? "NOTHING MATCHES" : "THE STREETS ARE QUIET"}</b>${coins.length ? "Try another search." : "No coins yet — launch the first, or wait for the agent’s next drop."}</div>`;
 }
 function card(c, i) {
   const fresh = c.launchedAt && Date.now() / 1000 - c.launchedAt < 3600;
-  return `<article class="cc${c.graduated ? " made" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">WANTED</span>${c.graduated ? `<span class="badge">MADE</span>` : fresh ? `<span class="badge new">NEW</span>` : ""}${pic(c)}</div>
+  return `<article class="cc${c.graduated ? " made" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">${c.kind === "drop" ? "HOURLY DROP" : "WANTED"}</span>${c.graduated ? `<span class="badge">MADE</span>` : fresh ? `<span class="badge new">NEW</span>` : ""}${pic(c)}</div>
     <div class="body"><h3>${esc(c.name)}</h3><span class="sym">$${esc(c.symbol)}</span> <span class="stars">${stars(c)}</span>
-      <div class="row"><b>${usd(c.mcapUsd)}</b><small>${c.hour ? "dropped " + esc(c.hour.slice(5, 10).replace("-", "/")) + " " + esc(c.hour.slice(11, 13)) + ":00" : ""}</small></div>
+      <div class="row"><b>${usd(c.mcapUsd)}</b><small>${c.hour ? "dropped " + esc(c.hour.slice(5, 10).replace("-", "/")) + " " + esc(c.hour.slice(11, 13)) + ":00" : c.launchedAt ? "launched " + esc(new Date(c.launchedAt * 1000).toISOString().slice(5, 16).replace("-", "/").replace("T", " ")) : ""}</small></div>
       <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? "graduated to PumpSwap" : `curve ${(c.progress || 0).toFixed(0)}%`}</small>
       <div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">In the city</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">Chart</a></div></div></article>`;
 }
@@ -67,18 +65,18 @@ function card(c, i) {
 // ---------------- TODAY'S 24
 function paintHours() {
   const today = new Date().toISOString().slice(0, 10), byH = new Map(coins.filter((c) => c.hour && c.hour.startsWith(today)).map((c) => [Number(c.hour.slice(11, 13)), c])), nowH = new Date().getUTCHours();
-  $("hours").innerHTML = Array.from({ length: 24 }, (_, h) => { const c = byH.get(h); return `<div class="${h === nowH ? "now" : ""} ${c ? "drop" : ""}"><b>${String(h).padStart(2, "0")}:00</b>${c ? `<a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}" style="color:var(--ink)">$${esc(c.symbol)}</a>` : h < nowH ? "—" : h === nowH ? (slot && slot.free ? "OPEN" : "…") : ""}</div>`; }).join("");
+  $("hours").innerHTML = Array.from({ length: 24 }, (_, h) => { const c = byH.get(h); return `<div class="${h === nowH ? "now" : ""} ${c ? "drop" : ""}"><b>${String(h).padStart(2, "0")}:00</b>${c ? `<a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}" style="color:var(--ink)">$${esc(c.symbol)}</a>` : h < nowH ? "—" : h === nowH ? "…" : ""}</div>`; }).join("");
 }
 
 // ---------------- LAUNCH
 function paintLaunch() {
   $("how-suffix").textContent = CFG.suffix ? `Your browser finds an address that ends in ${CFG.suffix} — every coin here carries it. The key never leaves your browser.` : "Your browser makes the coin's address. The key never leaves it.";
-  $("l-hint").textContent = !CFG.open && !DEMO ? CFG.why || "The city opens soon." : slot && slot.free ? `This hour is open — ${CFG.holdMin || 10} minutes to launch once you take it.` : "This hour is taken — the next opens at the top of the hour.";
+  $("l-hint").textContent = !CFG.open && !DEMO ? CFG.why || "The city opens soon." : "Open now — launch any time, as many coins as you like.";
 }
 
 // ---------------- FEES
 function paintFees() {
-  const s = CFG.split, parts = [[s.creator, "var(--lime)", "The sponsor", "You — the wallet that dropped the coin. Paid out any time from Creators."], [s.vault, "var(--gold)", "THE VAULT", "The city fund: buys back and burns the coins at the top of MOST WANTED.", CFG.vault], [s.buyer, "var(--cyan)", `Buys $${CFG.ticker}`, "A separate wallet that buys the city's main coin.", CFG.buyer]];
+  const s = CFG.split, parts = [[s.creator, "var(--lime)", "The creator", "You — the wallet that launched the coin. Paid out any time from Creators. On the agent’s hourly drops this share goes on to THE VAULT."], [s.vault, "var(--gold)", "THE VAULT", "The city fund: buys back and burns the coins at the top of MOST WANTED.", CFG.vault], [s.buyer, "var(--cyan)", `Buys $${CFG.ticker}`, "A separate wallet that buys the city's main coin.", CFG.buyer]];
   $("splitbar").innerHTML = parts.map(([b, c]) => `<div style="flex:${b};background:${c}">${b / 100}%</div>`).join("");
   $("feecards").innerHTML = parts.map(([b, c, h, p, w]) => `<div><b style="color:${c}">${b / 100}%</b><h3>${esc(h)}</h3><p>${esc(p)}</p>${w ? `<code>${esc(w)}</code>` : h === "THE VAULT" ? "<code>wallet being set up</code>" : ""}</div>`).join("");
 }
@@ -91,8 +89,8 @@ async function paintMe() {
   if (!W || !W.key) { el.innerHTML = `<div class="me-box"><p style="color:var(--dim);margin:0 0 12px">Connect the wallet you launch from to see your drops and the fees they've earned.</p><button type="button" class="btn hot" id="me-c">Connect wallet</button></div>`; $("me-c").onclick = () => $("wallet").click(); return; }
   const mine = coins.filter((c) => c.creator === W.key);
   const earned = mine.reduce((a, c) => a + (c.feesWaitingSol || 0), 0);
-  el.innerHTML = `<div class="me-box"><div class="stats" style="padding:0;max-width:none"><div><b>${mine.length}</b><small>your drops</small></div><div><b>${earned.toFixed(4)} SOL</b><small>fees waiting (all shares)</small></div><div><b>${(CFG.split.creator / 100)}%</b><small>your share</small></div><div><b>${slot && slot.free ? "OPEN" : "TAKEN"}</b><small>this hour</small></div></div>
-    ${mine.length ? `<div class="my">${mine.map((c) => `<div class="r">${pic(c)}<span><b>$${esc(c.symbol)}</b> ${esc(c.name)}<br><small>${usd(c.mcapUsd)} · ${c.graduated ? "made" : `curve ${(c.progress || 0).toFixed(0)}%`} · ${(c.feesWaitingSol || 0).toFixed(4)} SOL waiting</small></span><button type="button" class="btn cy" data-pay="${esc(c.mint)}" ${(c.feesWaitingSol || 0) > 0.0001 ? "" : "disabled"}>Pay out fees</button><a class="btn ghost" href="/city?coin=${esc(c.mint)}" style="text-decoration:none">In the city</a></div>`).join("")}</div>` : `<p style="color:var(--dim)">No drops from this wallet yet. Take an open hour and drop one.</p><button type="button" class="btn hot" data-drop2>Drop a coin</button>`}
+  el.innerHTML = `<div class="me-box"><div class="stats" style="padding:0;max-width:none"><div><b>${mine.length}</b><small>your drops</small></div><div><b>${earned.toFixed(4)} SOL</b><small>fees waiting (all shares)</small></div><div><b>${(CFG.split.creator / 100)}%</b><small>your share</small></div><div><b>OPEN</b><small>launching</small></div></div>
+    ${mine.length ? `<div class="my">${mine.map((c) => `<div class="r">${pic(c)}<span><b>$${esc(c.symbol)}</b> ${esc(c.name)}<br><small>${usd(c.mcapUsd)} · ${c.graduated ? "made" : `curve ${(c.progress || 0).toFixed(0)}%`} · ${(c.feesWaitingSol || 0).toFixed(4)} SOL waiting</small></span><button type="button" class="btn cy" data-pay="${esc(c.mint)}" ${(c.feesWaitingSol || 0) > 0.0001 ? "" : "disabled"}>Pay out fees</button><a class="btn ghost" href="/city?coin=${esc(c.mint)}" style="text-decoration:none">In the city</a></div>`).join("")}</div>` : `<p style="color:var(--dim)">No coins from this wallet yet. Launch one any time.</p><button type="button" class="btn hot" data-drop2>Drop a coin</button>`}
     <p class="fine">Paying out sends every share at once — ${(CFG.split.creator / 100)}% to you, ${(CFG.split.vault / 100)}% to the vault, ${(CFG.split.buyer / 100)}% to the buyer — straight from pump.fun's fee program. Anyone may press it; the split can't change.</p></div>`;
   el.querySelectorAll("[data-pay]").forEach((b) => (b.onclick = () => payOut(b.dataset.pay, b)));
   const d2 = el.querySelector("[data-drop2]"); if (d2) d2.onclick = drop;
@@ -116,7 +114,7 @@ start();
 // ---------------- motion: the ticker, reveals, card tilt, the coin's window
 function paintTicker() {
   const now = Date.now(), H = new Date().getUTCHours(), latest = coins.slice().sort((a, b) => (b.launchedAt || 0) - (a.launchedAt || 0)).slice(0, 12);
-  const head = `<span><i class="dot"></i><b>HOUR ${String(H).padStart(2, "0")}:00</b> ${slot && slot.free ? "OPEN — DROP NOW" : slot && slot.taken && slot.taken.state === "held" ? "HELD" : "DROPPED"}</span>`;
+  const head = `<span><i class="dot"></i><b>HOUR ${String(H).padStart(2, "0")}:00</b> ${dropState(slot, CFG)[0]}</span>`;
   const items = latest.map((c) => `<span><b>$${esc(c.symbol)}</b><i>${usd(c.mcapUsd)}</i>${c.graduated ? "MADE" : `curve ${(c.progress || 0).toFixed(0)}%`}</span>`);
   const one = [head, ...(items.length ? items : ["<span>THE CITY IS WAITING FOR ITS FIRST DROP</span>"]), `<span><b>${CFG.split.creator / 100} / ${CFG.split.vault / 100} / ${CFG.split.buyer / 100}</b> FEES LOCKED ON CHAIN</span>`].join("");
   const el = $("ticker"), html = one + one; if (el.innerHTML !== html) el.innerHTML = html;
@@ -131,10 +129,10 @@ $("grid").addEventListener("click", (e) => { if (e.target.closest("a")) return; 
 function openCoin(mint) {
   const c = coins.find((x) => x.mint === mint); if (!c) return;
   const el = $("cmodal"), share = encodeURIComponent(`$${c.symbol} — dropped in the city at ${c.hour ? c.hour.slice(11, 13) + ":00" : "its hour"}.\n`), link = encodeURIComponent(`${location.origin}/city?coin=${c.mint}`);
-  el.innerHTML = `<div class="cm-card"><button type="button" class="wm-x" aria-label="Close">×</button><div class="poster"><span class="tag">WANTED</span>${pic(c)}</div><div class="cm-in">
+  el.innerHTML = `<div class="cm-card"><button type="button" class="wm-x" aria-label="Close">×</button><div class="poster"><span class="tag">${c.kind === "drop" ? "HOURLY DROP" : "WANTED"}</span>${pic(c)}</div><div class="cm-in">
     <h2>${esc(c.name)}</h2><span class="sym" style="color:var(--hot);font:700 13px var(--mono)">$${esc(c.symbol)}</span> <span class="stars">${stars(c)}</span>
     <p class="addr">${esc(c.mint)}</p>
-    <div class="kv"><div><b>${usd(c.mcapUsd)}</b><small>Market cap</small></div><div><b>${c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>Price</small></div><div><b>${c.hour ? c.hour.slice(5, 10).replace("-", "/") + " " + c.hour.slice(11, 13) + ":00" : "–"}</b><small>Dropped (UTC)</small></div><div><b>${c.creator ? esc(short(c.creator)) : "–"}</b><small>Sponsor</small></div></div>
+    <div class="kv"><div><b>${usd(c.mcapUsd)}</b><small>Market cap</small></div><div><b>${c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>Price</small></div><div><b>${c.hour ? c.hour.slice(5, 10).replace("-", "/") + " " + c.hour.slice(11, 13) + ":00" : "–"}</b><small>Dropped (UTC)</small></div><div><b>${c.kind === "drop" ? "AGENT" : c.creator ? esc(short(c.creator)) : "–"}</b><small>${c.kind === "drop" ? "The hourly drop" : "Creator"}</small></div></div>
     <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? "MADE — graduated to PumpSwap" : `bonding curve ${(c.progress || 0).toFixed(1)}%`}</small>
     ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}
     <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade on pump.fun</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">See its tower</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">Share on X</a><button type="button" data-copy>Copy address</button></div>

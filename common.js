@@ -11,13 +11,25 @@ export const post = (b) => fetch(API, { method: "POST", headers: { "content-type
 const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 export const b58 = (u8) => { let n = 0n; for (const b of u8) n = n * 256n + BigInt(b); let s = ""; while (n > 0n) { s = B58[Number(n % 58n)] + s; n /= 58n; } for (const b of u8) { if (b) break; s = "1" + s; } return s; };
 export const note = (s, ms = 3200) => { const t = $("toast"); t.textContent = s; t.hidden = false; clearTimeout(note.t); note.t = setTimeout(() => (t.hidden = true), ms); };
-export const reserveMessage = (wallet, mint, hour, issued) => `Reserve a drop\nWallet: ${wallet}\nCoin: ${mint}\nHour (UTC): ${hour}\nIssued: ${issued}`;
+/// the hour's drop in words: [text, class]
+export function dropState(slot, cfg) {
+  if (!cfg.open && !DEMO) return ["THE CITY OPENS SOON", ""];
+  if (!slot) return ["…", ""];
+  if (slot.state === "dropped") return [`DROPPED${slot.drop && slot.drop.symbol ? " $" + slot.drop.symbol : ""}`, "done"];
+  if (slot.state === "dropping") return ["THE AGENT IS DROPPING…", "held"];
+  if (slot.state === "failed") return ["THE AGENT IS RETRYING", "held"];
+  if (slot.state === "off") return ["THE AGENT IS OFFLINE", ""];
+  return ["THE AGENT DROPS ANY MINUTE", "open"];
+}
+/// wake the agent once when this hour has no drop yet (the server makes sure it drops only once)
+let poked = "";
+export function poke(slot) { if (DEMO || !slot || slot.state !== "waiting" || poked === slot.hour || new Date().getUTCMinutes() < 1) return; poked = slot.hour; fetch(API + "?tick=1", { cache: "no-store" }).catch(() => {}); }
 
 export const DEMO = new URLSearchParams(location.search).get("demo") === "1";
-export const DEFAULT_CFG = { name: "DROP CITY", ticker: "DROP", suffix: "", split: { creator: 6000, vault: 3000, buyer: 1000 }, open: false, holdMin: 10 };
+export const DEFAULT_CFG = { name: "DROP CITY", ticker: "DROP", suffix: "", split: { creator: 6000, vault: 3000, buyer: 1000 }, open: false };
 export async function loadCfg() { try { return { ...DEFAULT_CFG, ...(await getJ("?cfg")) }; } catch { return { ...DEFAULT_CFG }; } }
 export async function loadCoins() { if (DEMO) return demoCoins(); try { const j = await getJ("?list"); return Array.isArray(j.items) ? j.items : []; } catch { return []; } }
-export async function loadSlot() { if (DEMO) return { hour: new Date().toISOString().slice(0, 13), next: Math.ceil(Date.now() / 3600e3) * 3600e3, free: true, taken: null }; try { return await getJ("?slot"); } catch { return null; } }
+export async function loadSlot() { if (DEMO) return { hour: new Date().toISOString().slice(0, 13), next: Math.ceil(Date.now() / 3600e3) * 3600e3, state: "dropped", drop: { symbol: "OWL" } }; try { return await getJ("?slot"); } catch { return null; } }
 export const stars = (c) => { const m = c.mcapUsd || 0, n = m >= 1e6 ? 5 : m >= 250e3 ? 4 : m >= 50e3 ? 3 : m >= 10e3 ? 2 : 1; return "★".repeat(n) + "☆".repeat(5 - n); };
 export const ini = (c, cls = "ini") => `<span class="${cls}">${esc((c.symbol || "?").slice(0, 3))}</span>`;
 export const pic = (c) => (c.image ? `<img src="${esc(c.image)}" alt="" loading="lazy" onerror="this.outerHTML='<span class=ini>${esc((c.symbol || "?").slice(0, 3))}</span>'">` : ini(c));
@@ -33,7 +45,7 @@ export const conn = () => (connP = connP || kit().then((K) => new K.Connection(n
 // ---------------- ?demo=1: made-up coins to see a full city
 export function demoCoins() {
   const day = new Date().toISOString().slice(0, 10), nowH = new Date().getUTCHours();
-  const names = [["Night Owl", "OWL"], ["Neon Rat", "NRAT"], ["Getaway Cat", "GCAT"], ["Pier Shark", "SHRK"], ["Vice Frog", "VFROG"], ["Cash Gull", "GULL"], ["Tow Truck", "TOW"], ["Palm Pump", "PALM"], ["Heat Wave", "HEAT"], ["Lowrider", "LOW"], ["Bail Out", "BAIL"], ["Big Score", "SCORE"]];
-  return names.map(([n, s], i) => ({ mint: "Demo" + i + "x".repeat(38), name: n, symbol: s, image: "", hour: i < Math.min(nowH, 9) ? `${day}T${String(i * 2 % 24).padStart(2, "0")}` : "2026-11-10T0" + (i % 9),
+  const names = [["Night Owl", "OWL"], ["Neon Rat", "NRAT"], ["Getaway Cat", "GCAT"], ["Pier Shark", "SHRK"], ["Dock Frog", "DFROG"], ["Cash Gull", "GULL"], ["Tow Truck", "TOW"], ["Palm Pump", "PALM"], ["Heat Wave", "HEAT"], ["Lowrider", "LOW"], ["Bail Out", "BAIL"], ["Big Score", "SCORE"]];
+  return names.map(([n, s], i) => ({ mint: "Demo" + i + "x".repeat(38), name: n, symbol: s, image: "", kind: i % 3 === 2 ? "user" : "drop", hour: i % 3 === 2 ? "" : i < Math.min(nowH, 9) ? `${day}T${String(i * 2 % 24).padStart(2, "0")}` : "2026-11-10T0" + (i % 9), launchedAt: Math.floor(Date.now() / 1000) - i * 3600,
     progress: [12, 48, 77, 100, 33, 91, 5, 64, 22, 58, 86, 40][i], graduated: i === 3 || i === 10, mcapUsd: [8e3, 31e3, 54e3, 410e3, 19e3, 72e3, 4e3, 45e3, 12e3, 38e3, 1.2e6, 26e3][i], priceUsd: 0.00004, description: "A made-up coin for the demo city." }));
 }

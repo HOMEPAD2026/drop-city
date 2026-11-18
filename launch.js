@@ -1,7 +1,6 @@
-// launch.js — the drop: find an address ending with the suffix (in this browser), reserve the hour (a signed message),
-// host the details, launch on pump.fun from the sponsor's own wallet with the fee split locked in the same signing,
+// launch.js — a launch: find an address ending with the suffix (in this browser), host the details, launch on pump.fun from the sponsor's own wallet with the fee split locked in the same signing,
 // register the coin. Used by the website and the city. Nothing custodial: the server hosts the details and checks the chain.
-import { $, esc, hh, sleep, post, b58, note, reserveMessage, DEMO, sol, kit, conn } from "/common.js";
+import { $, esc, sleep, post, note, DEMO, sol, kit, conn } from "/common.js";
 import { openWallet } from "/wallet.js";
 
 // the first buy as a share of the supply, bought in the launch transaction itself. On a fresh pump.fun curve
@@ -30,7 +29,7 @@ export function openDrop(o = {}) {
   const CFG = o.cfg || {};
   const sh = $("sheet"); sh.hidden = false;
   const f = { dev: 0, logo: "", logoData: "" };
-  sh.innerHTML = `<div role="dialog" aria-label="Drop a coin"><h2>DROP A COIN</h2><p class="sub">This hour's drop is yours if you take it. On pump.fun, from your own wallet.</p>
+  sh.innerHTML = `<div role="dialog" aria-label="Launch a coin"><h2>LAUNCH A COIN</h2><p class="sub">Any time, as many as you like. On pump.fun, from your own wallet.</p>
     <div class="form">
       <label class="w logo-pick"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden data-f="file"><span class="pv" data-f="pv">+</span><span>Logo<br><small data-f="lmsg">square image, 512 px is plenty</small></span></label>
       <label>Name<input data-f="name" maxlength="32" placeholder="Night Owl"></label>
@@ -44,7 +43,7 @@ export function openDrop(o = {}) {
     </div>
     <div class="note"><b>Fees, locked on chain:</b> ${(CFG.split.creator / 100)}% you · ${(CFG.split.vault / 100)}% THE VAULT · ${(CFG.split.buyer / 100)}% buys $${esc(CFG.ticker)}.${CFG.suffix ? ` <b>Your coin's address will end in ${esc(CFG.suffix)}</b> — found in this browser, the key never leaves it.` : ""} No launch fee; about 0.03 SOL of network costs.</div>
     <ol class="steps" data-f="steps" hidden></ol><p class="err" data-f="err" hidden></p>
-    <div class="foot"><button type="button" class="btn ghost" data-f="close">Close</button><button type="button" class="btn hot" data-f="go">Reserve the hour & drop</button></div></div>`;
+    <div class="foot"><button type="button" class="btn ghost" data-f="close">Close</button><button type="button" class="btn hot" data-f="go">Launch on pump.fun</button></div></div>`;
   const q = (k) => sh.querySelector(`[data-f="${k}"]`);
   const err = (s) => { q("err").hidden = !s; q("err").textContent = s || ""; };
   q("close").onclick = () => { try { grind.stop && grind.stop(); } catch {} sh.hidden = true; };
@@ -61,7 +60,7 @@ export function openDrop(o = {}) {
       f.logoData = data; q("pv").innerHTML = `<img src="${data}" alt="">`; q("lmsg").textContent = "ready"; err("");
     } catch (x) { err(String((x && x.message) || x)); }
   };
-  const STEPS = [["find", CFG.suffix ? `Find an address ending in ${CFG.suffix}` : "Make the coin's address"], ["hold", "Reserve the hour (sign a message)"], ["host", "Host the logo and details"], ["sign", "Sign the launch"], ["launch", "Launch on pump.fun"], ["split", "Lock the fee split"], ["list", "Move into the city"]];
+  const STEPS = [["find", CFG.suffix ? `Find an address ending in ${CFG.suffix}` : "Make the coin's address"], ["host", "Host the logo and details"], ["sign", "Sign the launch"], ["launch", "Launch on pump.fun"], ["split", "Lock the fee split"], ["list", "Move into the city"]];
   const step = (k, st, html) => { const li = q("steps").querySelector(`[data-s="${k}"]`); if (!li) return; li.className = st; if (html != null) li.querySelector("small").innerHTML = html; };
   const scan = (s) => `<a href="https://solscan.io/tx/${esc(s)}" target="_blank" rel="noopener">Solscan ↗</a>`;
   let busy = false;
@@ -74,7 +73,7 @@ export function openDrop(o = {}) {
     for (const k of ["twitter", "telegram", "website"]) if (F[k] && !/^https:\/\/\S+$/.test(F[k])) return err("Links must start with https://");
     if (!CFG.open && !DEMO) return err(CFG.why || "The city isn't open yet.");
     const S = await sol(); if (!S) return err("No Solana wallet found — open this page in Phantom or Solflare.");
-    if (!S.key) { await openWallet(); o.paintWallet && o.paintWallet(); if (!S.key) return err("Connect a wallet to drop."); }
+    if (!S.key) { await openWallet(); o.paintWallet && o.paintWallet(); if (!S.key) return err("Connect a wallet to launch."); }
     busy = true; err(""); q("go").disabled = true; q("steps").hidden = false;
     q("steps").innerHTML = STEPS.map(([k, t]) => `<li data-s="${k}"><i></i><span>${esc(t)}<small></small></span></li>`).join("");
     let cur = "find";
@@ -83,13 +82,6 @@ export function openDrop(o = {}) {
       step("find", "doing"); const t0 = Date.now(), want = 58 ** (CFG.suffix || "").length;
       const g = await grind(CFG.suffix || "", (n) => { const rate = n / Math.max(0.5, (Date.now() - t0) / 1000); step("find", "doing", `${Math.round(n).toLocaleString()} tried · ${Math.round(rate).toLocaleString()}/s${want > 1 ? ` · ~${Math.max(1, Math.round((want - n) / Math.max(rate, 1)))} s` : ""}`); });
       step("find", "ok", `<code>${esc(g.pub)}</code>`);
-      // 2. the hour
-      cur = "hold"; step("hold", "doing");
-      const hour = new Date().toISOString().slice(0, 13), issued = new Date().toISOString();
-      const sg = await S.signMessage(new TextEncoder().encode(reserveMessage(S.key, g.pub, hour, issued)));
-      const rr = DEMO ? { ok: true, j: { until: Date.now() + 600e3 } } : await post({ action: "reserve", wallet: S.key, mint: g.pub, issued, sig: b58(sg) });
-      if (!rr.ok) throw new Error(rr.j.error || "couldn't reserve the hour");
-      step("hold", "ok", `held until ${hh(rr.j.until)} UTC`); o.onDone && o.onDone();
       // 3. the details
       cur = "host"; step("host", "doing");
       const lg = await post({ action: "logo", image: f.logoData }); if (!lg.ok) throw new Error(lg.j.error || "couldn't host the logo");
@@ -116,10 +108,10 @@ export function openDrop(o = {}) {
       cur = "list"; step("list", "doing");
       let listed = false; for (let i = 0; i < 6 && !listed; i++) { if (i) await sleep(2500 + i * 1000); const r = await post({ action: "register", mint: g.pub, sig: sig1 }); listed = r.ok; if (!r.ok && r.status !== 404) { step("list", "bad", esc(r.j.error || "")); break; } }
       if (listed) step("list", "ok");
-      const tw = encodeURIComponent(`$${F.symbol} just dropped in the city — the ${hour.slice(11, 13)}:00 drop.\n`), link = encodeURIComponent(`${location.origin}/city?coin=${g.pub}`);
+      const tw = encodeURIComponent(`$${F.symbol} just launched in the city.\n`), link = encodeURIComponent(`${location.origin}/city?coin=${g.pub}`);
       q("go").outerHTML = `<a class="btn ghost" href="https://x.com/intent/tweet?text=${tw}&url=${link}" target="_blank" rel="noopener">Share on X</a><a class="btn cy" href="/city?coin=${esc(g.pub)}">See its tower</a><a class="btn hot" href="https://pump.fun/coin/${esc(g.pub)}" target="_blank" rel="noopener">pump.fun ↗</a>`;
-      sh.querySelector(".sub").innerHTML = `<b style="color:var(--lime)">$${esc(F.symbol)} is live.</b> The ${hour.slice(11, 13)}:00 lot is yours.`; burst(sh.firstChild);
-      note(`$${F.symbol} dropped — welcome to the city.`, 5000); o.onDone && o.onDone();
+      sh.querySelector(".sub").innerHTML = `<b style="color:var(--lime)">$${esc(F.symbol)} is live.</b> Its tower is going up in the city.`; burst(sh.firstChild);
+      note(`$${F.symbol} launched — welcome to the city.`, 5000); o.onDone && o.onDone();
     } catch (x) {
       step(cur, "bad"); const s = String((x && x.message) || x); err(/reject|denied|cancel/i.test(s) ? "Cancelled in your wallet." : s.slice(0, 220));
       busy = false; q("go").disabled = false;
