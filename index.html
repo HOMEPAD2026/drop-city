@@ -3,31 +3,93 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>DROP CITY</title>
-<meta name="description" content="One drop an hour. AI bosses pitch the coins, the city picks them, pump.fun launches them — and the city vault buys back the hottest.">
+<title>DROP CITY — one drop every hour</title>
+<meta name="description" content="A launchpad in a neon coast city. One coin drops every hour on pump.fun, its fees split on chain, the city vault buys back the hottest.">
 <meta name="theme-color" content="#140a22">
+<meta property="og:title" content="DROP CITY — one drop every hour"><meta property="og:image" content="/images/hero-1600.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/pad.css">
+<link rel="stylesheet" href="/site.css">
 </head>
 <body>
-<canvas id="city" aria-label="The city"></canvas>
-<header class="top">
-  <div class="brand"><b data-name>DROP CITY</b><small>one drop an hour · on pump.fun</small></div>
-  <div class="clock" id="clock"><span class="lbl">HOUR</span><b id="clk-h">--:00</b><span id="clk-s" class="st">…</span></div>
-  <div class="acts"><button type="button" class="btn ghost" id="wallet">Connect</button><button type="button" class="btn hot" id="drop">DROP A COIN</button></div>
+<nav class="nav" id="nav">
+  <a class="logo" href="/"><b data-name>DROP CITY</b></a>
+  <div class="navlinks" id="links"><a href="#explore">Explore</a><a href="#launch">Launch</a><a href="/city">Play the city</a><a href="#fees">Fees</a><a href="#creators">Creators</a><a href="#about">About</a></div>
+  <div class="nav-r"><button type="button" class="btn ghost" id="wallet">Connect</button><button type="button" class="btn hot" data-drop>Drop a coin</button><button type="button" class="burger" id="burger" aria-label="Menu">☰</button></div>
+</nav>
+
+<header class="hero">
+  <div class="hero-bg" aria-hidden="true"></div>
+  <div class="hero-in">
+    <p class="kicker">A launchpad on pump.fun · Solana</p>
+    <h1>ONE DROP.<br><span>EVERY HOUR.</span></h1>
+    <p class="lead">Twenty-four coins a day — one on every hour. Each one rises as a tower in the city, its fees split on chain the moment it launches, and the city vault fights for the hottest.</p>
+    <div class="cta"><button type="button" class="btn hot big" data-drop>Drop a coin</button><a class="btn ghost big" href="#explore">Explore drops</a><a class="btn cy big" href="/city">Enter the city ▸</a></div>
+    <div class="hour" id="hour"><span class="lbl">THIS HOUR</span><b id="h-h">--:00</b><span id="h-s" class="st">…</span></div>
+  </div>
+  <div class="stats" id="stats"></div>
 </header>
-<aside class="phone" id="phone">
-  <div class="ph-bar"><span id="ph-time">--:--</span><span class="ph-sig">▮▮▮▯ PUMP FM</span></div>
-  <nav class="ph-tabs" role="tablist">
-    <button type="button" data-t="wanted" class="on">MOST WANTED</button><button type="button" data-t="today">TODAY</button><button type="button" data-t="vault">THE VAULT</button><button type="button" data-t="rules">RULES</button>
-  </nav>
-  <div class="ph-body" id="ph-body"></div>
-</aside>
-<section class="card" id="card" hidden></section>
+
+<main>
+  <section id="explore" class="sec">
+    <div class="sec-h"><h2>EXPLORE</h2><p>Every coin that dropped here. Tap a card to trade it, or see its tower in the city.</p></div>
+    <div class="tools">
+      <input id="q" type="search" placeholder="Search name, ticker or address" autocomplete="off">
+      <div class="seg" id="sort"><button type="button" data-s="wanted" class="on">Most wanted</button><button type="button" data-s="new">Newest</button><button type="button" data-s="curve">Curve</button></div>
+      <div class="seg" id="filt"><button type="button" data-f="all" class="on">All</button><button type="button" data-f="today">Today</button><button type="button" data-f="curve">On the curve</button><button type="button" data-f="made">Made</button></div>
+    </div>
+    <div class="grid" id="grid"></div>
+  </section>
+
+  <section id="today" class="sec">
+    <div class="sec-h"><h2>TODAY'S 24</h2><p>One slot an hour (UTC). Reserve the open hour and launch within ten minutes — or the next sponsor takes it.</p></div>
+    <div class="hours" id="hours"></div>
+  </section>
+
+  <section id="launch" class="sec">
+    <div class="sec-h"><h2>LAUNCH</h2><p>Your coin, your wallet, your hour.</p></div>
+    <ol class="how">
+      <li><b>1</b><h3>Find your address</h3><p id="how-suffix">Your browser makes the coin's address. The key never leaves it.</p></li>
+      <li><b>2</b><h3>Take the hour</h3><p>Sign one message to hold this hour's slot for ten minutes. No fee.</p></li>
+      <li><b>3</b><h3>Drop it on pump.fun</h3><p>An ordinary pump.fun coin from your own wallet, with the fee split locked in the same signing.</p></li>
+      <li><b>4</b><h3>Rise in the city</h3><p>Your coin moves onto its hour's lot in Clock Plaza and grows a floor as the curve fills.</p></li>
+    </ol>
+    <div class="launch-cta"><button type="button" class="btn hot big" data-drop>Drop a coin now</button><span id="l-hint"></span></div>
+  </section>
+
+  <section id="play" class="sec play">
+    <div class="play-in"><div><h2>THE CITY</h2><p>Every drop is a tower. Clock Plaza holds today's 24; the old ones stand in the districts around it. Fly over the coast, follow the helicopter's searchlight, open any tower.</p><a class="btn cy big" href="/city">Enter the city ▸</a></div>
+      <a class="shot" href="/city" aria-label="Enter the city"><img src="/images/hero-1600.webp" alt="The city at dusk with Clock Plaza in the middle" loading="lazy"></a></div>
+  </section>
+
+  <section id="fees" class="sec">
+    <div class="sec-h"><h2>FEES</h2><p>pump.fun pays every coin's creator a share of its trading fees. Here that share is split three ways — locked on chain forever when the coin launches.</p></div>
+    <div class="splitbar" id="splitbar"></div>
+    <div class="fee-cards" id="feecards"></div>
+    <p class="fine">No launch fee from us — you pay about 0.03 SOL of Solana network and rent costs, plus any first buy you choose. pump.fun's own trading fees apply as on pump.fun.</p>
+  </section>
+
+  <section id="creators" class="sec">
+    <div class="sec-h"><h2>CREATORS</h2><p>Your drops, the fees they've earned, and the next open hour.</p></div>
+    <div id="me"></div>
+  </section>
+
+  <section id="about" class="sec">
+    <div class="sec-h"><h2>ABOUT</h2></div>
+    <div class="faq">
+      <details open><summary>What is this?</summary><p>A launchpad that turns pump.fun launches into a city. One coin drops every hour, so every drop gets the whole city's attention for its hour.</p></details>
+      <details><summary>Who holds my coin or my keys?</summary><p>Nobody but you. You launch from your own wallet; the coin's address key is made in your browser and used once to create the coin. Our server hosts the logo and details and checks the chain.</p></details>
+      <details><summary>What does THE VAULT do?</summary><p>It collects 30 % of every coin's creator fees and uses them to buy back and burn the coins at the top of MOST WANTED. Every move is a public transaction.</p></details>
+      <details><summary>What is the 10 %?</summary><p>It goes to a separate wallet that buys the city's main coin.</p></details>
+      <details><summary>Why only one coin an hour?</summary><p>Twenty-four drops a day keep the spam out and give each coin a real moment. Most coins on open launchpads never trade after their first day.</p></details>
+      <details><summary>Is this financial advice?</summary><p>No. Meme coins are extremely risky and most go to zero. Only use money you can lose.</p></details>
+    </div>
+  </section>
+</main>
+<footer class="sitefoot"><b data-name>DROP CITY</b><span>Built on pump.fun · Solana. Not affiliated with pump.fun.</span><span><a href="/city">The city</a> · <a href="#fees">Fees</a> · <a href="https://github.com/HOMEPAD2026/drop-city" rel="noopener">Source</a></span></footer>
 <div class="sheet" id="sheet" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <script src="/solwallet.js" defer></script>
-<script type="module" src="/app.js"></script>
+<script type="module" src="/site.js"></script>
 </body>
 </html>
