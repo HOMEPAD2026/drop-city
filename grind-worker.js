@@ -28,7 +28,7 @@ self.onmessage = async (e) => {
       tick();
     }
   }
-  importScripts("/vendor/pump-kit.js?v=8a0ae4bd61");
+  importScripts("/vendor/pump-kit.js?v=307d4308a0");
   const K = self.ArcPumpKit;
   for (;;) {
     for (let j = 0; j < 200; j++) {

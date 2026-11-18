@@ -103,10 +103,11 @@ export function openDrop(o = {}) {
       b.txs[0].partialSign(mint);
       const signed = typeof S.p.signAllTransactions === "function" ? await S.p.signAllTransactions(b.txs) : await Promise.all(b.txs.map((t) => S.p.signTransaction(t)));
       step("sign", "ok");
+      // the coin, then its split, then the first buy (one, two or three transactions — see the kit's launchTxs)
       cur = "launch"; step("launch", "doing");
       const sig1 = await send(c, signed[0], bh.lastValidBlockHeight); step("launch", "ok", scan(sig1));
       cur = "split"; step("split", "doing");
-      let sig2 = sig1; if (signed.length > 1) sig2 = await send(c, signed[1], bh.lastValidBlockHeight);
+      let sig2 = sig1; for (let i = 1; i < signed.length; i++) sig2 = await send(c, signed[i], bh.lastValidBlockHeight);
       step("split", "ok", scan(sig2));
       cur = "list"; step("list", "doing");
       let listed = false; for (let i = 0; i < 6 && !listed; i++) { if (i) await sleep(2500 + i * 1000); const r = await post({ action: "register", mint: g.pub, sig: sig1 }); listed = r.ok; if (!r.ok && r.status !== 404) { step("list", "bad", esc(r.j.error || "")); break; } }
