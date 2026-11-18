@@ -6,7 +6,6 @@ import { openWallet } from "/wallet.js";
 
 // the first buy as a share of the supply, bought in the launch transaction itself. On a fresh pump.fun curve
 // (30 SOL × 1.073B tokens virtual) t tokens cost x0·t / (y0 − t) SOL, plus the trade fee (about 1.25 %).
-export const FIRST_BUY = [0, 1, 2, 3, 4, 5];
 export const solForPct = (pct) => { const y0 = 1_073_000_000, x0 = 30, t = (pct / 100) * 1e9; return t <= 0 ? 0 : Math.ceil(((x0 * t) / (y0 - t)) * 1.0125 * 1e4) / 1e4; };
 export const pctForSol = (sol) => { const y0 = 1_073_000_000, x0 = 30, x = sol / 1.0125; return sol > 0 ? ((y0 * x) / (x0 + x) / 1e9) * 100 : 0; };
 
@@ -40,9 +39,8 @@ export function openDrop(o = {}) {
       <label>X link<input data-f="twitter" placeholder="https://x.com/…"></label>
       <label>Telegram<input data-f="telegram" placeholder="https://t.me/…"></label>
       <label class="w">Website<input data-f="website" placeholder="https://…"></label>
-      <div class="w buyset"><span class="lbl">Your first buy — set at launch, in the same signing</span>
-        <div class="chips big" data-f="devs">${FIRST_BUY.map((d) => `<button type="button" data-p="${d}" class="${d ? "" : "on"}">${d ? `<b>${d}%</b><small>≈ ${solForPct(d)} SOL</small>` : `<b>None</b><small>0 SOL</small>`}</button>`).join("")}</div>
-        <label class="custom">or exact SOL<input data-f="devsol" inputmode="decimal" placeholder="0.00"></label><small class="buyline" data-f="buyline">No first buy — the curve opens untouched.</small></div>
+      <label class="w buyset"><span class="lbl">Your first buy (optional) — bought in the same signing, before anyone else</span>
+        <span class="custom"><input data-f="devsol" inputmode="decimal" placeholder="0" style="max-width:180px"> SOL</span><small class="buyline" data-f="buyline">Leave it empty for no first buy.</small></label>
     </div>
     <div class="note"><b>Fees, locked on chain:</b> ${(CFG.split.creator / 100)}% you · ${(CFG.split.vault / 100)}% THE VAULT · ${(CFG.split.buyer / 100)}% buys $${esc(CFG.ticker)}.${CFG.suffix ? ` <b>Your coin's address will end in ${esc(CFG.suffix)}</b> — found in this browser, the key never leaves it.` : ""} No launch fee; about 0.03 SOL of network costs.</div>
     <ol class="steps" data-f="steps" hidden></ol><p class="err" data-f="err" hidden></p>
@@ -50,9 +48,8 @@ export function openDrop(o = {}) {
   const q = (k) => sh.querySelector(`[data-f="${k}"]`);
   const err = (s) => { q("err").hidden = !s; q("err").textContent = s || ""; };
   q("close").onclick = () => { try { grind.stop && grind.stop(); } catch {} sh.hidden = true; };
-  const buyline = () => { q("buyline").textContent = f.dev > 0 ? `You buy ≈ ${pctForSol(f.dev).toFixed(2)}% of the supply for ${f.dev} SOL the moment it launches — before anyone else.` : "No first buy — the curve opens untouched."; };
-  q("devs").onclick = (e) => { const b = e.target.closest("[data-p]"); if (!b) return; f.dev = solForPct(Number(b.dataset.p)); q("devsol").value = ""; q("devs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); buyline(); };
-  q("devsol").oninput = (e) => { const v = Math.max(0, Math.min(20, parseFloat(e.target.value) || 0)); f.dev = Math.round(v * 1e4) / 1e4; q("devs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", !f.dev && x.dataset.p === "0")); buyline(); };
+  q("devsol").oninput = (e) => { const v = Math.max(0, Math.min(50, parseFloat(e.target.value) || 0)); f.dev = Math.round(v * 1e4) / 1e4;
+    q("buyline").textContent = f.dev > 0 ? `≈ ${pctForSol(f.dev).toFixed(2)}% of the supply for ${f.dev} SOL, the moment it launches.` : "Leave it empty for no first buy."; };
   q("symbol").oninput = (e) => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); };
   q("file").onchange = async (e) => {
     const file = e.target.files && e.target.files[0]; if (!file) return;
