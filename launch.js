@@ -56,7 +56,7 @@ export function openDrop(o = {}) {
   const esc0 = (e) => { if (e.key === "Escape" && !busy) q("close").onclick(); }; document.addEventListener("keydown", esc0);
   sh.onclick = (e) => { if (e.target === sh && !busy) q("close").onclick(); };
   const buyline = () => { const u = f.quote ? f.quote.id : "SOL";
-    q("buyline").textContent = f.dev > 0 ? (f.quote ? `${f.dev} ${u} of your coin, bought in the very next transaction — you sign both at once.` : `≈ ${pctForSol(f.dev).toFixed(2)}% of the supply for ${f.dev} SOL, the moment it launches.`) : "Leave it empty for no first buy."; };
+    q("buyline").textContent = f.dev > 0 ? (f.quote ? `Buys your coin with ${f.dev} ${u} in the very next transaction — you sign both at once.` : `≈ ${pctForSol(f.dev).toFixed(2)}% of the supply for ${f.dev} SOL, the moment it launches.`) : "Leave it empty for no first buy."; };
   q("devsol").oninput = (e) => { const v = Math.max(0, Math.min(f.quote ? 1000 : 50, parseFloat(e.target.value) || 0)); f.dev = Math.round(v * 1e6) / 1e6; buyline(); };
   if (QS.length) q("pairs").onclick = (e) => { const b = e.target.closest("[data-q]"); if (!b || busy) return;
     q("pairs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));

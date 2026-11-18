@@ -192,7 +192,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 }
 /* the launch form's pair (SOL or a token) */
 .pairset { display: grid; gap: 6px; }
-.pairset .lbl { font-size: 13px; color: var(--dim); }
+.pairset .lbl { font: 700 12px var(--mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink); }
 .pairs { display: inline-flex; width: max-content; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); }
 .pairs button { border: 0; background: none; padding: 9px 18px; border-radius: 9px; font: 800 13px var(--mono); letter-spacing: 0.06em; color: var(--dim); cursor: pointer; }
 .pairs button.on { background: var(--hot); color: #fff; box-shadow: 0 0 14px rgba(255, 46, 136, 0.45); }
