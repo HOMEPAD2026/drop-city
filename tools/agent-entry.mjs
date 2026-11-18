@@ -5,7 +5,8 @@
 //   esbuild agent-entry.mjs --bundle --minify --format=esm --platform=node --target=node20 --outfile=<dropcity>/lib/_agentkit.mjs (+ the createRequire banner)
 import { Connection, PublicKey, Keypair, Transaction, VersionedTransaction, AddressLookupTableAccount, SystemProgram, ComputeBudgetProgram } from "@solana/web3.js";
 import { OnlinePumpSdk, PUMP_SDK, feeSharingConfigPda } from "@pump-fun/pump-sdk";
-import { launchTxs, distributeTx, splitTx, launchV0, buyTx, feeVaultOf, qOf, sharedAddresses, lutCreateTx, lutOf } from "./entry.mjs";
+import { launchTxs, distributeTx, splitTx, launchV0, buyTx, feeVaultOf, qOf, sharedAddresses, lutCreateTx, lutExtendTx, lutOf } from "./entry.mjs";
+import { QUOTE_CONTROL_PDA } from "@pump-fun/pump-sdk";
 
 export async function sharingOf(connection, mint) {
   const a = await connection.getAccountInfo(feeSharingConfigPda(new PublicKey(mint)));
@@ -41,4 +42,4 @@ export async function simulate(connection, tx) {
   const r = await connection.simulateTransaction(v, { sigVerify: false, replaceRecentBlockhash: true });
   return { err: r.value.err, logs: r.value.logs || [] };
 }
-export { Connection, PublicKey, Keypair, AddressLookupTableAccount, OnlinePumpSdk, launchTxs, distributeTx, splitTx, launchV0, buyTx, feeVaultOf, qOf, sharedAddresses, lutCreateTx, lutOf, PUMP_SDK, feeSharingConfigPda };
+export { Connection, PublicKey, Keypair, AddressLookupTableAccount, OnlinePumpSdk, launchTxs, distributeTx, splitTx, launchV0, buyTx, feeVaultOf, qOf, sharedAddresses, lutCreateTx, lutExtendTx, lutOf, PUMP_SDK, feeSharingConfigPda, QUOTE_CONTROL_PDA };

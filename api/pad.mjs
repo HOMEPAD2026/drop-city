@@ -64,7 +64,7 @@ async function simQuote(id, dev) {
   const [global, feeConfig, quoteControl] = await Promise.all([sdk.fetchGlobal(), sdk.fetchFeeConfig().catch(() => null), sdk.fetchQuoteControl().catch(() => null)]);
   const creator = new K.PublicKey(c.agent), mint = K.Keypair.generate().publicKey, quote = { mint: qt.mint, program: qt.program };
   const shares = [{ address: creator, shareBps: c.split.creator }, { address: new K.PublicKey(c.vault), shareBps: c.split.vault }, { address: new K.PublicKey(c.buyer), shareBps: c.split.buyer }];
-  const bh = await conn.getLatestBlockhash("confirmed"), o = { global, feeConfig, creator, mint, name: "Simulated Pair Coin Long Name 32", symbol: "SIMPAIR", uri: "https://example.com/m.json", devBuyLamports: 0, treasury: new K.PublicKey(c.vault), shares, quote, quoteControl, blockhash: bh.blockhash };
+  const bh = await conn.getLatestBlockhash("confirmed"), o = { global, feeConfig, creator, mint, name: "Simulated Pair Coin Long Name 32", symbol: "SIMPAIRCOI", uri: "https://tpt4oh98wh6pordk.public.blob.vercel-storage.com/meta/f794454d11ab95a483d07728.json", devBuyLamports: 0, treasury: new K.PublicKey(c.vault), shares, quote, quoteControl, blockhash: bh.blockhash };
   let lut = null; if (blobEnabled()) try { const d = await pad().store.get("agent/lut.json"); if (d && d.address) lut = await K.lutOf(conn, d.address); } catch {}
   const out = { pair: qt.id, creator: c.agent };
   try {
