@@ -4,7 +4,7 @@
 import { esc, short, note, sol, kit, conn } from "/common.js";
 
 const COLORS = { phantom: "#ab9ff2", solflare: "#fc7d22", backpack: "#e33e3f", metamask: "#f6851b" };
-const badge = (w) => (w.icon ? `<img src="${esc(w.icon)}" alt="">` : `<span style="background:${COLORS[w.name.toLowerCase()] || "#22e6ff"}">${esc(w.name[0])}</span>`);
+const badge = (w) => (w.icon ? `<img src="${esc(w.icon)}" alt="">` : `<span style="background:${COLORS[w.name.toLowerCase()] || "#ff2e88"}">${esc(w.name[0])}</span>`);
 const GET = [["Phantom", "https://phantom.app/download"], ["Solflare", "https://solflare.com/download"], ["Backpack", "https://backpack.app/downloads"]];
 
 function shell(html) {

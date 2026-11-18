@@ -144,7 +144,7 @@ async function send(c, signed, lastValid) {
 export function burst(host) {
   if (matchMedia("(prefers-reduced-motion: reduce)").matches || !host) return;
   const c = document.createElement("canvas"), r = host.getBoundingClientRect(); c.width = r.width; c.height = r.height; c.className = "burst"; host.appendChild(c);
-  const x = c.getContext("2d"), P = Array.from({ length: 120 }, () => ({ x: r.width / 2, y: r.height * 0.3, vx: (Math.random() - 0.5) * 14, vy: -Math.random() * 12 - 3, c: ["#ff2bd6", "#22e6ff", "#ffb02e", "#7cff6b"][(Math.random() * 4) | 0], s: 3 + Math.random() * 5 }));
+  const x = c.getContext("2d"), P = Array.from({ length: 120 }, () => ({ x: r.width / 2, y: r.height * 0.3, vx: (Math.random() - 0.5) * 14, vy: -Math.random() * 12 - 3, c: ["#ff2e88", "#ffffff", "#ff6fae", "#ffc2dc"][(Math.random() * 4) | 0], s: 3 + Math.random() * 5 }));
   let t = 0; const step = () => { t++; x.clearRect(0, 0, c.width, c.height); for (const p of P) { p.vy += 0.35; p.x += p.vx; p.y += p.vy; x.fillStyle = p.c; x.fillRect(p.x, p.y, p.s, p.s * 0.6); } if (t < 75) requestAnimationFrame(step); else c.remove(); };
   requestAnimationFrame(step);
 }
