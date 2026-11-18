@@ -61,6 +61,11 @@ ok(g.status === 200 && docs.get(`coins/${MINT2}.json`).kind === "user" && !docs.
 ok((await P.register({ mint: MINT2 })).body.already, "registering twice is harmless");
 put(MINT, [[SPONSOR.pub, 6000], [VAULT, 3000], [BUYER, 1000]]);
 ok((await P.register({ mint: MINT })).status === 200, "the same sponsor launches again in the same hour — no limit");
+const NOSPLIT = "8MU9UNSTvFxfxttvmaQoVR2DDs9F9kKNbdXMd6hQRGTA", nsCv = C.bondingCurvePda(NOSPLIT);
+process.env.PAD_SUFFIX = "GTA"; chain[nsCv] = [C.PROGRAM.pump, curveOf(SPONSOR.pub)];
+const ns = await P.register({ mint: NOSPLIT });
+ok(ns.status === 200 && docs.get(`coins/${NOSPLIT}.json`).noSplit && docs.get(`coins/${NOSPLIT}.json`).creator === SPONSOR.pub, "a coin on the owner's list is listed without a split, its creator from the curve");
+process.env.PAD_SUFFIX = "Xy"; docs.delete(`coins/${NOSPLIT}.json`);
 const L = await P.list();
 ok(L.items.length === 2 && L.items[0].progress === 0 && L.items[0].mcapUsd > 0, "the list reads the coin's curve live");
 ok(splitCheck(C.decodeSharing(scOf(MINT2, [[OTHER.pub, 6000], [VAULT, 3000], [BUYER, 1000]])), MINT2).ok, "splitCheck reads the three holders");
