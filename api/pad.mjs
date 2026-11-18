@@ -37,7 +37,9 @@ async function simSplit(mint, ch) {
   const shares = [{ address: creator, shareBps: c.split.creator }, { address: new K.PublicKey(c.vault), shareBps: c.split.vault }, { address: new K.PublicKey(c.buyer), shareBps: c.split.buyer }];
   const bh = await conn.getLatestBlockhash("confirmed");
   const tx = await K.splitTx({ creator, mint: m, treasury: new K.PublicKey(c.vault), shares, blockhash: bh.blockhash, sharingConfig: sc });
-  return { as: creator.toBase58(), ...(await K.simulate(conn, tx)) };
+  const sw = await K.sweepTx(conn, creator, bh.blockhash).catch(() => null);
+  if (sw) { const both = new tx.constructor(); both.feePayer = creator; both.recentBlockhash = bh.blockhash; both.add(...sw.instructions.slice(2), ...tx.instructions); try { return { as: creator.toBase58(), withSweep: sw.instructions.length - 2, ...(await K.simulate(conn, both)) }; } catch (e) { /* too big for one: the split alone */ } }
+  return { as: creator.toBase58(), withSweep: 0, ...(await K.simulate(conn, tx)) };
 }
 export async function GET(req) {
   const q = new URL(req.url).searchParams;

@@ -26,6 +26,15 @@ export function sendSolTx({ from, to, lamports, blockhash }) {
   t.add(ComputeBudgetProgram.setComputeUnitPrice({ microLamports: 50000 }), SystemProgram.transfer({ fromPubkey: from, toPubkey: to, lamports }));
   return t;
 }
+/// every waiting creator fee of `creator`, in every quote and on the AMM too, collected to the creator (pump.fun
+/// refuses to move a curve's creator to a fee-sharing config while any of them holds fees: error 6095) — null if none
+export async function sweepTx(connection, creator, blockhash, cuPrice = 100000) {
+  const ixs = await new OnlinePumpSdk(connection).collectCoinCreatorFeeAllQuotesInstructions(creator);
+  if (!ixs.length) return null;
+  const t = new Transaction(); t.feePayer = creator; t.recentBlockhash = blockhash;
+  t.add(ComputeBudgetProgram.setComputeUnitLimit({ units: 300000 }), ComputeBudgetProgram.setComputeUnitPrice({ microLamports: cuPrice }), ...ixs);
+  return t;
+}
 /// a transaction's simulation without signatures → { err, logs }
 export async function simulate(connection, tx) {
   const v = new VersionedTransaction(tx.compileMessage());

@@ -103,7 +103,7 @@ const fakeKit = {
   PublicKey: class { constructor(a) { this.a = a; } },
   OnlinePumpSdk: class { async fetchGlobal() { return {}; } async fetchFeeConfig() { return {}; } },
   launchTxs: async (o) => { fakeKit.last = o; return { txs: [{ partialSign() {}, serialize: () => new Uint8Array(1) }] }; },
-  sharingOf: async () => null, sendSolTx: () => ({ sign() {}, serialize: () => new Uint8Array(1) }),
+  sharingOf: async () => null, sweepTx: async () => null, splitTx: async () => ({ sign() {}, serialize: () => new Uint8Array(1) }), sendSolTx: () => ({ sign() {}, serialize: () => new Uint8Array(1) }),
 };
 process.env.PAD_SUFFIX = "Xy";
 let dropMint = null;
