@@ -48,7 +48,7 @@ export async function GET(req) {
   try {
     if (q.has("list")) return json(200, await pad().list(), "public, max-age=10, s-maxage=20");
     if (q.has("slot")) return json(200, { ...(await pad().slot()), cfg: publicCfg() }, "no-store");
-    if (q.has("agent")) return json(200, await agent().status(), "public, max-age=10");
+    if (q.has("agent")) { const [st, tk, pl] = await Promise.all([agent().status(), pad().store.get("beat/tick.json").catch(() => null), pad().store.get("beat/poll.json").catch(() => null)]); return json(200, { ...st, lastTick: tk, lastPoll: pl }, "public, max-age=10"); }
     if (q.has("verify")) { if (limited("v:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); const r = await extra().verify(q.get("verify")); return json(r.status, r.body, "public, max-age=15"); }
     if (q.has("coin")) { if (limited("c:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); const r = await extra().detail(q.get("coin")); return json(r.status, r.body, "public, max-age=30"); }
     if (q.has("trades")) return json(200, await extra().trades(), "public, max-age=6, s-maxage=8");
@@ -67,6 +67,7 @@ export async function GET(req) {
       return json(r.status, r.body, "no-store");
     }
     if (q.has("tick")) {
+      pad().store.put("beat/tick.json", { at: Date.now(), ua: String(req.headers.get("user-agent") || "").slice(0, 60) }, {}).catch(() => {});
       if (limited("tick:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" });
       return json(200, await agent().tick(), "no-store");
     }
