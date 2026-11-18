@@ -197,3 +197,26 @@ a { color: var(--hot2); }
 .tk-in .up { color: var(--hot); } .tk-in .dot { background: var(--hot); box-shadow: 0 0 8px var(--hot); } .tk-in b { color: #fff; }
 .fix { margin-top: 16px; padding: 14px 16px; border-radius: 14px; border: 1px dashed rgba(255, 46, 136, 0.35); color: var(--dim); font-size: 13px; }
 .fix b { color: var(--ink); } .fix-row { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; } .fix-row input { flex: 1; min-width: 220px; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.16); background: rgba(255, 255, 255, 0.04); color: var(--ink); font: 13px var(--mono); }
+
+/* THE MAIN COIN beside the hero */
+.mainc { position: absolute; right: 6vw; top: 50%; transform: translateY(-50%); width: min(380px, 34vw); padding: 20px; border-radius: 22px; z-index: 2;
+  background: linear-gradient(180deg, rgba(20, 18, 21, 0.86), rgba(9, 9, 10, 0.9)); border: 1px solid rgba(255, 46, 136, 0.45); backdrop-filter: blur(12px);
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.04) inset, 0 0 60px rgba(255, 46, 136, 0.18); }
+.mainc::before { content: ""; position: absolute; inset: -1px; border-radius: inherit; padding: 1px; pointer-events: none; background: linear-gradient(135deg, rgba(255, 255, 255, 0.5), transparent 30%, transparent 70%, rgba(255, 46, 136, 0.9));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
+.mc-k { display: inline-block; font: 700 10px var(--mono); letter-spacing: 0.24em; color: var(--hot); padding: 4px 10px; border-radius: 99px; border: 1px solid rgba(255, 46, 136, 0.45); background: rgba(255, 46, 136, 0.08); }
+.mc-h { display: flex; gap: 14px; align-items: center; margin: 14px 0 12px; }
+.mc-h img, .mc-h .ini { width: 64px; height: 64px; border-radius: 50%; object-fit: cover; border: 2px solid rgba(255, 46, 136, 0.7); box-shadow: 0 0 24px rgba(255, 46, 136, 0.45); display: grid; place-items: center; background: #161518; font: 400 20px var(--head); color: var(--hot); flex: none; }
+.mc-h b { display: block; font: 400 36px/1 var(--head); font-style: italic; letter-spacing: 0.01em; padding-right: 0.15em; background: linear-gradient(92deg, #fff, #ffd0e4 45%, var(--hot)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.mc-h small { color: var(--dim); font-size: 13px; }
+.mc-n { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+.mc-n div { padding: 8px 10px; border-radius: 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.06); }
+.mc-n b { display: block; font: 700 15px var(--mono); color: #fff; } .mc-n small { color: var(--dim); font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; }
+.mc-ca { display: flex; width: 100%; align-items: center; gap: 10px; margin-top: 12px; padding: 10px 12px; border-radius: 12px; border: 1px dashed rgba(255, 46, 136, 0.45); background: rgba(0, 0, 0, 0.35); color: var(--dim); font: 500 11.5px var(--mono); text-align: left; word-break: break-all; }
+.mc-ca b { color: var(--hot); font-weight: 800; text-shadow: 0 0 10px rgba(255, 46, 136, 0.7); } .mc-ca span { margin-left: auto; flex: none; font: 700 10px var(--mono); letter-spacing: 0.14em; color: #fff; }
+.mc-ca:hover { border-color: var(--hot); }
+.mc-p { color: var(--dim); font-size: 12px; margin: 10px 0 12px; }
+.mc-a { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 8px; } .mc-a .btn { text-align: center; text-decoration: none; padding: 10px 8px; font-size: 12px; }
+.cc.main { border-color: rgba(255, 46, 136, 0.75); box-shadow: 0 0 0 1px rgba(255, 46, 136, 0.35), 0 18px 50px rgba(255, 46, 136, 0.18); }
+@media (max-width: 1100px) { .mainc { position: relative; right: auto; top: auto; transform: none; width: auto; margin: 0 6vw 28px; } }
+@media (max-width: 760px) { .mainc { margin: 0 16px 24px; } }

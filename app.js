@@ -44,7 +44,8 @@ function paintPhone() {
     el.innerHTML = `<h3>TODAY · 24 DROPS</h3><p>The agent drops one coin at the top of every hour (UTC); each rises on its lot in Clock Plaza.</p><div class="hours">${Array.from({ length: 24 }, (_, h) => { const c = byH.get(h); return `<div class="${h === nowH ? "now" : ""} ${c ? "drop" : ""}" ${c ? `data-m="${esc(c.mint)}"` : ""}><b>${String(h).padStart(2, "0")}:00</b>${c ? "$" + esc(c.symbol) : h < nowH ? "—" : h === nowH ? "…" : ""}</div>`; }).join("")}</div>`;
   } else if (tab === "vault") {
     const s = CFG.split || {};
-    el.innerHTML = `<h3>THE VAULT</h3><p>Every coin dropped here splits its pump.fun creator fees three ways, locked on chain the moment it launches.</p>
+    const mc = CFG.main && coins.find((x) => x.mint === CFG.main);
+    el.innerHTML = `${mc ? `<h3>THE MAIN COIN</h3><ul class="wanted"><li data-m="${esc(mc.mint)}"><span class="rk">★</span>${pic(mc)}<span><b>$${esc(mc.symbol)}</b><small>${mc.graduated ? "MADE · graduated" : `curve ${(mc.progress || 0).toFixed(0)}%`}</small></span><span class="mc">${usd(mc.mcapUsd)}<small>mcap</small></span></li></ul>` : ""}<h3>THE VAULT</h3><p>Every coin dropped here splits its pump.fun creator fees three ways, locked on chain the moment it launches.</p>
       <div class="split"><div class="s1"><b>${(s.creator || 0) / 100}%</b><span>The creator<small>the wallet that launched the coin (the agent's share goes on to THE VAULT)</small></span></div>
       <div class="s2"><b>${(s.vault || 0) / 100}%</b><span>THE VAULT — the city fund<small>${CFG.vault ? esc(CFG.vault) : "wallet being set up"}</small></span></div>
       <div class="s3"><b>${(s.buyer || 0) / 100}%</b><span>Buys $${esc(CFG.ticker)}<small>${CFG.buyer ? esc(CFG.buyer) : ""}</small></span></div></div>

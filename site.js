@@ -19,7 +19,25 @@ async function start() {
   await refresh(); paintFees(); paintMe(); readVault(); setInterval(readVault, 60e3);
 }
 setInterval(refresh, 20e3); setInterval(paintHour, 1000);
-function paintAll() { paintHour(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker(); }
+function paintAll() { paintHour(); paintMain(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker(); }
+
+// ---------------- THE MAIN COIN (beside the hero)
+/// the address with its suffix lit
+const caHtml = (m) => { const k = (CFG.suffix || "").length; return k && m.endsWith(CFG.suffix) ? `${esc(m.slice(0, -k))}<b>${esc(m.slice(-k))}</b>` : esc(m); };
+function paintMain() {
+  const el = $("mainc"), m = CFG.main || (DEMO ? coins[0] && coins[0].mint : null), c = m && coins.find((x) => x.mint === m);
+  if (!m) { el.hidden = true; return; }
+  el.hidden = false;
+  const sym = c ? c.symbol : CFG.ticker, prog = c ? (c.graduated ? 100 : c.progress || 0) : 0;
+  el.innerHTML = `<span class="mc-k">THE MAIN COIN</span>
+    <div class="mc-h">${c ? pic(c) : `<span class="ini">${esc(String(sym).slice(0, 3))}</span>`}<div><b>$${esc(sym)}</b><small>${esc(c ? c.name : CFG.name)}</small></div></div>
+    <div class="mc-n"><div><b>${usd(c && c.mcapUsd)}</b><small>Market cap</small></div><div><b>${c && c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>Price</small></div><div><b>${c ? (c.graduated ? "MADE" : prog.toFixed(1) + "%") : "–"}</b><small>${c && c.graduated ? "Graduated" : "Bonding curve"}</small></div></div>
+    <div class="bar"><i style="width:${Math.max(2, prog)}%"></i></div>
+    <button type="button" class="mc-ca" id="mc-ca" title="Copy the address">${caHtml(m)}<span>COPY</span></button>
+    <p class="mc-p">${(CFG.split.buyer / 100)}% of every coin's creator fees buys $${esc(sym)}.</p>
+    <div class="mc-a"><a class="btn hot" href="https://pump.fun/coin/${esc(m)}" target="_blank" rel="noopener">Buy $${esc(sym)}</a><a class="btn ghost" href="https://dexscreener.com/solana/${esc(m)}" target="_blank" rel="noopener">Chart</a><a class="btn ghost" href="/city?coin=${esc(m)}${DEMO ? "&demo=1" : ""}">In the city</a></div>`;
+  $("mc-ca").onclick = async () => { try { await navigator.clipboard.writeText(m); note("Address copied."); } catch { note(m, 6000); } };
+}
 
 // ---------------- the hour
 function paintHour() {
@@ -55,7 +73,7 @@ function paintGrid() {
 }
 function card(c, i) {
   const fresh = c.launchedAt && Date.now() / 1000 - c.launchedAt < 3600;
-  return `<article class="cc${c.graduated ? " made" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">${c.kind === "drop" ? "HOURLY DROP" : "WANTED"}</span>${c.graduated ? `<span class="badge">MADE</span>` : fresh ? `<span class="badge new">NEW</span>` : ""}${pic(c)}</div>
+  return `<article class="cc${c.graduated ? " made" : ""}${c.mint === CFG.main ? " main" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">${c.mint === CFG.main ? "THE MAIN COIN" : c.kind === "drop" ? "HOURLY DROP" : "WANTED"}</span>${c.graduated ? `<span class="badge">MADE</span>` : fresh ? `<span class="badge new">NEW</span>` : ""}${pic(c)}</div>
     <div class="body"><h3>${esc(c.name)}</h3><span class="sym">$${esc(c.symbol)}</span> <span class="stars">${stars(c)}</span>
       <div class="row"><b>${usd(c.mcapUsd)}</b><small>${c.hour ? "dropped " + esc(c.hour.slice(5, 10).replace("-", "/")) + " " + esc(c.hour.slice(11, 13)) + ":00" : c.launchedAt ? "launched " + esc(new Date(c.launchedAt * 1000).toISOString().slice(5, 16).replace("-", "/").replace("T", " ")) : ""}</small></div>
       <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? "graduated to PumpSwap" : `curve ${(c.progress || 0).toFixed(0)}%`}</small>
@@ -137,7 +155,7 @@ $("grid").addEventListener("click", (e) => { if (e.target.closest("a")) return; 
 function openCoin(mint) {
   const c = coins.find((x) => x.mint === mint); if (!c) return;
   const el = $("cmodal"), share = encodeURIComponent(`$${c.symbol} — dropped in the city at ${c.hour ? c.hour.slice(11, 13) + ":00" : "its hour"}.\n`), link = encodeURIComponent(`${location.origin}/city?coin=${c.mint}`);
-  el.innerHTML = `<div class="cm-card"><button type="button" class="wm-x" aria-label="Close">×</button><div class="poster"><span class="tag">${c.kind === "drop" ? "HOURLY DROP" : "WANTED"}</span>${pic(c)}</div><div class="cm-in">
+  el.innerHTML = `<div class="cm-card"><button type="button" class="wm-x" aria-label="Close">×</button><div class="poster"><span class="tag">${c.mint === CFG.main ? "THE MAIN COIN" : c.kind === "drop" ? "HOURLY DROP" : "WANTED"}</span>${pic(c)}</div><div class="cm-in">
     <h2>${esc(c.name)}</h2><span class="sym" style="color:var(--hot);font:700 13px var(--mono)">$${esc(c.symbol)}</span> <span class="stars">${stars(c)}</span>
     <p class="addr">${esc(c.mint)}</p>
     <div class="kv"><div><b>${usd(c.mcapUsd)}</b><small>Market cap</small></div><div><b>${c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>Price</small></div><div><b>${c.hour ? c.hour.slice(5, 10).replace("-", "/") + " " + c.hour.slice(11, 13) + ":00" : "–"}</b><small>Dropped (UTC)</small></div><div><b>${c.kind === "drop" ? "AGENT" : c.creator ? esc(short(c.creator)) : "–"}</b><small>${c.kind === "drop" ? "The hourly drop" : "Creator"}</small></div></div>

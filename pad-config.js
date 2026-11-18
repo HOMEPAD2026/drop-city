@@ -12,6 +12,7 @@ export const PAD = {
   suffix: "",
   vault: "", // THE VAULT — 30 % of every coin's creator fees (the city fund). Empty = launching is closed
   buyer: "7yajVrzpMV8MBmvWnVrniD14FVs73muNqSqGsvG9B9Jb", // 10 % — this wallet buys the main coin with it
+  main: "8MU9UNSTvFxfxttvmaQoVR2DDs9F9kKNbdXMd6hQRGTA", // the main coin (featured on the site; PAD_MAIN overrides)
   split: { creator: 6000, vault: 3000, buyer: 1000 }, // basis points, locked on chain at every launch
   // coins the owner lists although their split didn't lock (launched before the fix) — all their creator fees go to
   // their creator; the city shows them as "no split"
