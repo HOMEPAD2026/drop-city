@@ -28,7 +28,8 @@ export function grind(suffix, onTries) {
 export function openDrop(o = {}) {
   const CFG = o.cfg || {};
   const sh = $("sheet"); sh.hidden = false;
-  const f = { dev: 0, logo: "", logoData: "" };
+  const f = { dev: 0, logo: "", logoData: "", quote: null };
+  const QS = (CFG.quotes || []).filter((x) => x && x.mint);
   sh.innerHTML = `<div role="dialog" aria-label="Launch a coin" class="wide"><button type="button" class="sheet-x" data-f="x" aria-label="Close">×</button><h2>LAUNCH A COIN</h2><p class="sub">Any time, as many as you like. On pump.fun, from your own wallet.</p>
     <div class="lf"><div class="form">
       <label class="w logo-pick"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden data-f="file"><span class="pv" data-f="pv">+</span><span>Logo<br><small data-f="lmsg">square image, 512 px is plenty</small></span></label>
@@ -38,23 +39,30 @@ export function openDrop(o = {}) {
       <label>X link<input data-f="twitter" placeholder="https://x.com/…"></label>
       <label>Telegram<input data-f="telegram" placeholder="https://t.me/…"></label>
       <label class="w">Website<input data-f="website" placeholder="https://…"></label>
+      ${QS.length ? `<div class="w pairset"><span class="lbl">Pair — what your coin trades against</span><div class="seg pairs" data-f="pairs"><button type="button" class="on" data-q="">SOL</button>${QS.map((x) => `<button type="button" data-q="${esc(x.id)}">${esc(x.id)}</button>`).join("")}</div><small class="pairline" data-f="pairline">Bought and sold with SOL — the usual pump.fun coin.</small></div>` : ""}
       <label class="w buyset"><span class="lbl">Your first buy (optional) — bought in the same signing, before anyone else</span>
-        <span class="custom"><input data-f="devsol" inputmode="decimal" placeholder="0" style="max-width:180px"> SOL</span><small class="buyline" data-f="buyline">Leave it empty for no first buy.</small></label>
+        <span class="custom"><input data-f="devsol" inputmode="decimal" placeholder="0" style="max-width:180px"> <b data-f="unit">SOL</b></span><small class="buyline" data-f="buyline">Leave it empty for no first buy.</small></label>
     </div><div class="lprev"><p class="cap">PREVIEW</p><div data-f="prev"></div></div></div>
-    <div class="note"><b>Fees, locked on chain:</b> ${(CFG.split.creator / 100)}% you · ${(CFG.split.vault / 100)}% THE VAULT · ${(CFG.split.buyer / 100)}% buys $${esc(CFG.ticker)}.${CFG.suffix ? ` <b>Your coin's address will end in ${esc(CFG.suffix)}</b> — found in this browser, the key never leaves it.` : ""} No launch fee; about 0.03 SOL of network costs.</div>
+    <div class="note"><b>Fees, locked on chain<span data-f="feeunit"></span>:</b> ${(CFG.split.creator / 100)}% you · ${(CFG.split.vault / 100)}% THE VAULT · ${(CFG.split.buyer / 100)}% buys $${esc(CFG.ticker)}.${CFG.suffix ? ` <b>Your coin's address will end in ${esc(CFG.suffix)}</b> — found in this browser, the key never leaves it.` : ""} No launch fee; about 0.03 SOL of network costs.</div>
     <ol class="steps" data-f="steps" hidden></ol><p class="err" data-f="err" hidden></p>
     <div class="foot"><button type="button" class="btn ghost" data-f="close">Close</button><button type="button" class="btn hot" data-f="go">Launch on pump.fun</button></div></div>`;
   const q = (k) => sh.querySelector(`[data-f="${k}"]`);
   // the card as it will look in Explore, while you type
   const prev = () => { const v = (k) => String((q(k) && q(k).value) || "").trim(), sym = v("symbol") || "TICKER", nm = v("name") || "Your coin";
-    q("prev").innerHTML = `<article class="cc"><div class="poster"><span class="tag">WANTED</span><span class="badge new">NEW</span>${f.logoData ? `<img src="${f.logoData}" alt="">` : `<span class="ini">${esc(sym.slice(0, 3))}</span>`}<span class="bounty">BOUNTY $0</span></div><div class="body"><h3>${esc(nm)}</h3><span class="sym">$${esc(sym)}</span> <span class="stars">★☆☆☆☆</span><div class="bar"><i style="width:2%"></i></div><small style="color:var(--dim)">${CFG.suffix ? `CA …${esc(CFG.suffix)}` : "curve 0%"}</small></div></article>`; };
+    q("prev").innerHTML = `<article class="cc"><div class="poster"><span class="tag">WANTED</span><span class="badge new">NEW</span>${f.logoData ? `<img src="${f.logoData}" alt="">` : `<span class="ini">${esc(sym.slice(0, 3))}</span>`}<span class="bounty">BOUNTY $0</span></div><div class="body"><h3>${esc(nm)}</h3><span class="sym">$${esc(sym)}</span> <span class="stars">★☆☆☆☆</span><div class="bar"><i style="width:2%"></i></div><small style="color:var(--dim)">${CFG.suffix ? `CA …${esc(CFG.suffix)}` : "curve 0%"}${f.quote ? ` · ${esc(f.quote.id)} pair` : ""}</small></div></article>`; };
   sh.addEventListener("input", prev); prev();
   const err = (s) => { q("err").hidden = !s; q("err").textContent = s || ""; };
   q("close").onclick = q("x").onclick = () => { try { grind.stop && grind.stop(); } catch {} sh.hidden = true; document.removeEventListener("keydown", esc0); };
   const esc0 = (e) => { if (e.key === "Escape" && !busy) q("close").onclick(); }; document.addEventListener("keydown", esc0);
   sh.onclick = (e) => { if (e.target === sh && !busy) q("close").onclick(); };
-  q("devsol").oninput = (e) => { const v = Math.max(0, Math.min(50, parseFloat(e.target.value) || 0)); f.dev = Math.round(v * 1e4) / 1e4;
-    q("buyline").textContent = f.dev > 0 ? `≈ ${pctForSol(f.dev).toFixed(2)}% of the supply for ${f.dev} SOL, the moment it launches.` : "Leave it empty for no first buy."; };
+  const buyline = () => { const u = f.quote ? f.quote.id : "SOL";
+    q("buyline").textContent = f.dev > 0 ? (f.quote ? `${f.dev} ${u} of your coin, bought in the very next transaction — you sign both at once.` : `≈ ${pctForSol(f.dev).toFixed(2)}% of the supply for ${f.dev} SOL, the moment it launches.`) : "Leave it empty for no first buy."; };
+  q("devsol").oninput = (e) => { const v = Math.max(0, Math.min(f.quote ? 1000 : 50, parseFloat(e.target.value) || 0)); f.dev = Math.round(v * 1e6) / 1e6; buyline(); };
+  if (QS.length) q("pairs").onclick = (e) => { const b = e.target.closest("[data-q]"); if (!b || busy) return;
+    q("pairs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
+    f.quote = QS.find((x) => x.id === b.dataset.q) || null; q("unit").textContent = f.quote ? f.quote.id : "SOL";
+    q("pairline").textContent = f.quote ? `Bought and sold with ${f.quote.name || f.quote.id} on pump.fun. Your first buy and the creator fees are in ${f.quote.id}; you still pay about 0.03 SOL of network costs.` : "Bought and sold with SOL — the usual pump.fun coin.";
+    q("feeunit").textContent = f.quote ? `, paid in ${f.quote.id}` : ""; q("devsol").value = ""; f.dev = 0; buyline(); prev(); };
   q("symbol").oninput = (e) => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); };
   q("file").onchange = async (e) => {
     const file = e.target.files && e.target.files[0]; if (!file) return;
@@ -105,15 +113,28 @@ export function openDrop(o = {}) {
       const V = new K.PublicKey(CFG.vault), Bw = new K.PublicKey(CFG.buyer);
       const shares = [{ address: me, shareBps: CFG.split.creator }, { address: V, shareBps: CFG.split.vault }, { address: Bw, shareBps: CFG.split.buyer }];
       const sdk = new K.OnlinePumpSdk(c);
-      const [global, feeConfig, bh, bal] = await Promise.all([sdk.fetchGlobal(), sdk.fetchFeeConfig().catch(() => null), c.getLatestBlockhash("confirmed"), c.getBalance(me)]);
+      const Q = f.quote, quote = Q ? { mint: Q.mint, program: Q.program } : null;
+      const [global, feeConfig, bh, bal, quoteControl] = await Promise.all([sdk.fetchGlobal(), sdk.fetchFeeConfig().catch(() => null), c.getLatestBlockhash("confirmed"), c.getBalance(me), Q ? sdk.fetchQuoteControl().catch(() => null) : null]);
       if (global.createV2Enabled === false) throw new Error("pump.fun has paused new coins for a moment — try again later.");
-      if (bal / 1e9 < 0.03 + f.dev) throw new Error(`Not enough SOL — about ${(0.03 + f.dev).toFixed(2)} SOL is needed.`);
+      if (bal / 1e9 < 0.03 + (Q ? 0.01 : f.dev)) throw new Error(`Not enough SOL — about ${(0.03 + (Q ? 0.01 : f.dev)).toFixed(2)} SOL is needed.`);
+      if (Q && quoteControl && !(quoteControl.mints || []).some((m) => String(m.mint) === Q.mint) && !(global.whitelistedQuoteMints || []).some((m) => String(m) === Q.mint)) throw new Error(`pump.fun doesn't take ${Q.id} as a pair right now.`);
+      const devUnits = Q ? Math.round(f.dev * 10 ** Q.decimals) : Math.round(f.dev * 1e9);
+      if (Q && devUnits > 0) { const qa = K.spl.getAssociatedTokenAddressSync(new K.PublicKey(Q.mint), me, true, new K.PublicKey(Q.program)); const have = await c.getTokenAccountBalance(qa).then((r) => Number(r.value.uiAmount || 0)).catch(() => 0);
+        if (have < f.dev) throw new Error(`Not enough ${Q.id} — your wallet has ${have} ${Q.id}, the first buy needs ${f.dev}.`); }
       // one transaction (create → split → first buy) through the city's lookup table, so nothing trades in between; else the old steps
       const lut = CFG.lut ? await K.lutOf(c, CFG.lut).catch(() => null) : null;
       let b = null;
-      if (lut) b = await K.launchV0({ lut, global, feeConfig, creator: me, mint: mint.publicKey, name: F.name, symbol: F.symbol, uri: md.j.uri, devBuyLamports: Math.round(f.dev * 1e9), treasury: V, shares, blockhash: bh.blockhash, slipBps: 300 }).catch(() => null);
-      if (b) b.txs[0].sign([mint]);
-      else { b = await K.launchTxs({ global, feeConfig, creator: me, mint: mint.publicKey, name: F.name, symbol: F.symbol, uri: md.j.uri, devBuyLamports: Math.round(f.dev * 1e9), treasury: V, shares, blockhash: bh.blockhash, slipBps: 300 }); b.txs[0].partialSign(mint); }
+      const L0 = { global, feeConfig, creator: me, mint: mint.publicKey, name: F.name, symbol: F.symbol, uri: md.j.uri, treasury: V, shares, blockhash: bh.blockhash, slipBps: 300, quote, quoteControl };
+      if (Q) {
+        // a token pair: create + the locked split as one v0 transaction (nothing can trade before the split), the first buy right after
+        if (!lut) throw new Error("The city's lookup table didn't load — try again in a moment.");
+        b = await K.launchV0({ lut, ...L0, devBuyLamports: 0 }); b.txs[0].sign([mint]);
+        if (devUnits > 0) { const bt = await K.buyTx({ ...L0, amount: devUnits }); b.txs.push(bt.tx); b.single = false; }
+      } else {
+        if (lut) b = await K.launchV0({ lut, ...L0, devBuyLamports: devUnits }).catch(() => null);
+        if (b) b.txs[0].sign([mint]);
+        else { b = await K.launchTxs({ ...L0, devBuyLamports: devUnits }); b.txs[0].partialSign(mint); }
+      }
       const signed = typeof S.p.signAllTransactions === "function" ? await S.p.signAllTransactions(b.txs) : await Promise.all(b.txs.map((t) => S.p.signTransaction(t)));
       step("sign", "ok");
       // the coin, then its split, then the first buy (one, two or three transactions — see the kit's launchTxs)
