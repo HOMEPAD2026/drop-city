@@ -17,5 +17,11 @@ export const PAD = {
   // coins the owner lists although their split didn't lock (launched before the fix) — all their creator fees go to
   // their creator; the city shows them as "no split"
   listAnyway: ["8MU9UNSTvFxfxttvmaQoVR2DDs9F9kKNbdXMd6hQRGTA"],
-  dropsPerDay: 24, // the agent drops one coin at the top of every UTC hour; everyone else launches any time, no limit
+  dropsPerDay: 24,
+  // what a coin can trade against besides SOL (the launch form's "pair"): tokens pump.fun admits as a quote. TTWO =
+  // Take-Two Interactive's tokenized share by Backpack Securities (Token-2022, 6 decimals) — on pump.fun's QuoteControl
+  // list (checked with /api/pad?quotes). dev = the first-buy choices, in the token
+  quotes: [
+    { id: "TTWO", name: "Take-Two (TTWO)", mint: "TTWofwAge91oFhZs7kpQdyrVRkmevgM88xijGvQFbKo", program: "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", decimals: 6, dev: [0.01, 0.05, 0.1] },
+  ], // the agent drops one coin at the top of every UTC hour; everyone else launches any time, no limit
 };

@@ -7,7 +7,7 @@
 //   GET  ?agent         the agent: its wallet, this hour, today's drops and transfers to THE VAULT
 //   POST ?solrpc        the browser's Solana RPC relay (only the calls a launch makes)
 //   POST {action}       register · meta · logo
-import { makePad, publicCfg, cfg } from "../lib/_pad.mjs";
+import { makePad, publicCfg, cfg, quotesOf } from "../lib/_pad.mjs";
 import { proxy } from "../lib/_chain.mjs";
 import { blobStore, blobEnabled } from "../lib/_blob.mjs";
 import { makeAgent } from "../lib/_agent.mjs";
@@ -54,9 +54,30 @@ async function quotes() {
   const v = { at: Date.now(), list, createV2: g.createV2Enabled ?? null };
   QUOTES = { at: Date.now(), v }; return v;
 }
+/// a token-pair launch, simulated (no signatures, nothing sent) with the agent's wallet as the creator: create + the
+/// locked split in one v0 transaction through the city's lookup table, and the first buy alone when dev= is given
+async function simQuote(id, dev) {
+  const c = cfg(), qt = quotesOf(c).find((x) => x.id === String(id || "").toUpperCase());
+  if (!qt) return { error: "unknown pair" };
+  if (!c.agent) return { error: "no agent wallet to simulate with" };
+  const K = await import("../lib/_agentkit.mjs"), conn = new K.Connection(process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com", "confirmed"), sdk = new K.OnlinePumpSdk(conn);
+  const [global, feeConfig, quoteControl] = await Promise.all([sdk.fetchGlobal(), sdk.fetchFeeConfig().catch(() => null), sdk.fetchQuoteControl().catch(() => null)]);
+  const creator = new K.PublicKey(c.agent), mint = K.Keypair.generate().publicKey, quote = { mint: qt.mint, program: qt.program };
+  const shares = [{ address: creator, shareBps: c.split.creator }, { address: new K.PublicKey(c.vault), shareBps: c.split.vault }, { address: new K.PublicKey(c.buyer), shareBps: c.split.buyer }];
+  const bh = await conn.getLatestBlockhash("confirmed"), o = { global, feeConfig, creator, mint, name: "Simulated Pair Coin With A Long Name", symbol: "SIMPAIR", uri: "https://example.com/m.json", devBuyLamports: 0, treasury: new K.PublicKey(c.vault), shares, quote, quoteControl, blockhash: bh.blockhash };
+  let lut = null; if (blobEnabled()) try { const d = await pad().store.get("agent/lut.json"); if (d && d.address) lut = await K.lutOf(conn, d.address); } catch {}
+  const out = { pair: qt.id, creator: c.agent };
+  try {
+    if (lut) { const v = await K.launchV0({ lut, ...o }); out.v0 = { size: v.size }; const r = await conn.simulateTransaction(v.txs[0], { sigVerify: false, replaceRecentBlockhash: true }); out.v0.err = r.value.err; out.v0.logs = (r.value.logs || []).slice(-14); out.v0.units = r.value.unitsConsumed; }
+    else { const r = await K.launchTxs(o); out.legacy = { txs: r.txs.length }; const s = await K.simulate(conn, r.txs[0]); out.legacy.err = s.err; out.legacy.logs = s.logs.slice(-14); }
+  } catch (e) { out.buildError = String((e && e.message) || e).slice(0, 200); }
+  if (dev) try { const b = await K.buyTx({ ...o, amount: Math.round(Number(dev) * 10 ** qt.decimals), slipBps: 300 }); out.buyTokens = String(b.tokens); out.buySize = b.tx.serialize({ requireAllSignatures: false, verifySignatures: false }).length; } catch (e) { out.buyError = String((e && e.message) || e).slice(0, 200); }
+  return out;
+}
 export async function GET(req) {
   const q = new URL(req.url).searchParams;
   if (q.has("cfg")) { let lut = null; if (blobEnabled()) try { const d = await pad().store.get("agent/lut.json"); lut = d && d.address; } catch {} return json(200, { ...publicCfg(), lut }, "public, max-age=30"); }
+  if (q.has("simquote")) { if (limited("sq:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" }); try { return json(200, await simQuote(q.get("simquote"), q.get("dev")), "no-store"); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 300) }); } }
   if (q.has("quotes")) { try { return json(200, await quotes(), "public, max-age=300, s-maxage=600"); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 200) }); } }
   if (!blobEnabled()) return json(503, { error: "the store isn't connected yet" });
   try {
