@@ -2,12 +2,13 @@
 // the hour on the top bar, and the drop (launch.js). ?coin=<mint> opens that coin.
 import { makeCity } from "/city.js";
 import { $, esc, short, usd, hh, note, DEMO, loadCfg, loadCoins, loadSlot as getSlot, stars, ini, pic, sol } from "/common.js";
+import { walletButton } from "/wallet.js";
 import { openDrop as drop, grind } from "/launch.js";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } };
 let coins = [], slot = null, tab = "wanted", sel = new URLSearchParams(location.search).get("coin");
 const city = makeCity($("city"), { onPick: (m) => openCard(m) });
-const openDrop = () => drop({ cfg: CFG, onDone: () => { loadList(); loadSlot(); }, paintWallet });
+const openDrop = () => drop({ cfg: CFG, onDone: () => { loadList(); loadSlot(); }, paintWallet: () => paintWallet() });
 
 async function load() {
   CFG = await loadCfg();
@@ -77,15 +78,8 @@ function openCard(mint, quiet) {
 }
 
 // ---------------- the wallet
-async function paintWallet() { const S = await sol(); $("wallet").textContent = S && S.key ? short(S.key) : "Connect"; }
-$("wallet").onclick = async () => {
-  const S = await sol(); if (!S) { note("No Solana wallet found — open this page in Phantom or Solflare."); return; }
-  if (S.key) { await S.disconnect(); paintWallet(); return; }
-  const list = S.providers(); if (!list.length) { if (S.mobile()) location.href = S.openIn("Phantom"); else note("No Solana wallet found — install Phantom, Solflare or Backpack."); return; }
-  try { await S.connect(0); } catch (e) { note(String((e && e.message) || e).slice(0, 120)); } paintWallet();
-};
-document.addEventListener("arc:solwallet", paintWallet);
-sol().then((S) => S && S.quiet && S.quiet()).finally(paintWallet);
+let paintWallet = async () => {};
+walletButton($("wallet"), () => { }).then((f) => (paintWallet = f));
 
 $("drop").onclick = () => openDrop();
 load();

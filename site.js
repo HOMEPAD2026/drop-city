@@ -1,11 +1,12 @@
 // site.js — the website: the hour, the numbers, EXPLORE (every drop as a card), TODAY'S 24, the launch, FEES and the
 // creators' space (your drops, the fees they've earned, paying them out). The drop itself is launch.js.
 import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn } from "/common.js";
+import { walletButton } from "/wallet.js";
 import { openDrop } from "/launch.js";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } }, coins = [], slot = null;
 const S = { q: "", sort: "wanted", filt: "all" };
-const drop = () => openDrop({ cfg: CFG, onDone: refresh, paintWallet });
+const drop = () => openDrop({ cfg: CFG, onDone: refresh, paintWallet: () => paintWallet() });
 document.querySelectorAll("[data-drop]").forEach((b) => (b.onclick = drop));
 $("burger").onclick = () => $("links").classList.toggle("open");
 $("links").addEventListener("click", () => $("links").classList.remove("open"));
@@ -15,10 +16,10 @@ async function start() {
   CFG = await loadCfg();
   document.querySelectorAll("[data-name]").forEach((e) => (e.textContent = CFG.name));
   document.title = `${CFG.name} — one drop every hour`;
-  await refresh(); paintFees(); paintMe();
+  await refresh(); paintFees(); paintMe(); readVault(); setInterval(readVault, 60e3);
 }
 setInterval(refresh, 20e3); setInterval(paintHour, 1000);
-function paintAll() { paintHour(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); }
+function paintAll() { paintHour(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker(); }
 
 // ---------------- the hour
 function paintHour() {
@@ -27,14 +28,19 @@ function paintHour() {
   if (!CFG.open && !DEMO) { st.textContent = "THE CITY OPENS SOON"; return; }
   if (!slot) { st.textContent = "…"; return; }
   const left = Math.max(0, slot.next - now), mm = String(Math.floor(left / 60e3)).padStart(2, "0"), ss = String(Math.floor((left % 60e3) / 1000)).padStart(2, "0");
-  if (slot.free) { st.textContent = `OPEN — ${mm}:${ss} LEFT TO DROP`; st.classList.add("open"); }
+  digits(mm + ss);
+  if (slot.free) { st.textContent = "OPEN — TAKE IT"; st.classList.add("open"); }
   else if (slot.taken && slot.taken.state === "held") { st.textContent = `HELD BY ${short(slot.taken.wallet)} UNTIL ${hh(slot.taken.until)}`; st.classList.add("held"); }
-  else { st.textContent = `DROPPED${slot.taken && slot.taken.symbol ? " $" + slot.taken.symbol : ""} · NEXT IN ${mm}:${ss}`; st.classList.add("done"); }
+  else { st.textContent = `DROPPED${slot.taken && slot.taken.symbol ? " $" + slot.taken.symbol : ""}`; st.classList.add("done"); }
 }
+const lastDig = {};
+function digits(str) { ["d-m1", "d-m2", "d-s1", "d-s2"].forEach((id, i) => { const el = $(id); if (!el || lastDig[id] === str[i]) return; lastDig[id] = str[i]; el.textContent = str[i]; el.classList.remove("tick"); void el.offsetWidth; el.classList.add("tick"); }); }
+let vaultSol = null;
+async function readVault() { if (!CFG.vault) return; try { const K = await kit(), c = await conn(); vaultSol = (await c.getBalance(new K.PublicKey(CFG.vault))) / 1e9; paintStats(); } catch {} }
 function paintStats() {
   const today = new Date().toISOString().slice(0, 10), t = coins.filter((c) => c.hour && c.hour.startsWith(today)).length;
   const mc = coins.reduce((a, c) => a + (c.mcapUsd || 0), 0), made = coins.filter((c) => c.graduated).length;
-  $("stats").innerHTML = [[coins.length, "coins dropped"], [`${t}/24`, "dropped today"], [usd(mc), "total market cap"], [made, "made it (graduated)"]].map(([v, l]) => `<div><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("");
+  $("stats").innerHTML = [[coins.length, "coins dropped"], [`${t}/24`, "dropped today"], [usd(mc), "total market cap"], [made, "made it (graduated)"], ...(vaultSol != null ? [[vaultSol.toFixed(2) + " SOL", "in THE VAULT"]] : [])].map(([v, l]) => `<div><b>${esc(v)}</b><small>${esc(l)}</small></div>`).join("");
 }
 
 // ---------------- EXPLORE
@@ -49,9 +55,9 @@ function paintGrid() {
   list.sort(S.sort === "new" ? (a, b) => (b.launchedAt || 0) - (a.launchedAt || 0) || String(b.hour).localeCompare(String(a.hour)) : S.sort === "curve" ? (a, b) => (b.graduated ? 100 : b.progress || 0) - (a.graduated ? 100 : a.progress || 0) : (a, b) => (b.mcapUsd || 0) - (a.mcapUsd || 0));
   $("grid").innerHTML = list.length ? list.map((c, i) => card(c, i)).join("") : `<div class="empty"><b>${coins.length ? "NOTHING MATCHES" : "THE STREETS ARE QUIET"}</b>${coins.length ? "Try another search." : "No drops yet — the first coin takes the first hour."}</div>`;
 }
-function card(c) {
+function card(c, i) {
   const fresh = c.launchedAt && Date.now() / 1000 - c.launchedAt < 3600;
-  return `<article class="cc"><div class="poster"><span class="tag">WANTED</span>${c.graduated ? `<span class="badge">MADE</span>` : fresh ? `<span class="badge new">NEW</span>` : ""}${pic(c)}</div>
+  return `<article class="cc${c.graduated ? " made" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">WANTED</span>${c.graduated ? `<span class="badge">MADE</span>` : fresh ? `<span class="badge new">NEW</span>` : ""}${pic(c)}</div>
     <div class="body"><h3>${esc(c.name)}</h3><span class="sym">$${esc(c.symbol)}</span> <span class="stars">${stars(c)}</span>
       <div class="row"><b>${usd(c.mcapUsd)}</b><small>${c.hour ? "dropped " + esc(c.hour.slice(5, 10).replace("-", "/")) + " " + esc(c.hour.slice(11, 13)) + ":00" : ""}</small></div>
       <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? "graduated to PumpSwap" : `curve ${(c.progress || 0).toFixed(0)}%`}</small>
@@ -78,15 +84,8 @@ function paintFees() {
 }
 
 // ---------------- CREATORS: your drops and their fees
-async function paintWallet() { const W = await sol(); $("wallet").textContent = W && W.key ? short(W.key) : "Connect"; paintMe(); }
-$("wallet").onclick = async () => {
-  const W = await sol(); if (!W) { note("No Solana wallet found — open this page in Phantom or Solflare."); return; }
-  if (W.key) { await W.disconnect(); paintWallet(); return; }
-  const list = W.providers(); if (!list.length) { if (W.mobile()) location.href = W.openIn("Phantom"); else note("No Solana wallet found — install Phantom, Solflare or Backpack."); return; }
-  try { await W.connect(0); } catch (e) { note(String((e && e.message) || e).slice(0, 120)); } paintWallet();
-};
-document.addEventListener("arc:solwallet", paintWallet);
-sol().then((W) => W && W.quiet && W.quiet()).finally(paintWallet);
+let paintWallet = async () => {};
+walletButton($("wallet"), () => { paintMe(); }).then((f) => (paintWallet = f));
 async function paintMe() {
   const W = await sol(), el = $("me");
   if (!W || !W.key) { el.innerHTML = `<div class="me-box"><p style="color:var(--dim);margin:0 0 12px">Connect the wallet you launch from to see your drops and the fees they've earned.</p><button type="button" class="btn hot" id="me-c">Connect wallet</button></div>`; $("me-c").onclick = () => $("wallet").click(); return; }
@@ -113,3 +112,35 @@ async function payOut(mint, btn) {
   } catch (e) { const s = String((e && e.message) || e); note(/reject|denied|cancel/i.test(s) ? "Cancelled in your wallet." : s.slice(0, 140), 5000); btn.disabled = false; btn.textContent = "Pay out fees"; }
 }
 start();
+
+// ---------------- motion: the ticker, reveals, card tilt, the coin's window
+function paintTicker() {
+  const now = Date.now(), H = new Date().getUTCHours(), latest = coins.slice().sort((a, b) => (b.launchedAt || 0) - (a.launchedAt || 0)).slice(0, 12);
+  const head = `<span><i class="dot"></i><b>HOUR ${String(H).padStart(2, "0")}:00</b> ${slot && slot.free ? "OPEN — DROP NOW" : slot && slot.taken && slot.taken.state === "held" ? "HELD" : "DROPPED"}</span>`;
+  const items = latest.map((c) => `<span><b>$${esc(c.symbol)}</b><i>${usd(c.mcapUsd)}</i>${c.graduated ? "MADE" : `curve ${(c.progress || 0).toFixed(0)}%`}</span>`);
+  const one = [head, ...(items.length ? items : ["<span>THE CITY IS WAITING FOR ITS FIRST DROP</span>"]), `<span><b>${CFG.split.creator / 100} / ${CFG.split.vault / 100} / ${CFG.split.buyer / 100}</b> FEES LOCKED ON CHAIN</span>`].join("");
+  const el = $("ticker"), html = one + one; if (el.innerHTML !== html) el.innerHTML = html;
+}
+const io = "IntersectionObserver" in window ? new IntersectionObserver((es) => es.forEach((e) => { if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }), { threshold: 0.12 }) : null;
+document.querySelectorAll("[data-rv]").forEach((el) => (io ? io.observe(el) : el.classList.add("in")));
+const fine = matchMedia("(hover: hover) and (pointer: fine)").matches && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+$("grid").addEventListener("pointermove", (e) => { if (!fine) return; const c = e.target.closest(".cc"); if (!c) return; const r = c.getBoundingClientRect(), x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+  c.style.transform = `perspective(700px) rotateY(${(x - 0.5) * 12}deg) rotateX(${(0.5 - y) * 10}deg) translateY(-4px)`; c.style.setProperty("--gx", x * 100 + "%"); c.style.setProperty("--gy", y * 100 + "%"); });
+$("grid").addEventListener("pointerout", (e) => { const c = e.target.closest(".cc"); if (c && !c.contains(e.relatedTarget)) c.style.transform = ""; });
+$("grid").addEventListener("click", (e) => { if (e.target.closest("a")) return; const c = e.target.closest(".cc"); if (c) openCoin(c.dataset.m); });
+function openCoin(mint) {
+  const c = coins.find((x) => x.mint === mint); if (!c) return;
+  const el = $("cmodal"), share = encodeURIComponent(`$${c.symbol} — dropped in the city at ${c.hour ? c.hour.slice(11, 13) + ":00" : "its hour"}.\n`), link = encodeURIComponent(`${location.origin}/city?coin=${c.mint}`);
+  el.innerHTML = `<div class="cm-card"><button type="button" class="wm-x" aria-label="Close">×</button><div class="poster"><span class="tag">WANTED</span>${pic(c)}</div><div class="cm-in">
+    <h2>${esc(c.name)}</h2><span class="sym" style="color:var(--hot);font:700 13px var(--mono)">$${esc(c.symbol)}</span> <span class="stars">${stars(c)}</span>
+    <p class="addr">${esc(c.mint)}</p>
+    <div class="kv"><div><b>${usd(c.mcapUsd)}</b><small>Market cap</small></div><div><b>${c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>Price</small></div><div><b>${c.hour ? c.hour.slice(5, 10).replace("-", "/") + " " + c.hour.slice(11, 13) + ":00" : "–"}</b><small>Dropped (UTC)</small></div><div><b>${c.creator ? esc(short(c.creator)) : "–"}</b><small>Sponsor</small></div></div>
+    <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? "MADE — graduated to PumpSwap" : `bonding curve ${(c.progress || 0).toFixed(1)}%`}</small>
+    ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}
+    <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade on pump.fun</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">See its tower</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">Share on X</a><button type="button" data-copy>Copy address</button></div>
+    ${[c.twitter, c.telegram, c.website].filter(Boolean).length ? `<p style="margin:12px 0 0;font-size:13px">${[["X", c.twitter], ["Telegram", c.telegram], ["Website", c.website]].filter((x) => x[1]).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n} ↗</a>`).join(" · ")}</p>` : ""}</div></div>`;
+  el.hidden = false;
+  const close = () => { el.hidden = true; document.removeEventListener("keydown", k); }, k = (e) => { if (e.key === "Escape") close(); };
+  document.addEventListener("keydown", k);
+  el.onclick = async (e) => { if (e.target === el || e.target.closest(".wm-x")) return close(); if (e.target.closest("[data-copy]")) { try { await navigator.clipboard.writeText(c.mint); note("Address copied"); } catch {} } };
+}

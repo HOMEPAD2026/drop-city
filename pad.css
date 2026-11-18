@@ -102,3 +102,35 @@ button { font: inherit; color: inherit; cursor: pointer; }
   .card { left: 8px; right: 8px; top: auto; bottom: calc(42dvh + 16px); width: auto; max-height: 40dvh; overflow-y: auto; }
   .form { grid-template-columns: 1fr; }
 }
+
+/* shared: the wallet window, the first-buy chips, the launch burst */
+.wmodal { position: fixed; inset: 0; z-index: 30; display: grid; place-items: center; padding: 16px; background: rgba(8, 3, 16, 0.6); backdrop-filter: blur(6px); }
+/* the wallet window */
+.wmodal { opacity: 0; transition: opacity 0.18s; } .wmodal.in { opacity: 1; }
+.wm-card { position: relative; width: min(400px, 100%); border-radius: 22px; padding: 22px; background: linear-gradient(180deg, #221038, #170b27); border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); transform: translateY(12px) scale(0.97); transition: transform 0.22s cubic-bezier(0.2, 1.3, 0.4, 1); }
+.wmodal.in .wm-card { transform: none; }
+.wm-card h3 { margin: 0 0 4px; font: 400 28px var(--head); font-style: italic; } .wm-sub { color: var(--dim); margin: 0 0 14px; font-size: 13px; } .wm-fine { color: var(--dim); font-size: 11px; margin: 14px 0 0; }
+.wm-x { position: absolute; right: 12px; top: 10px; border: 0; background: none; font-size: 24px; color: var(--dim); }
+.wm-list { display: grid; gap: 8px; }
+.wm-row { width: 100%; display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.1); background: rgba(255, 255, 255, 0.04); color: var(--ink); text-decoration: none; text-align: left; margin-bottom: 8px; transition: border-color 0.15s, transform 0.15s, background 0.15s; }
+.wm-row:hover { border-color: var(--hot); background: rgba(255, 43, 214, 0.08); transform: translateX(3px); }
+.wm-row img, .wm-row span { width: 40px; height: 40px; border-radius: 11px; display: grid; place-items: center; font: 800 18px var(--body); color: #1a0d2c; }
+.wm-row b { font-weight: 800; } .wm-row i { font-style: normal; font: 600 11px var(--mono); color: var(--lime); }
+.wm-row.busy { opacity: 0.7; pointer-events: none; }
+.wm-acct { display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); }
+.wm-acct span, .wm-acct img { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font: 800 18px var(--body); color: #1a0d2c; }
+.wm-acct b { font: 700 16px var(--mono); display: block; } .wm-acct small { color: var(--dim); }
+.wm-acts { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.wm-acts button, .wm-acts a { padding: 11px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.05); color: var(--ink); text-align: center; text-decoration: none; font: 700 13px var(--body); }
+.wm-acts .danger { grid-column: 1 / -1; color: var(--red); }
+#wallet.on { border-color: rgba(124, 255, 107, 0.4); } .wdot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--lime); margin-right: 8px; box-shadow: 0 0 8px var(--lime); }
+/* the first buy */
+.buyset .lbl { display: block; font: 700 11px var(--body); color: var(--dim); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+.chips.big { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; }
+.chips.big button { border-radius: 12px; padding: 8px 4px; display: grid; gap: 2px; text-align: center; }
+.chips.big b { font: 400 18px var(--head); } .chips.big small { font: 500 10px var(--mono); opacity: 0.8; }
+.custom { display: flex !important; align-items: center; gap: 10px; margin-top: 8px; text-transform: none !important; } .custom input { max-width: 140px; }
+.buyline { display: block; margin-top: 6px; color: var(--gold); font: 600 12px var(--mono); }
+.burst { position: absolute; inset: 0; pointer-events: none; }
+.sheet > div { position: relative; }
+@media (max-width: 560px) { .chips.big { grid-template-columns: repeat(3, 1fr); } }

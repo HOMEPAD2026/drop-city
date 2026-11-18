@@ -2,6 +2,13 @@
 // host the details, launch on pump.fun from the sponsor's own wallet with the fee split locked in the same signing,
 // register the coin. Used by the website and the city. Nothing custodial: the server hosts the details and checks the chain.
 import { $, esc, hh, sleep, post, b58, note, reserveMessage, DEMO, sol, kit, conn } from "/common.js";
+import { openWallet } from "/wallet.js";
+
+// the first buy as a share of the supply, bought in the launch transaction itself. On a fresh pump.fun curve
+// (30 SOL × 1.073B tokens virtual) t tokens cost x0·t / (y0 − t) SOL, plus the trade fee (about 1.25 %).
+export const FIRST_BUY = [0, 1, 2, 3, 4, 5];
+export const solForPct = (pct) => { const y0 = 1_073_000_000, x0 = 30, t = (pct / 100) * 1e9; return t <= 0 ? 0 : Math.ceil(((x0 * t) / (y0 - t)) * 1.0125 * 1e4) / 1e4; };
+export const pctForSol = (sol) => { const y0 = 1_073_000_000, x0 = 30, x = sol / 1.0125; return sol > 0 ? ((y0 * x) / (x0 + x) / 1e9) * 100 : 0; };
 
 // ---------------- the address: N workers grind until one ends with the suffix
 export function grind(suffix, onTries) {
@@ -33,7 +40,9 @@ export function openDrop(o = {}) {
       <label>X link<input data-f="twitter" placeholder="https://x.com/…"></label>
       <label>Telegram<input data-f="telegram" placeholder="https://t.me/…"></label>
       <label class="w">Website<input data-f="website" placeholder="https://…"></label>
-      <label class="w">Your first buy<span class="chips" data-f="devs">${[0, 0.1, 0.5, 1].map((d) => `<button type="button" data-d="${d}" class="${d ? "" : "on"}">${d ? d + " SOL" : "None"}</button>`).join("")}</span></label>
+      <div class="w buyset"><span class="lbl">Your first buy — set at launch, in the same signing</span>
+        <div class="chips big" data-f="devs">${FIRST_BUY.map((d) => `<button type="button" data-p="${d}" class="${d ? "" : "on"}">${d ? `<b>${d}%</b><small>≈ ${solForPct(d)} SOL</small>` : `<b>None</b><small>0 SOL</small>`}</button>`).join("")}</div>
+        <label class="custom">or exact SOL<input data-f="devsol" inputmode="decimal" placeholder="0.00"></label><small class="buyline" data-f="buyline">No first buy — the curve opens untouched.</small></div>
     </div>
     <div class="note"><b>Fees, locked on chain:</b> ${(CFG.split.creator / 100)}% you · ${(CFG.split.vault / 100)}% THE VAULT · ${(CFG.split.buyer / 100)}% buys $${esc(CFG.ticker)}.${CFG.suffix ? ` <b>Your coin's address will end in ${esc(CFG.suffix)}</b> — found in this browser, the key never leaves it.` : ""} No launch fee; about 0.03 SOL of network costs.</div>
     <ol class="steps" data-f="steps" hidden></ol><p class="err" data-f="err" hidden></p>
@@ -41,7 +50,9 @@ export function openDrop(o = {}) {
   const q = (k) => sh.querySelector(`[data-f="${k}"]`);
   const err = (s) => { q("err").hidden = !s; q("err").textContent = s || ""; };
   q("close").onclick = () => { try { grind.stop && grind.stop(); } catch {} sh.hidden = true; };
-  q("devs").onclick = (e) => { const b = e.target.closest("[data-d]"); if (!b) return; f.dev = Number(b.dataset.d); q("devs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); };
+  const buyline = () => { q("buyline").textContent = f.dev > 0 ? `You buy ≈ ${pctForSol(f.dev).toFixed(2)}% of the supply for ${f.dev} SOL the moment it launches — before anyone else.` : "No first buy — the curve opens untouched."; };
+  q("devs").onclick = (e) => { const b = e.target.closest("[data-p]"); if (!b) return; f.dev = solForPct(Number(b.dataset.p)); q("devsol").value = ""; q("devs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); buyline(); };
+  q("devsol").oninput = (e) => { const v = Math.max(0, Math.min(20, parseFloat(e.target.value) || 0)); f.dev = Math.round(v * 1e4) / 1e4; q("devs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", !f.dev && x.dataset.p === "0")); buyline(); };
   q("symbol").oninput = (e) => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); };
   q("file").onchange = async (e) => {
     const file = e.target.files && e.target.files[0]; if (!file) return;
@@ -66,7 +77,7 @@ export function openDrop(o = {}) {
     for (const k of ["twitter", "telegram", "website"]) if (F[k] && !/^https:\/\/\S+$/.test(F[k])) return err("Links must start with https://");
     if (!CFG.open && !DEMO) return err(CFG.why || "The city isn't open yet.");
     const S = await sol(); if (!S) return err("No Solana wallet found — open this page in Phantom or Solflare.");
-    if (!S.key) { try { await S.connect(0); } catch (x) { return err(String((x && x.message) || x)); } o.paintWallet && o.paintWallet(); if (!S.key) return err("Connect a wallet first."); }
+    if (!S.key) { await openWallet(); o.paintWallet && o.paintWallet(); if (!S.key) return err("Connect a wallet to drop."); }
     busy = true; err(""); q("go").disabled = true; q("steps").hidden = false;
     q("steps").innerHTML = STEPS.map(([k, t]) => `<li data-s="${k}"><i></i><span>${esc(t)}<small></small></span></li>`).join("");
     let cur = "find";
@@ -108,7 +119,9 @@ export function openDrop(o = {}) {
       cur = "list"; step("list", "doing");
       let listed = false; for (let i = 0; i < 6 && !listed; i++) { if (i) await sleep(2500 + i * 1000); const r = await post({ action: "register", mint: g.pub, sig: sig1 }); listed = r.ok; if (!r.ok && r.status !== 404) { step("list", "bad", esc(r.j.error || "")); break; } }
       if (listed) step("list", "ok");
-      q("go").outerHTML = `<a class="btn hot" href="https://pump.fun/coin/${esc(g.pub)}" target="_blank" rel="noopener">See it on pump.fun</a>`;
+      const tw = encodeURIComponent(`$${F.symbol} just dropped in the city — the ${hour.slice(11, 13)}:00 drop.\n`), link = encodeURIComponent(`${location.origin}/city?coin=${g.pub}`);
+      q("go").outerHTML = `<a class="btn ghost" href="https://x.com/intent/tweet?text=${tw}&url=${link}" target="_blank" rel="noopener">Share on X</a><a class="btn cy" href="/city?coin=${esc(g.pub)}">See its tower</a><a class="btn hot" href="https://pump.fun/coin/${esc(g.pub)}" target="_blank" rel="noopener">pump.fun ↗</a>`;
+      sh.querySelector(".sub").innerHTML = `<b style="color:var(--lime)">$${esc(F.symbol)} is live.</b> The ${hour.slice(11, 13)}:00 lot is yours.`; burst(sh.firstChild);
       note(`$${F.symbol} dropped — welcome to the city.`, 5000); o.onDone && o.onDone();
     } catch (x) {
       step(cur, "bad"); const s = String((x && x.message) || x); err(/reject|denied|cancel/i.test(s) ? "Cancelled in your wallet." : s.slice(0, 220));
@@ -129,3 +142,12 @@ async function send(c, signed, lastValid) {
   throw new Error("not confirmed yet — check Solscan");
 }
 
+
+/// a quick confetti burst over the window (one canvas, ~1.2 s); nothing with reduced motion
+export function burst(host) {
+  if (matchMedia("(prefers-reduced-motion: reduce)").matches || !host) return;
+  const c = document.createElement("canvas"), r = host.getBoundingClientRect(); c.width = r.width; c.height = r.height; c.className = "burst"; host.appendChild(c);
+  const x = c.getContext("2d"), P = Array.from({ length: 120 }, () => ({ x: r.width / 2, y: r.height * 0.3, vx: (Math.random() - 0.5) * 14, vy: -Math.random() * 12 - 3, c: ["#ff2bd6", "#22e6ff", "#ffb02e", "#7cff6b"][(Math.random() * 4) | 0], s: 3 + Math.random() * 5 }));
+  let t = 0; const step = () => { t++; x.clearRect(0, 0, c.width, c.height); for (const p of P) { p.vy += 0.35; p.x += p.vx; p.y += p.vy; x.fillStyle = p.c; x.fillRect(p.x, p.y, p.s, p.s * 0.6); } if (t < 75) requestAnimationFrame(step); else c.remove(); };
+  requestAnimationFrame(step);
+}
