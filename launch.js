@@ -74,6 +74,9 @@ export function openDrop(o = {}) {
     if (!CFG.open && !DEMO) return err(CFG.why || "The city isn't open yet.");
     const S = await sol(); if (!S) return err("No Solana wallet found — open this page in Phantom or Solflare.");
     if (!S.key) { await openWallet(); o.paintWallet && o.paintWallet(); if (!S.key) return err("Connect a wallet to launch."); }
+    // pump.fun's fee split can't hold one wallet twice: the vault, the buyer and the agent can't be a coin's creator
+    const role = S.key === CFG.vault ? "THE VAULT's wallet" : S.key === CFG.buyer ? `the wallet that buys $${CFG.ticker}` : S.key === CFG.agent ? "the agent's wallet" : "";
+    if (role) return err(`This is ${role} — it already gets a share of every coin, so it can't be the creator too. Switch to another wallet (a new account in Phantom works) and launch from there.`);
     busy = true; err(""); q("go").disabled = true; q("steps").hidden = false;
     q("steps").innerHTML = STEPS.map(([k, t]) => `<li data-s="${k}"><i></i><span>${esc(t)}<small></small></span></li>`).join("");
     let cur = "find";
@@ -96,7 +99,7 @@ export function openDrop(o = {}) {
       const [global, feeConfig, bh, bal] = await Promise.all([sdk.fetchGlobal(), sdk.fetchFeeConfig().catch(() => null), c.getLatestBlockhash("confirmed"), c.getBalance(me)]);
       if (global.createV2Enabled === false) throw new Error("pump.fun has paused new coins for a moment — try again later.");
       if (bal / 1e9 < 0.03 + f.dev) throw new Error(`Not enough SOL — about ${(0.03 + f.dev).toFixed(2)} SOL is needed.`);
-      const b = await K.launchTxs({ global, feeConfig, creator: me, mint: mint.publicKey, name: F.name, symbol: F.symbol, uri: md.j.uri, devBuyLamports: Math.round(f.dev * 1e9), treasury: V, shares, blockhash: bh.blockhash });
+      const b = await K.launchTxs({ global, feeConfig, creator: me, mint: mint.publicKey, name: F.name, symbol: F.symbol, uri: md.j.uri, devBuyLamports: Math.round(f.dev * 1e9), treasury: V, shares, blockhash: bh.blockhash, slipBps: 300 });
       b.txs[0].partialSign(mint);
       const signed = typeof S.p.signAllTransactions === "function" ? await S.p.signAllTransactions(b.txs) : await Promise.all(b.txs.map((t) => S.p.signTransaction(t)));
       step("sign", "ok");
@@ -113,10 +116,25 @@ export function openDrop(o = {}) {
       sh.querySelector(".sub").innerHTML = `<b style="color:var(--lime)">$${esc(F.symbol)} is live.</b> Its tower is going up in the city.`; burst(sh.firstChild);
       note(`$${F.symbol} launched — welcome to the city.`, 5000); o.onDone && o.onDone();
     } catch (x) {
-      step(cur, "bad"); const s = String((x && x.message) || x); err(/reject|denied|cancel/i.test(s) ? "Cancelled in your wallet." : s.slice(0, 220));
+      step(cur, "bad"); err(why(x));
       busy = false; q("go").disabled = false;
     }
   };
+}
+// pump.fun's errors in words (the full logs go to the console)
+const PUMP_ERR = { TooMuchSolRequired: "The first buy's price moved — try again, or a little less SOL.", NotEnoughTokensToBuy: "The first buy is too big for a new coin.", NameTooLong: "The name is too long (32 letters at most).", SymbolTooLong: "The ticker is too long (13 letters at most).", CreateV2Disabled: "pump.fun has paused new coins for a moment — try again later.", 6077: "pump.fun isn't taking custom creator fees right now.", 6082: "pump.fun no longer creates cashback coins." };
+export function why(e) {
+  if (!e) return "";
+  const m = String((e && e.message) || e), logs = ((e && (e.logs || e.transactionLogs)) || []).join("\n");
+  if (e.code === 4001 || /reject|denied|cancel/i.test(m)) return "Cancelled in your wallet.";
+  if (logs) console.warn("launch logs:\n" + logs);
+  const am = /Error Code: (\w+)\. Error Number: (\d+)\. Error Message: ([^\n.]+)/.exec(logs + "\n" + m);
+  if (am) return PUMP_ERR[am[1]] || PUMP_ERR[am[2]] || am[3];
+  if (/insufficient lamports|insufficient funds|Attempt to debit an account but found no record/i.test(logs + m)) return "Not enough SOL in this wallet for the launch, the first buy and the network fee.";
+  const cu = /"Custom":(\d+)|custom program error: 0x([0-9a-f]+)/i.exec(logs + "\n" + m);
+  if (cu) { const n = cu[1] ? Number(cu[1]) : parseInt(cu[2], 16); if (PUMP_ERR[n]) return PUMP_ERR[n]; if (n === 1) return "Not enough SOL in this wallet for the launch, the first buy and the network fee."; return `pump.fun refused it (error ${n}).`; }
+  if (/block ?height exceeded|blockhash not found|expired/i.test(m)) return "The transaction expired before it landed — try again.";
+  return m.slice(0, 220);
 }
 async function send(c, signed, lastValid) {
   const by = typeof signed.serialize === "function" ? signed.serialize() : signed;
