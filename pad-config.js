@@ -22,6 +22,6 @@ export const PAD = {
   // Take-Two Interactive's tokenized share by Backpack Securities (Token-2022, 6 decimals) — on pump.fun's QuoteControl
   // list (checked with /api/pad?quotes). dev = the first-buy choices, in the token; live = shown in the launch form (off until a launch simulates clean)
   quotes: [
-    { id: "TTWO", name: "Take-Two (TTWO)", mint: "TTWofwAge91oFhZs7kpQdyrVRkmevgM88xijGvQFbKo", program: "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", decimals: 6, dev: [0.01, 0.05, 0.1], live: false },
+    { id: "TTWO", name: "Take-Two (TTWO)", mint: "TTWofwAge91oFhZs7kpQdyrVRkmevgM88xijGvQFbKo", program: "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb", decimals: 6, dev: [0.01, 0.05, 0.1], live: true },
   ], // the agent drops one coin at the top of every UTC hour; everyone else launches any time, no limit
 };
