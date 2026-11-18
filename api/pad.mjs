@@ -41,9 +41,21 @@ async function simSplit(mint, ch) {
   if (sw) { const both = new tx.constructor(); both.feePayer = creator; both.recentBlockhash = bh.blockhash; both.add(...sw.instructions.slice(2), ...tx.instructions); try { return { as: creator.toBase58(), withSweep: sw.instructions.length - 2, ...(await K.simulate(conn, both)) }; } catch (e) { /* too big for one: the split alone */ } }
   return { as: creator.toBase58(), withSweep: 0, ...(await K.simulate(conn, tx)) };
 }
+/// the quote mints pump.fun takes for a new coin (besides SOL): Global's whitelist and the QuoteControl list, with names
+let QUOTES = null;
+async function quotes() {
+  if (QUOTES && Date.now() - QUOTES.at < 600e3) return QUOTES.v;
+  const K = await import("../lib/_agentkit.mjs"), conn = new K.Connection(process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com", "confirmed"), sdk = new K.OnlinePumpSdk(conn);
+  const g = await sdk.fetchGlobal(), qc = await sdk.fetchQuoteControl().catch(() => null);
+  const list = [...(g.whitelistedQuoteMints || []).map((m) => ({ mint: String(m), via: "global" })), ...((qc && qc.mints) || []).map((m) => ({ mint: String(m.mint), via: "control", vqr: String(m.initialVirtualQuoteReserves) }))].filter((x) => x.mint !== "11111111111111111111111111111111");
+  for (const x of list) try { const a = await conn.getParsedAccountInfo(new K.PublicKey(x.mint)); const d = a.value && a.value.data && a.value.data.parsed && a.value.data.parsed.info; x.program = a.value && String(a.value.owner); if (d) { x.decimals = d.decimals; const md = (d.extensions || []).find((e) => e.extension === "tokenMetadata"); if (md) { x.name = md.state.name; x.symbol = md.state.symbol; } } } catch {}
+  const v = { at: Date.now(), list, createV2: g.createV2Enabled ?? null };
+  QUOTES = { at: Date.now(), v }; return v;
+}
 export async function GET(req) {
   const q = new URL(req.url).searchParams;
   if (q.has("cfg")) { let lut = null; if (blobEnabled()) try { const d = await pad().store.get("agent/lut.json"); lut = d && d.address; } catch {} return json(200, { ...publicCfg(), lut }, "public, max-age=30"); }
+  if (q.has("quotes")) { try { return json(200, await quotes(), "public, max-age=300, s-maxage=600"); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 200) }); } }
   if (!blobEnabled()) return json(503, { error: "the store isn't connected yet" });
   try {
     if (q.has("list")) return json(200, await pad().list(), "public, max-age=10, s-maxage=20");
