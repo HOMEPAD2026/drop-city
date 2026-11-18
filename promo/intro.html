@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1080">
+<title>Intro — motion graphic</title>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@500;700;800&family=JetBrains+Mono:wght@600;700&display=swap" rel="stylesheet">
+<style>
+/* intro.html — a 30 s motion graphic, drawn from one function of time (render(t)) so it can be recorded frame by frame.
+   ?name=  the wordmark   ?suffix=  the CA's ending (empty → three glowing marks)   ?url=  the end card's address   ?play=1 plays in real time */
+:root { --hot: #ff2e88; --hot2: #ff6fae; --ink: #f6f2f4; --dim: #9a9498; }
+* { box-sizing: border-box; margin: 0; }
+html, body { width: 1080px; height: 1080px; background: #000; overflow: hidden; }
+#stage { position: relative; width: 1080px; height: 1080px; overflow: hidden; background: radial-gradient(900px 700px at 50% 40%, #1a0610, #000 70%); font-family: Inter, sans-serif; color: var(--ink); }
+.s { position: absolute; inset: 0; opacity: 0; display: grid; place-items: center; }
+.big { font: 400 150px/0.9 Anton, Impact, sans-serif; font-style: italic; letter-spacing: 0.01em; text-align: center; }
+.mid { font: 400 76px/0.95 Anton, Impact, sans-serif; font-style: italic; text-align: center; }
+.k { font: 700 30px "JetBrains Mono", monospace; letter-spacing: 0.32em; color: var(--hot); text-align: center; }
+.grad { background: linear-gradient(92deg, #fff 0%, #ffd0e4 40%, var(--hot) 80%); -webkit-background-clip: text; background-clip: text; color: transparent; padding: 0 0.15em; }
+.glow { filter: drop-shadow(0 0 22px rgba(255, 46, 136, 0.6)); }
+canvas { position: absolute; inset: 0; }
+#scan { position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.025) 0 2px, transparent 2px 4px); mix-blend-mode: overlay; }
+#vig { position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 220px rgba(0, 0, 0, 0.9); }
+.coin { position: absolute; width: 240px; height: 240px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 60px rgba(255, 46, 136, 0.55), 0 0 0 4px rgba(255, 46, 136, 0.8); }
+.coin img { width: 100%; height: 100%; object-fit: cover; }
+.ring { position: absolute; width: 560px; height: 560px; left: 260px; top: 230px; }
+.digits { position: absolute; width: 100%; top: 440px; text-align: center; font: 400 120px Anton, sans-serif; color: #fff; }
+.card { width: 560px; padding: 28px; border-radius: 28px; background: linear-gradient(180deg, #161518, #0b0b0c); border: 2px solid rgba(255, 46, 136, 0.5); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.7), 0 0 60px rgba(255, 46, 136, 0.2); }
+.field { margin: 14px 0; padding: 18px 20px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); font: 600 30px Inter; min-height: 76px; }
+.field small { display: block; font: 700 14px "JetBrains Mono"; letter-spacing: 0.2em; color: var(--dim); margin-bottom: 6px; }
+.btn { margin-top: 18px; padding: 22px; border-radius: 999px; text-align: center; font: 800 28px Inter; letter-spacing: 0.1em; color: #fff; background: linear-gradient(180deg, #ff4f9c, #ff2e88 45%, #c8125f); box-shadow: 0 12px 40px rgba(255, 46, 136, 0.5); }
+.addr { font: 700 40px "JetBrains Mono", monospace; letter-spacing: 0.02em; color: #5d5559; padding: 26px 30px; border-radius: 18px; border: 2px solid rgba(255, 46, 136, 0.45); background: #050505; white-space: nowrap; }
+.addr b { color: #fff; text-shadow: 0 0 18px #fff, 0 0 40px var(--hot); }
+.bar { display: flex; width: 960px; height: 110px; border-radius: 22px; overflow: hidden; border: 2px solid rgba(255, 255, 255, 0.12); }
+.bar div { display: grid; place-items: center; font: 400 44px Anton; color: #070708; overflow: hidden; white-space: nowrap; }
+.legend { display: flex; gap: 40px; justify-content: center; margin-top: 30px; font: 700 32px Inter; color: var(--ink); }
+.legend i { display: inline-block; width: 18px; height: 18px; border-radius: 5px; margin-right: 10px; vertical-align: -1px; }
+.chips { display: flex; gap: 18px; justify-content: center; }
+.chip { padding: 16px 24px; border-radius: 999px; border: 2px solid rgba(255, 46, 136, 0.6); background: rgba(0, 0, 0, 0.6); font: 800 24px Inter; letter-spacing: 0.12em; }
+#city { position: absolute; inset: 0; background: url("/images/hero-1600.webp") center / cover; }
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="fx" width="1080" height="1080"></canvas>
+
+  <div class="s" id="s1"><div style="text-align:center"><div class="k" id="s1k">A LAUNCHPAD THAT'S A CITY</div><div class="big grad glow" id="s1n" style="margin-top:22px">DROP CITY</div><div id="s1line" style="height:6px;margin:30px auto 0;background:linear-gradient(90deg,transparent,var(--hot),transparent)"></div></div></div>
+
+  <div class="s" id="s2"><svg class="ring" viewBox="0 0 100 100"><circle cx="50" cy="50" r="46" fill="none" stroke="rgba(255,255,255,.08)" stroke-width="3"/><circle id="s2r" cx="50" cy="50" r="46" fill="none" stroke="#ff2e88" stroke-width="3.2" stroke-linecap="round" pathLength="100" stroke-dasharray="100" transform="rotate(-90 50 50)" style="filter:drop-shadow(0 0 3px #ff2e88)"/></svg>
+    <div class="digits" id="s2d">00:03</div><div class="k" style="position:absolute;top:150px;width:100%" id="s2k">THE NEXT DROP IN</div>
+    <div class="coin" id="s2c" style="left:420px;top:300px"><img src="/images/agent/fox-1.webp" alt=""></div>
+    <div style="position:absolute;bottom:120px;width:100%;text-align:center" id="s2t"><div class="mid">THE AGENT DROPS A COIN</div><div class="k" style="margin-top:18px">ON THE HOUR · EVERY HOUR</div></div></div>
+
+  <div class="s" id="s3"><div id="s3g"></div><div style="position:absolute;bottom:110px;width:100%;text-align:center"><div class="big grad glow" id="s3n">24</div><div class="k" style="margin-top:10px">DROPS A DAY · ON CLOCK PLAZA</div></div></div>
+
+  <div class="s" id="s4"><div style="text-align:center"><div class="mid" id="s4h" style="margin-bottom:34px">LAUNCH <span class="grad">YOURS</span></div>
+    <div class="card" id="s4c" style="text-align:left"><div style="display:flex;gap:18px;align-items:center"><div class="coin" style="position:relative;width:96px;height:96px;flex:none;box-shadow:0 0 30px rgba(255,46,136,.5),0 0 0 3px rgba(255,46,136,.8)"><img src="/images/agent/owl-1.webp" alt=""></div><div><div class="k" style="text-align:left;letter-spacing:.25em">NEW COIN</div><div style="font:400 40px Anton" id="s4nm">&nbsp;</div></div></div>
+      <div class="field"><small>TICKER</small><span id="s4tk"></span></div><div class="btn" id="s4b">LAUNCH ON PUMP.FUN</div></div>
+    <div class="k" style="margin-top:34px" id="s4k">ANY TIME · NO LIMIT · YOUR OWN WALLET</div></div></div>
+
+  <div class="s" id="s5"><div style="text-align:center"><div class="k">EVERY COIN'S CONTRACT ADDRESS</div><div class="mid" style="margin:22px 0 40px" id="s5h">ENDS WITH <span class="grad">THE CITY'S MARK</span></div><div class="addr" id="s5a"></div></div></div>
+
+  <div class="s" id="s6"><div style="text-align:center"><div class="mid" style="margin-bottom:40px">FEES <span class="grad">SPLIT ON CHAIN</span></div>
+    <div class="bar"><div id="b1" style="background:#ff2e88">60%</div><div id="b2" style="background:#ff8cc0">30%</div><div id="b3" style="background:#f6f2f4">10%</div></div>
+    <div class="legend"><span><i style="background:#ff2e88"></i>Creator</span><span><i style="background:#ff8cc0"></i>The Vault</span><span><i style="background:#f6f2f4"></i>Buys the main coin</span></div>
+    <div class="k" style="margin-top:40px" id="s6k">LOCKED FOREVER · AT LAUNCH</div></div></div>
+
+  <div class="s" id="s7"><div id="city"></div><div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.2),rgba(0,0,0,.85))"></div>
+    <div style="position:absolute;bottom:130px;width:100%;text-align:center"><div class="big grad glow" style="font-size:118px" id="s7h">EVERY COIN<br>IS A TOWER</div><div class="chips" style="margin-top:34px" id="s7c"><span class="chip">VOTE THE NEXT DROP</span><span class="chip">LIVE TRADES</span><span class="chip">CHECK A CA</span></div></div></div>
+
+  <div class="s" id="s8"><div style="text-align:center"><div class="k">ONE DROP. EVERY HOUR.</div><div class="big grad glow" id="s8n" style="margin:24px 0">DROP CITY</div><div class="k" style="color:#fff;letter-spacing:.25em">ON PUMP.FUN · SOLANA</div><div id="s8u" style="margin-top:40px;font:800 34px Inter;color:var(--hot2)"></div></div></div>
+
+  <div id="scan"></div><div id="vig"></div>
+</div>
+<script>
+const P = new URLSearchParams(location.search), NAME = (P.get("name") || "DROP CITY").toUpperCase(), SUFFIX = P.get("suffix") || "", URL_ = P.get("url") || "";
+document.getElementById("s1n").textContent = NAME; document.getElementById("s8n").textContent = NAME; document.getElementById("s8u").textContent = URL_;
+if (SUFFIX) document.getElementById("s5h").innerHTML = `ENDS IN <span class="grad">${SUFFIX.replace(/[<>&]/g, "")}</span>`;
+const $ = (id) => document.getElementById(id);
+const cl = (x) => Math.max(0, Math.min(1, x)), lerp = (a, b, k) => a + (b - a) * k;
+const eo = (k) => 1 - Math.pow(1 - cl(k), 3), eb = (k) => { k = cl(k); const c = 1.7; return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2); };
+const win = (t, a, b, fade = 0.35) => cl((t - a) / fade) * cl((b - t) / fade); // a scene's opacity
+let seed = 7; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
+const ADDR = Array.from({ length: 41 }, () => B58[Math.floor(rnd() * 58)]).join("");
+const MASCOTS = ["owl-1", "shark-1", "cat-1", "fox-1", "croc-2", "raccoon-1", "flamingo-1", "boss-1", "racer-1", "gull-1", "rat-1", "driver-1"];
+const g3 = $("s3g"); MASCOTS.forEach((m, i) => { const d = document.createElement("div"); d.className = "coin"; d.style.width = d.style.height = "190px"; d.innerHTML = `<img src="/images/agent/${m}.webp" alt="">`; g3.appendChild(d); });
+// sparks (deterministic)
+const fx = $("fx"), x = fx.getContext("2d");
+const SP = Array.from({ length: 140 }, () => ({ a: rnd() * 6.283, v: 200 + rnd() * 520, s: 2 + rnd() * 5, c: ["#ff2e88", "#ffffff", "#ff8cc0"][Math.floor(rnd() * 3)] }));
+const DUST = Array.from({ length: 70 }, () => ({ x: rnd() * 1080, y: rnd() * 1080, r: 0.6 + rnd() * 2.2, v: 8 + rnd() * 26, p: rnd() * 6 }));
+function burst(t0, t, cx, cy) { const k = t - t0; if (k < 0 || k > 1.6) return; for (const p of SP) { const d = p.v * k - 160 * k * k * 0.3; x.globalAlpha = Math.max(0, 1 - k / 1.6); x.fillStyle = p.c; x.fillRect(cx + Math.cos(p.a) * d, cy + Math.sin(p.a) * d + 120 * k * k, p.s, p.s); } x.globalAlpha = 1; }
+
+function render(t) {
+  x.clearRect(0, 0, 1080, 1080);
+  for (const d of DUST) { x.globalAlpha = 0.25 + 0.25 * Math.sin(t * 2 + d.p); x.fillStyle = "#ff6fae"; x.beginPath(); x.arc(d.x, (d.y - d.v * t + 1080 * 4) % 1080, d.r, 0, 6.283); x.fill(); } x.globalAlpha = 1;
+  // 1 · 0–3.2: the wordmark slams in
+  { const o = win(t, 0, 3.2); $("s1").style.opacity = o; const k = eb((t - 0.35) / 0.55);
+    const flick = t < 0.9 ? (Math.sin(t * 90) > 0.2 ? 1 : 0.25) : 1;
+    $("s1n").style.transform = `scale(${lerp(2.6, 1, k)}) skewX(-6deg)`; $("s1n").style.opacity = cl((t - 0.35) / 0.2) * flick;
+    const gl = (1 - cl((t - 0.35) / 0.5)) * 14; $("s1n").style.filter = gl > 0.3 ? `drop-shadow(${gl}px 0 0 rgba(0,255,255,.55)) drop-shadow(${-gl}px 0 0 rgba(255,46,136,.8))` : "drop-shadow(0 0 22px rgba(255,46,136,.6))";
+    $("s1k").style.opacity = cl((t - 1.1) / 0.4); $("s1k").style.letterSpacing = lerp(0.9, 0.4, eo((t - 1.1) / 0.8)) + "em";
+    $("s1line").style.width = eo((t - 0.9) / 0.9) * 760 + "px"; }
+  // 2 · 3.2–8.4: the clock runs out, a coin falls, sparks
+  { const o = win(t, 3.2, 8.4); $("s2").style.opacity = o; const u = t - 3.2;
+    const left = Math.max(0, 3 - u * 1.2); $("s2d").textContent = "00:0" + Math.ceil(left); $("s2d").style.opacity = cl((2.6 - u) / 0.2);
+    $("s2r").style.strokeDashoffset = String(lerp(30, 0, cl(u / 2.5))); $("s2k").style.opacity = cl((2.6 - u) / 0.2);
+    const fall = eb((u - 2.5) / 0.7); $("s2c").style.transform = `translateY(${lerp(-760, 0, fall)}px) rotate(${lerp(-40, 0, fall)}deg) scale(${u > 3.2 ? 1 + Math.sin((u - 3.2) * 3) * 0.02 : 1})`;
+    $("s2c").style.opacity = u > 2.5 ? 1 : 0; $("s2t").style.opacity = cl((u - 3.2) / 0.4); $("s2t").style.transform = `translateY(${lerp(30, 0, eo((u - 3.2) / 0.5))}px)`;
+    if (o > 0) burst(3.2 + 3.15, t, 540, 420); }
+  // 3 · 8.4–12.4: twelve drops fly into a grid, the count rolls to 24
+  { const o = win(t, 8.4, 12.4); $("s3").style.opacity = o; const u = t - 8.4;
+    [...g3.children].forEach((c, i) => { const col = i % 4, row = Math.floor(i / 4), k = eb((u - i * 0.09) / 0.6), tx = 120 + col * 220, ty = 70 + row * 215;
+      const fromA = (i * 2.4) % 6.283; c.style.left = lerp(540 - 95 + Math.cos(fromA) * 900, tx, k) + "px"; c.style.top = lerp(380 + Math.sin(fromA) * 900, ty, k) + "px"; c.style.transform = `rotate(${lerp(90, 0, k)}deg)`; });
+    $("s3n").textContent = String(Math.max(1, Math.round(24 * eo((u - 0.6) / 1.8)))); }
+  // 4 · 12.4–16.6: a launch, typed, then pressed
+  { const o = win(t, 12.4, 16.6); $("s4").style.opacity = o; const u = t - 12.4, nm = "Neon Owl", tk = "OWL";
+    $("s4nm").textContent = nm.slice(0, Math.floor(cl((u - 0.5) / 0.9) * nm.length)) || " "; $("s4tk").textContent = tk.slice(0, Math.floor(cl((u - 1.5) / 0.4) * tk.length));
+    const press = u > 2.3 && u < 2.55; $("s4b").style.transform = `scale(${press ? 0.94 : 1})`; $("s4b").style.filter = u > 2.55 ? "brightness(1.25)" : "none";
+    $("s4b").textContent = u > 2.6 ? "LIVE ON PUMP.FUN ✓" : "LAUNCH ON PUMP.FUN";
+    $("s4c").style.transform = `translateY(${lerp(80, 0, eo(u / 0.6))}px) rotate(${lerp(-4, 0, eo(u / 0.6))}deg)`; $("s4k").style.opacity = cl((u - 2.7) / 0.4);
+    if (o > 0) burst(12.4 + 2.6, t, 540, 640); }
+  // 5 · 16.6–20.6: the address spins like a slot machine, then its ending locks
+  { const o = win(t, 16.6, 20.6); $("s5").style.opacity = o; const u = t - 16.6, n = SUFFIX.length || 3, lock = cl((u - 1.6) / 0.9);
+    const body = u < 1.6 ? Array.from({ length: 23 - n }, (_, i) => B58[(Math.floor(u * 40) * 7 + i * 13) % 58]).join("") : ADDR.slice(0, 23 - n);
+    const tail = Array.from({ length: n }, (_, i) => (lock * n > i ? (SUFFIX ? SUFFIX[i] : "■") : B58[(Math.floor(u * 40) + i * 17) % 58])).join("");
+    $("s5a").innerHTML = body + "<b>" + tail.replace(/[<>&]/g, "") + "</b>"; $("s5a").style.transform = `scale(${1 + (lock >= 1 ? Math.max(0, 0.06 - (u - 2.5) * 0.12) : 0)})`; }
+  // 6 · 20.6–24.4: the split fills in
+  { const o = win(t, 20.6, 24.4); $("s6").style.opacity = o; const u = t - 20.6;
+    $("b1").style.flex = String(0.001 + 60 * eo((u - 0.3) / 0.6)); $("b2").style.flex = String(0.001 + 30 * eo((u - 0.7) / 0.6)); $("b3").style.flex = String(0.001 + 10 * eo((u - 1.1) / 0.6));
+    $("s6k").style.opacity = cl((u - 1.8) / 0.4); }
+  // 7 · 24.4–27.4: the city, slowly closer
+  { const o = win(t, 24.4, 27.4); $("s7").style.opacity = o; const u = t - 24.4; $("city").style.transform = `scale(${1.08 + u * 0.05}) translateX(${-u * 10}px)`;
+    $("s7h").style.transform = `translateY(${lerp(40, 0, eo(u / 0.6))}px)`; $("s7c").style.opacity = cl((u - 0.8) / 0.4); }
+  // 8 · 27.4–30: the end card
+  { const o = cl((t - 27.4) / 0.35); $("s8").style.opacity = o; const u = t - 27.4; $("s8n").style.transform = `scale(${lerp(1.4, 1, eb(u / 0.6))}) skewX(-6deg)`;
+    if (o > 0) burst(27.55, t, 540, 520); }
+}
+window.render = render;
+if (P.get("play") === "1") { const t0 = performance.now(); const loop = (n) => { render(((n - t0) / 1000) % 30); requestAnimationFrame(loop); }; requestAnimationFrame(loop); } else render(0);
+</script>
+</body>
+</html>
