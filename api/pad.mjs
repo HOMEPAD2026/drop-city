@@ -67,7 +67,7 @@ export async function GET(req) {
       return json(r.status, r.body, "no-store");
     }
     if (q.has("tick")) {
-      pad().store.put("beat/tick.json", { at: Date.now(), ua: String(req.headers.get("user-agent") || "").slice(0, 60) }, {}).catch(() => {});
+      await pad().store.put("beat/tick.json", { at: Date.now(), ua: String(req.headers.get("user-agent") || "").slice(0, 60) }, {}).catch(() => {});
       if (limited("tick:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" });
       return json(200, await agent().tick(), "no-store");
     }

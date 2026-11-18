@@ -14,7 +14,7 @@ let lastPoll = 0;
 
 export async function GET(req) {
   const q = new URL(req.url).searchParams;
-  if (q.has("poll") && blobEnabled()) blobStore().put("beat/poll.json", { at: Date.now(), ua: String(req.headers.get("user-agent") || "").slice(0, 60), bot: on() }, {}).catch(() => {});
+  if (q.has("poll") && blobEnabled()) await blobStore().put("beat/poll.json", { at: Date.now(), ua: String(req.headers.get("user-agent") || "").slice(0, 60), bot: on() }, {}).catch(() => {});
   if (!on()) return json(503, { error: "TG_BOT_TOKEN isn't set" });
   if (!blobEnabled()) return json(503, { error: "the store isn't connected" });
   try {
