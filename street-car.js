@@ -43,11 +43,11 @@ export function streetCar(A) {
     else { const p = n.p; parked.splice(parked.indexOf(p), 1); car.mesh = p.mesh; car.pos.copy(p.pos); car.yaw = p.yaw; car.ci = p.ci; car.slot = p.slot; }
     root.add(car.mesh); car.v = 0; S.inCar = true; S.carColor = car.ci; S.yaw = car.yaw; S.camYaw = car.yaw + Math.PI;
     savedDist = S.camDist; S.camDist = Math.max(S.camDist, PHONE ? 13 : 12);
-    S.hero.play("drive"); A.sound("drop"); document.body.classList.add("in-car");
+    S.hero.play("drive"); if (A.emit) A.emit("car-in"); document.body.classList.add("in-car");
   }
   function getOut() {
     if (!S.inCar) return;
-    S.inCar = false; document.body.classList.remove("in-car"); const side = new THREE.Vector3(Math.cos(car.yaw), 0, -Math.sin(car.yaw)).multiplyScalar(2.2);
+    S.inCar = false; document.body.classList.remove("in-car"); if (A.emit) A.emit("car-out"); const side = new THREE.Vector3(Math.cos(car.yaw), 0, -Math.sin(car.yaw)).multiplyScalar(2.2);
     S.pos.copy(car.pos).add(side); S.pos.y = 0; A.collide(S.pos);
     parked.push({ mesh: car.mesh, pos: car.pos.clone(), yaw: car.yaw, ci: car.ci, slot: car.slot, at: performance.now() });
     while (parked.length > 3) { const o = parked.shift(); root.remove(o.mesh); }
@@ -76,7 +76,7 @@ export function streetCar(A) {
     car.pos.x += Math.sin(car.yaw) * car.v * dt; car.pos.z += Math.cos(car.yaw) * car.v * dt;
     const want = car.pos.clone(); A.collide(car.pos, 1.6);
     const bumped = want.distanceTo(car.pos);
-    if (bumped > 0.05 && Math.abs(car.v) > 4) { A.shake(Math.min(0.6, Math.abs(car.v) / 40)); A.sound("sell"); car.v *= -0.25; if (navigator.vibrate) try { navigator.vibrate(25); } catch { /* */ } }
+    if (bumped > 0.05 && Math.abs(car.v) > 4) { A.shake(Math.min(0.6, Math.abs(car.v) / 40)); if (A.emit) A.emit("crash", { v: Math.abs(car.v) }); car.v *= -0.25; if (navigator.vibrate) try { navigator.vibrate(25); } catch { /* */ } }
     else if (bumped > 0.05) car.v *= 0.5;
     // rivals on the road
     for (const n of A.rivals) { if (n.st === "down") continue; const d = Math.hypot(n.pos.x - car.pos.x, n.pos.z - car.pos.z);

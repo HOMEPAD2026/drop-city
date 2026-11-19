@@ -43,7 +43,7 @@ export function streetJobs(A, { pid = () => "" } = {}) {
     if (!J.picks.includes(id) || J.done.includes(id)) return;
     J.prog[id] = Math.min(JOBS[id].n, (J.prog[id] || 0) + by);
     if (J.prog[id] >= JOBS[id].n) {
-      J.done.push(id); addScore(100); A.bigText("JOB DONE", "#3dffb5"); A.sound("win"); A.me.cash += 250; A.saveMe(A.me); A.paintHud();
+      J.done.push(id); addScore(100); if (A.emit) A.emit("job", { id }); else A.bigText("JOB DONE", "#3dffb5"); A.sound("win"); A.me.cash += 250; A.saveMe(A.me); A.paintHud();
       if (J.done.length === 3) { addScore(200); const y = dayOf(Date.now() - 864e5); K = { last: J.day, n: K.last === y ? K.n + 1 : K.last === J.day ? K.n : 1 }; save("dc.streak", K); setTimeout(() => A.bigText(titleOf(K.n) || "ALL JOBS DONE", "#ffd36b"), 1800); }
     }
     save("dc.jobs", J); paint();

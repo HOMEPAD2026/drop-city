@@ -85,6 +85,7 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
   // the street's add-ons (street-*.js) hang off these: punch(fx, fz) -> hit?, step(dt), act() -> { label, key, run } | null
   // (the first one wins the action button), key(k, down) -> used?, drive(dt, input) -> true while it moves you (a car)
   const hooks = { punch: [], step: [], act: [], key: [], drive: null };
+  const subs = {}; const on = (ev, f) => (subs[ev] = subs[ev] || []).push(f), emit = (ev, d) => { for (const f of subs[ev] || []) { try { f(d); } catch (e) { console.warn(ev, e); } } };
 
   // ---------------- what's solid: the city's blocks, the coins' towers, the plaza's hub, the edges
   function collide(p, r = R) {
@@ -175,7 +176,7 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
   function crime(n = 1) { S.wanted = Math.min(5, S.wanted + n); S.wantT = 22; sound("siren"); paintHud(); }
   function punch() {
     if (!S.active || !S.hero || S.down > 0 || S.atkLock > 0 || S.inCar) return;
-    S.atkLock = 0.5; S.hero.play("punch", { once: true, speed: 1.7, fade: 0.06 });
+    S.atkLock = 0.5; S.hero.play("punch", { once: true, speed: 1.7, fade: 0.06 }); emit("swing");
     setTimeout(() => {
       const fx = Math.sin(S.yaw), fz = Math.cos(S.yaw); let hit = false;
       for (const n of rivals) { if (n.st === "down") continue; const dx = n.pos.x - S.pos.x, dz = n.pos.z - S.pos.z, d = Math.hypot(dx, dz);
@@ -186,11 +187,11 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
         if (d < 2.6 && (dx * fx + dz * fz) / (d || 1) > 0.1) { hit = true; a.hp--; pop(a.hp > 0 ? "CRACK!" : "JACKPOT!", { x: a.x, z: a.z }, "#3dffb5");
           if (a.hp <= 0) { a.cd = 45; a.hp = 3; a.s.material.color.setHex(0x3a0d1c); a.sign.material.opacity = 0.25; const loot = 300 + Math.floor(Math.random() * 400); me.cash += loot; saveMe(me); pop(`+$${loot}`, { x: a.x, z: a.z }, "#ffd36b", 2.8); city.burst(a.x, 2.4, a.z, 0.45); crime(1); sound("win"); } } }
       for (const f of hooks.punch) if (f(fx, fz)) hit = true;
-      if (hit) { sound("tick"); shake = 0.18; if (navigator.vibrate) try { navigator.vibrate(12); } catch { /* */ } }
+      if (hit) { emit("hit", { x: S.pos.x + fx * 1.4, z: S.pos.z + fz * 1.4 }); shake = 0.18; if (navigator.vibrate) try { navigator.vibrate(12); } catch { /* */ } }
       paintHud();
     }, 230);
   }
-  function jump() { if (!S.active || !S.ground || S.down > 0 || S.inCar) return; S.vy = JUMP_V; S.ground = false; S.hero.play("jump", { once: true, speed: 1.55, fade: 0.08 }); }
+  function jump() { if (!S.active || !S.ground || S.down > 0 || S.inCar) return; S.vy = JUMP_V; S.ground = false; S.hero.play("jump", { once: true, speed: 1.55, fade: 0.08 }); emit("jump"); }
 
   // ---------------- input: keys; a thumb stick + buttons on phones; drag anywhere else to look round
   const keys = new Set(), stick = { x: 0, y: 0, on: false };
@@ -257,6 +258,7 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
   let towerBodies = [], tbT = 0, lastNear = null;
   function step(dt) {
     const hero = S.hero; if (!hero) return;
+    if (S.freeze > 0) { S.freeze -= dt; dt *= 0.06; } // hit-stop (street-fx.js)
     // moving
     let fwd = 0, side = 0;
     if (keys.has("w") || keys.has("arrowup")) fwd += 1; if (keys.has("s") || keys.has("arrowdown")) fwd -= 1;
@@ -277,7 +279,7 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
     } else if (!driving && S.ground && !hero.busy() && S.down <= 0) hero.play("idle");
     if (S.knock) { S.pos.addScaledVector(S.knock, dt * 6); S.knock.multiplyScalar(Math.max(0, 1 - dt * 6)); if (S.knock.lengthSq() < 0.01) S.knock = null; }
     // jumping
-    if (!S.ground) { S.vy -= GRAV * dt; S.pos.y += S.vy * dt; if (S.pos.y <= 0) { S.pos.y = 0; S.vy = 0; S.ground = true; city.burst(S.pos.x, 0.2, S.pos.z, 0.06); } }
+    if (!S.ground) { S.vy -= GRAV * dt; S.pos.y += S.vy * dt; if (S.pos.y <= 0) { S.pos.y = 0; S.vy = 0; S.ground = true; city.burst(S.pos.x, 0.2, S.pos.z, 0.06); emit("land"); } }
     if (!driving) { collide(S.pos); hero.obj.position.copy(S.pos); hero.obj.rotation.y = S.yaw; }
     hero.update(dt);
     lamp.position.set(S.pos.x, S.pos.y + 7, S.pos.z);
@@ -336,7 +338,7 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
     S.pos.set(p.x - (p.x / d) * hw, 0, p.z - (p.z / d) * hw); collide(S.pos); S.yaw = Math.atan2(p.x - S.pos.x, p.z - S.pos.z); S.camYaw = S.yaw + Math.PI; S.from.copy(cam.position); S.blend = 0.35; flash("warp");
   }
   // what the add-ons get to work with
-  const api = { THREE, S, me, root, city, cam, hooks, makeBody, tagOf, tagTex, pop, bigText, flash, hurtMe, crime, collide, paintHud, sound, toast, saveMe, onOpen, PHONE, rivals, atms, keys, stick, clipName,
+  const api = { THREE, S, me, root, city, cam, hooks, on, emit, makeBody, tagOf, tagTex, pop, bigText, flash, hurtMe, crime, collide, paintHud, sound, toast, saveMe, onOpen, PHONE, rivals, atms, keys, stick, clipName,
     shake: (k) => { shake = Math.max(shake, k); } };
   return { enter, leave, goTo, me, setName, setLook, setPerk, get active() { return S.active; }, get ready() { return S.ready; }, randomHandle, state: S, rivals, api, hooks };
 }
