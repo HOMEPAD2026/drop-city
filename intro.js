@@ -1,178 +1,111 @@
-// intro.js — the way into the city, like a game connecting: boot lines, the site's name slamming in, the city's own
-// mascots (WANTED posters) and launched coins flying out of a neon skyline, a loading bar that waits for the real
-// pictures, PRESS START, a flash, and the page behind. The name and the CA suffix come from config (never in code).
-// Once a browser tab (sessionStorage dc.intro) it's skipped; a returning visitor gets a short version without START.
-// ?intro=1 always plays the full one. prefers-reduced-motion: a plain fade.
-import { loadCfg, loadCoins } from "/common.js";
+// intro.js — "Last light": the way into the city. The coast at dusk (coast.js): the camera cranes down past the palms, the
+// sun sinks behind the clock tower, the horizon flares as it goes under, the windows and the neon come on in a wave, and the
+// site's name lights up letter by letter over the city. A loading line that follows the real loads, PRESS START, the city.
+// The name and the CA suffix come from config (never in code). Once a browser tab (sessionStorage dc.intro); a returning
+// visitor, or anyone arriving on a deep link (#vote, ?coin=, /coin/…), gets a short version that a tap ends. ?intro=1 always
+// plays the full one. prefers-reduced-motion: one still frame and a fade. Every way out sets window.__introDone and fires
+// "intro:done" with detail.played (true when an intro was shown).
+import { loadCfg } from "/common.js";
+import { t, tf } from "/i18n.js";
 
 const root = document.getElementById("intro");
 const html = document.documentElement;
 const FORCE = /[?&]intro=1\b/.test(location.search);
-const MASCOTS = ["bandit-1", "boss-1", "cat-1", "croc-1", "croc-2", "cruiser-1", "driver-1", "flamingo-1", "fox-1", "gull-1", "owl-1", "pigeon-1", "raccoon-1", "racer-1", "rat-1", "shadow-1", "shark-1"];
+// rooftop signs: the city's own mascots, faces only (never scenes, never coin logos)
+const SIGNS = ["bandit-1", "boss-1", "cat-1", "croc-1", "croc-2", "driver-1", "flamingo-1", "fox-1", "gull-1", "owl-1", "pigeon-1", "raccoon-1", "racer-1", "rat-1", "shark-1"];
 const ls = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } };
 const ss = (k, v) => { try { if (v === undefined) return sessionStorage.getItem(k); sessionStorage.setItem(k, v); } catch { return null; } };
-const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const rnd = (a, b) => a + Math.random() * (b - a);
-const pick = (a) => a[Math.floor(Math.random() * a.length)];
+const done = (played) => { window.__introDone = true; dispatchEvent(new CustomEvent("intro:done", { detail: { played } })); };
 
-if (root && !html.classList.contains("nointro")) start();
-else if (root) root.remove();
+if (root && !html.classList.contains("nointro")) start().catch((e) => { console.warn("intro", e); try { root.remove(); } catch {} html.style.overflow = ""; if (!window.__introDone) done(false); });
+else { if (root) root.remove(); done(false); }
 
 async function start() {
   root.dataset.on = "1";
   const phone = matchMedia("(max-width: 600px)").matches;
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const short = !FORCE && ls("dc.intro.seen") === "1";
+  const deep = location.hash.length > 1 || /[?&]coin=/.test(location.search) || location.pathname.startsWith("/coin/");
+  const short = !FORCE && (ls("dc.intro.seen") === "1" || deep);
   ss("dc.intro", "1"); ls("dc.intro.seen", "1");
   html.style.overflow = "hidden";
 
-  root.innerHTML = `<canvas></canvas><div class="ix-stage"></div>
-    <div class="ix-boot"></div>
-    <div class="ix-logo"><div class="ix-k">NOW ENTERING</div><div class="ix-name"></div><div class="ix-tl"></div><div class="ix-sfx"></div></div>
-    <button class="ix-start" type="button">PRESS START</button>
-    <button class="ix-skip" type="button">SKIP ›</button>
-    <div class="ix-bot"><div class="ix-tip"><i>TIP</i><span></span></div><div class="ix-bar"><i></i></div><div class="ix-pct"><span>LOADING CITY</span><span class="ix-n">0%</span></div></div>
+  root.innerHTML = `<canvas class="ix-cv"></canvas><div class="ix-vig"></div><div class="ix-lb t"></div><div class="ix-lb b"></div><div class="ix-hz"></div><div class="ix-smear"></div>
+    <div class="ix-cap"></div>
+    <div class="ix-logo"><div class="ix-k"></div><div class="ix-name"></div><div class="ix-tl"></div><div class="ix-sfx"></div></div>
+    <button class="ix-start" type="button"></button>
+    <button class="ix-skip" type="button"></button>
+    <div class="ix-bot"><div class="ix-tip"><i></i><span></span></div><div class="ix-bar"><i></i></div><div class="ix-pct"><span></span><span class="ix-n">0%</span></div></div>
     <div class="ix-flash"></div>`;
   const $ = (s) => root.querySelector(s);
+  $(".ix-k").textContent = t("ixEntering", "NOW ENTERING");
+  $(".ix-start").textContent = t("ixStart", "PRESS START");
+  $(".ix-skip").textContent = t("ixSkip", "SKIP ›");
+  $(".ix-tip i").textContent = t("ixTip", "TIP");
+  $(".ix-pct span").textContent = t("ixLoading", "LOADING CITY");
+  $(".ix-cap").textContent = `${t("ixHour", "HOUR")} ${String(new Date().getUTCHours()).padStart(2, "0")}:00 UTC`;
+  if (short) root.classList.add("short");
   const T0 = performance.now();
+  let leaving = false, autoT = 0;
 
-  // the config and the coins, but never wait on them for long
-  const [cfg, coins] = await Promise.all([
-    Promise.race([loadCfg(), sleep(short ? 600 : 1200).then(() => ({ name: "", suffix: "" }))]),
-    Promise.race([loadCoins(), sleep(short ? 600 : 1200).then(() => [])]),
-  ]);
-  const name = String(cfg.name || "DROP CITY").toUpperCase();
-  const suf = String(cfg.suffix || "");
-  const withImg = (coins || []).filter((c) => c && c.image && c.symbol).slice(0, 24);
+  // ---- the scene starts on the first frame; the config fills the words in when it comes
+  const coastMod = import("/coast.js").catch(() => null);
+  const cfgP = Promise.race([loadCfg(), sleep(short ? 600 : 1200).then(() => null)]).catch(() => null);
+  const boards = [];
+  if (!short && !still) { const pool = SIGNS.slice(); for (let i = 0; i < (phone ? 2 : 3); i++) { const m = pool.splice(Math.floor(Math.random() * pool.length), 1)[0], im = new Image(); im.decoding = "async"; im.src = `/images/agent/${m}.webp`; boards.push(im); } }
+  const opts = phone ? { layout: "intro", horizon: 0.64, sunX: 0.56, palms: 2 } : { layout: "intro", horizon: 0.6, sunX: 0.6, palms: 4 };
+  const mod = await coastMod;
+  let coast = null;
+  try { if (mod) coast = mod.makeCoast($(".ix-cv"), { ...opts, boards, sun: short ? 0.55 : 0.05, night: short ? 0.4 : 0, lift: short ? 0 : 0.07 }); } catch (e) { console.warn("coast", e); }
+  const C = { set: (s) => { try { coast && coast.set(s); } catch {} }, to: (s, ms, e) => { try { return coast ? coast.to(s, ms, e) : sleep(ms); } catch { return sleep(ms); } }, start: () => { try { coast && coast.start(); } catch {} }, speed: (k) => { try { coast && coast.setSpeed(k); } catch {} } };
+  let rt = 0; const onResize = () => { clearTimeout(rt); rt = setTimeout(() => { try { coast && coast.resize(); } catch {} }, 150); };
+  addEventListener("resize", onResize);
 
-  $(".ix-name").textContent = name;
-  $(".ix-tl").innerHTML = suf ? `EVERY CA ENDS IN <span>${esc(suf)}</span>` : "THE CITY THAT LAUNCHES COINS";
-  const tips = [
-    suf ? `Every coin's address ends in “${suf}” — look at the last letters.` : "Every coin here is launched on pump.fun.",
-    "A new coin drops on the hour — be there when it lands.",
-    "Launch your own coin from the city — it gets a lot of its own.",
-    "Coins launched here split creator fees 60 / 30 / 10: creator · THE VAULT · buyers.",
-    (cfg.quotes || []).some((q) => q.live) ? `Pick the pair at launch: SOL or ${(cfg.quotes.find((q) => q.live) || {}).id}.` : "Tap a building to open its coin.",
-  ];
-  let tipI = 0;
-  const showTip = () => { const s = $(".ix-tip span"); s.style.opacity = 0; setTimeout(() => { s.textContent = tips[tipI++ % tips.length]; s.style.transition = "opacity .3s"; s.style.opacity = 1; }, 160); };
-  showTip();
-  const tipT = setInterval(showTip, 2200);
-
-  // the next drop's countdown (top of the hour)
+  // ---- the words (they wait for the config, never for long)
+  const cfgReady = cfgP.then((cfg) => {
+    cfg = cfg || {};
+    const name = String(cfg.name || "DROP CITY").toUpperCase(), suf = String(cfg.suffix || "");
+    const nm = $(".ix-name"); nm.setAttribute("aria-label", name); nm.style.setProperty("--n", String(Math.max(4, [...name].length)));
+    const step = Math.min(35, 450 / Math.max(1, name.length));
+    nm.innerHTML = ""; [...name].forEach((ch, i) => { const s = document.createElement("span"); s.setAttribute("aria-hidden", "true"); s.textContent = ch === " " ? " " : ch; s.style.setProperty("--d", `${Math.round(i * (short ? 20 : step))}ms`); nm.appendChild(s); });
+    const tl = $(".ix-tl"); if (suf) { tl.textContent = t("ixEnds", "EVERY CA ENDS IN") + " "; const b = document.createElement("span"); b.textContent = suf; tl.appendChild(b); } else tl.textContent = t("ixFallback", "THE CITY THAT LAUNCHES COINS");
+    const sp = cfg.split || { creator: 6000, vault: 3000, buyer: 1000 }, live = (cfg.quotes || []).find((q) => q.live);
+    tips = [suf ? tf("tip1a", "Every coin's address ends in “{s}” — look at the last letters.", { s: suf }) : t("tip1b", "Every coin here is launched on pump.fun."),
+      t("tip2", "A new coin drops on the hour — be there when it lands."), t("tip3", "Launch your own coin from the city — it gets a lot of its own."),
+      tf("tip4", "Coins launched here split creator fees {a} / {b} / {c}: creator · THE VAULT · the main-coin buyer.", { a: sp.creator / 100, b: sp.vault / 100, c: sp.buyer / 100 }),
+      live ? tf("tip5a", "Pick the pair at launch: SOL or {q}.", { q: live.id }) : t("tip5b", "Tap a building to open its coin.")];
+  });
+  let tips = [t("tip2", "A new coin drops on the hour — be there when it lands.")], tipI = 0;
+  const showTip = () => { const s = $(".ix-tip span"); s.style.opacity = 0; setTimeout(() => { s.textContent = tips[tipI++ % tips.length]; s.style.opacity = 1; }, 160); };
+  showTip(); const tipT = setInterval(showTip, 2400);
   const sfx = $(".ix-sfx");
-  const tick = () => { const d = new Date(); const m = 59 - d.getMinutes(), s = 59 - d.getSeconds(); sfx.innerHTML = `NEXT DROP IN <b>${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}</b>`; };
+  const tick = () => { const d = new Date(), m = 59 - d.getMinutes(), s = 59 - d.getSeconds(); sfx.textContent = `${t("ixNext", "NEXT DROP IN")} `; const b = document.createElement("b"); b.textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`; sfx.appendChild(b); };
   tick(); const sfxT = setInterval(tick, 1000);
 
-  // pictures: the loading bar follows them for real
-  const urls = [...MASCOTS.map((m) => `/images/agent/${m}.webp`), ...withImg.map((c) => c.image)];
-  let loaded = 0;
-  const imgs = {};
-  urls.forEach((u) => { const i = new Image(); i.decoding = "async"; i.onload = i.onerror = () => { loaded++; }; i.src = u; imgs[u] = i; });
+  // ---- the loading line: time and the real steps (config, fonts, the sign pictures) together
+  let stepsDone = 0; const steps = [cfgReady, document.fonts ? document.fonts.ready : Promise.resolve(), ...boards.map((im) => new Promise((r) => { if (im.complete) r(); else { im.onload = im.onerror = r; } }))];
+  steps.forEach((p) => Promise.resolve(p).catch(() => {}).then(() => stepsDone++));
+  const need = short ? 1200 : 3700;
+  const loaded = new Promise((res) => {
+    const bar = $(".ix-bar i"), num = $(".ix-n");
+    const step = () => {
+      if (leaving) return res();
+      const el = performance.now() - T0, tk = Math.min(1, el / need), sk = stepsDone / steps.length;
+      const fin = tk >= 1 && (short || sk >= 1 || el > need + 2500);
+      const show = fin ? 1 : short ? tk : Math.min(tk, 0.25 + 0.75 * sk);
+      bar.style.transform = `scaleX(${show.toFixed(3)})`; num.textContent = Math.round(show * 100) + "%";
+      if (fin) return res();
+      requestAnimationFrame(step);
+    };
+    step();
+  });
 
-  // ---- the city behind: a skyline, a grid road, speed streaks ----
-  const cv = $("canvas"), cx = cv.getContext("2d");
-  const dpr = Math.min(devicePixelRatio || 1, phone ? 1.25 : 1.75);
-  let W = 0, H = 0, sky = [], streaks = [];
-  const size = () => {
-    W = innerWidth; H = innerHeight; cv.width = W * dpr; cv.height = H * dpr; cx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    sky = [];
-    for (const [layer, n, hMax, col] of [[0, phone ? 16 : 30, 0.26, "#1a0b16"], [1, phone ? 11 : 20, 0.18, "#0d0710"]]) {
-      let x = -20;
-      while (x < W + 20) {
-        const w = rnd(W / n * 0.6, W / n * 1.4), h = rnd(0.06, hMax) * H;
-        const win = []; for (let i = 0; i < 6; i++) win.push([rnd(0.15, 0.85), rnd(0.1, 0.9), Math.random() < 0.5 ? "#ff2e88" : "#ffd36b"]);
-        sky.push({ layer, x, w, h, col, win, neon: Math.random() < 0.3 });
-        x += w + rnd(0, 6);
-      }
-    }
-    streaks = Array.from({ length: phone ? 70 : 140 }, () => ({ a: rnd(0, Math.PI * 2), r: rnd(20, Math.max(W, H)), v: rnd(0.6, 1.4), c: Math.random() < 0.75 ? "255,46,136" : "0,229,255" }));
-  };
-  size(); addEventListener("resize", size);
-  let speed = still ? 0 : 1, gridOff = 0, alive = true, lastT = T0;
-  const draw = (t) => {
-    if (!alive) return;
-    const dt = Math.min(50, t - lastT); lastT = t;
-    const vx = W / 2, vy = H * 0.46, hz = H * 0.62;
-    cx.clearRect(0, 0, W, H);
-    // streaks out of the vanishing point
-    cx.lineCap = "round";
-    for (const s of streaks) {
-      s.r += s.v * speed * dt * 0.55 * (1 + s.r / 400);
-      if (s.r > Math.max(W, H) * 0.9) { s.r = rnd(10, 60); s.a = rnd(0, Math.PI * 2); }
-      const len = 6 + s.r * 0.08 * speed * s.v;
-      const x0 = vx + Math.cos(s.a) * s.r, y0 = vy + Math.sin(s.a) * s.r * 0.7;
-      const x1 = vx + Math.cos(s.a) * (s.r + len), y1 = vy + Math.sin(s.a) * (s.r + len) * 0.7;
-      cx.strokeStyle = `rgba(${s.c},${Math.min(0.75, s.r / 500)})`; cx.lineWidth = 1 + s.r / 600;
-      cx.beginPath(); cx.moveTo(x0, y0); cx.lineTo(x1, y1); cx.stroke();
-    }
-    // the skyline: far layer, glow line, near layer
-    const glow = cx.createLinearGradient(0, hz - H * 0.3, 0, hz);
-    glow.addColorStop(0, "rgba(255,46,136,0)"); glow.addColorStop(1, "rgba(255,46,136,0.22)");
-    cx.fillStyle = glow; cx.fillRect(0, hz - H * 0.3, W, H * 0.3);
-    for (const b of sky) {
-      const top = hz - b.h * (b.layer ? 0.8 : 1);
-      cx.fillStyle = b.col; cx.fillRect(b.x, top, b.w, hz - top);
-      if (b.neon) { cx.fillStyle = "rgba(255,46,136,0.85)"; cx.fillRect(b.x, top, b.w, 2); }
-      for (const [wx, wy, c] of b.win) if ((Math.sin(t / 700 + wx * 40) > -0.6)) { cx.fillStyle = c; cx.globalAlpha = 0.55; cx.fillRect(b.x + wx * b.w, top + wy * (hz - top), 3, 4); cx.globalAlpha = 1; }
-    }
-    // the road: a grid racing toward you
-    const fl = cx.createLinearGradient(0, hz, 0, H);
-    fl.addColorStop(0, "#14060f"); fl.addColorStop(1, "#000");
-    cx.fillStyle = fl; cx.fillRect(0, hz, W, H - hz);
-    cx.strokeStyle = "rgba(255,46,136,0.9)"; cx.lineWidth = 2; cx.beginPath(); cx.moveTo(0, hz); cx.lineTo(W, hz); cx.stroke();
-    cx.lineWidth = 1;
-    for (let i = -12; i <= 12; i++) { cx.strokeStyle = `rgba(255,46,136,${0.32 - Math.abs(i) * 0.018})`; cx.beginPath(); cx.moveTo(vx + i * 14, hz); cx.lineTo(vx + i * W * 0.22, H); cx.stroke(); }
-    gridOff = (gridOff + dt * 0.0011 * speed * 3) % 1;
-    for (let k = 0; k < 9; k++) { const p = Math.pow((k + gridOff) / 9, 2.2); const y = hz + p * (H - hz); cx.strokeStyle = `rgba(255,46,136,${0.12 + p * 0.5})`; cx.beginPath(); cx.moveTo(0, y); cx.lineTo(W, y); cx.stroke(); }
-    stepCards(t, dt);
-    requestAnimationFrame(draw);
-  };
-
-  // ---- the cards flying at you ----
-  const stage = $(".ix-stage");
-  const cap = phone ? 14 : 26;
-  const cards = [];
-  let spawnAt = 0, cardsOn = false;
-  const posterOf = () => { const m = pick(MASCOTS); return `<div class="ix-card ix-poster"><em>WANTED</em><img src="/images/agent/${m}.webp" alt=""><b>${"★".repeat(1 + Math.floor(Math.random() * 5))}</b></div>`; };
-  const coinOf = () => { const c = pick(withImg); return `<div class="ix-card ix-coin"><img src="${esc(c.image)}" alt="" referrerpolicy="no-referrer"></div>`; };
-  const tagOf = () => {
-    const c = withImg.length ? pick(withImg) : null;
-    const opts = [`NEW DROP <b>$${esc(c ? c.symbol : "????")}</b>`, suf ? `CA …<b>${esc(suf)}</b>` : `<b>+</b> NEW COIN`, `60 / 30 / <b>10</b>`, `LAUNCH <b>▲</b>`];
-    return `<div class="ix-card ix-tag">${pick(opts)}</div>`;
-  };
-  const spawn = () => {
-    if (cards.length >= cap) return;
-    const r = Math.random();
-    const htmlS = r < 0.45 ? posterOf() : r < 0.8 && withImg.length ? coinOf() : r < 0.8 ? posterOf() : tagOf();
-    stage.insertAdjacentHTML("beforeend", htmlS);
-    const el = stage.lastElementChild;
-    // never straight down the middle where the name stands
-    let x = rnd(-1, 1), y = rnd(-0.9, 0.9);
-    if (Math.abs(x) < 0.3) x = Math.sign(x || 1) * rnd(0.3, 1);
-    cards.push({ el, x: x * W * (phone ? 0.75 : 0.62), y: y * H * 0.5, z: -2400, rx: rnd(-25, 25), ry: rnd(-45, 45), rz: rnd(-18, 18), sp: rnd(0.75, 1.25), spin: rnd(-0.04, 0.04) });
-  };
-  const stepCards = (t, dt) => {
-    if (!cardsOn) return;
-    if (t > spawnAt) { spawn(); spawnAt = t + (phone ? 260 : 170) / Math.max(1, speed * 0.7); }
-    for (let i = cards.length - 1; i >= 0; i--) {
-      const c = cards[i];
-      c.z += dt * 0.9 * c.sp * speed;
-      c.rz += c.spin * dt;
-      const o = c.z < -2000 ? (c.z + 2400) / 400 : c.z > 350 ? Math.max(0, 1 - (c.z - 350) / 250) : 1;
-      c.el.style.opacity = o.toFixed(3);
-      c.el.style.transform = `translate3d(${c.x.toFixed(1)}px,${c.y.toFixed(1)}px,${c.z.toFixed(1)}px) rotateX(${c.rx}deg) rotateY(${(c.ry * (1 - (c.z + 2400) / 3200)).toFixed(1)}deg) rotateZ(${c.rz.toFixed(1)}deg)`;
-      if (c.z > 600) { c.el.remove(); cards.splice(i, 1); }
-    }
-  };
-
-  // ---- sound: one synth "drop" on START, unless the city's sound is off ----
+  // ---- sound: one synth "drop" on START, unless the city's sound is off
   const boom = () => {
     if (ls("dc.snd") === "0") return;
     try {
       const A = new (window.AudioContext || window.webkitAudioContext)(), n = A.currentTime;
-      const g = A.createGain(); g.connect(A.destination); g.gain.setValueAtTime(0.0001, n); g.gain.exponentialRampToValueAtTime(0.5, n + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, n + 1.1);
+      const g = A.createGain(); g.connect(A.destination); g.gain.setValueAtTime(0.0001, n); g.gain.exponentialRampToValueAtTime(0.45, n + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, n + 1.1);
       const o = A.createOscillator(); o.type = "sawtooth"; o.frequency.setValueAtTime(880, n); o.frequency.exponentialRampToValueAtTime(42, n + 0.9);
       const f = A.createBiquadFilter(); f.type = "lowpass"; f.frequency.setValueAtTime(2400, n); f.frequency.exponentialRampToValueAtTime(200, n + 0.9);
       o.connect(f); f.connect(g); o.start(n); o.stop(n + 1.1);
@@ -182,65 +115,63 @@ async function start() {
     } catch { /* no audio */ }
   };
 
-  // ---- the way out ----
-  let leaving = false;
-  const leave = (withFx) => {
-    if (leaving) return; leaving = true;
-    clearInterval(tipT); clearInterval(sfxT);
-    if (withFx) { boom(); root.classList.add("flash"); }
-    const t0 = performance.now();
-    const warp = () => { const k = (performance.now() - t0) / 700; speed = 1 + Math.min(1, k) * 9; if (k < 1.2 && alive) requestAnimationFrame(warp); };
-    if (!still) warp();
-    setTimeout(() => {
-      root.classList.add("out");
-      html.classList.add("ix-arrive");
-      setTimeout(() => {
-        alive = false; root.remove(); html.style.overflow = "";
-        removeEventListener("resize", size);
-        setTimeout(() => html.classList.remove("ix-arrive"), 950);
-        dispatchEvent(new CustomEvent("intro:done"));
-      }, 850);
-    }, withFx ? 260 : 0);
+  // ---- the way out: START (the push-in), SKIP / Escape / a tap in the short version (a crossfade)
+  const finish = () => {
+    clearInterval(tipT); clearInterval(sfxT); clearTimeout(autoT); removeEventListener("resize", onResize); removeEventListener("keydown", onKey);
+    try { coast && coast.destroy(); } catch {}
+    root.remove(); html.style.overflow = "";
+    html.classList.add("ix-arrive"); setTimeout(() => html.classList.remove("ix-arrive"), 600);
+    done(true);
   };
-  $(".ix-skip").onclick = () => leave(false);
-  $(".ix-start").onclick = () => leave(true);
-  addEventListener("keydown", function k(e) { if (leaving) return removeEventListener("keydown", k); if (e.key === "Escape") leave(false); else if ((e.key === "Enter" || e.key === " ") && root.classList.contains("ready")) { e.preventDefault(); leave(true); } });
+  const leave = (start) => {
+    if (leaving) return; leaving = true;
+    if (start && !still) {
+      boom(); C.speed(3); root.classList.add("go");
+      setTimeout(() => root.classList.add("flash"), 380);
+      setTimeout(() => root.classList.add("out"), 420);
+      setTimeout(finish, 800);
+    } else { root.classList.add("out"); setTimeout(finish, 360); }
+  };
+  const onKey = (e) => { if (leaving) return; if (e.key === "Escape") leave(false); else if (short) leave(false); else if ((e.key === "Enter" || e.key === " ") && root.classList.contains("ready")) { e.preventDefault(); leave(true); } };
+  addEventListener("keydown", onKey);
+  $(".ix-skip").onclick = (e) => { e.stopPropagation(); leave(false); };
+  $(".ix-start").onclick = (e) => { e.stopPropagation(); leave(true); };
+  if (short) root.addEventListener("pointerdown", () => leave(false));
 
-  // ---- the timeline ----
+  // ---- reduced motion: one still frame, the words shown, a fade
   if (still) {
-    $(".ix-boot").remove(); root.classList.add("slam");
-    $(".ix-bar i").style.width = "100%"; $(".ix-n").textContent = "100%";
-    draw(T0); await sleep(1200); return leave(false);
+    C.set({ sun: 1, night: 1, lift: 0 }); await cfgReady; root.classList.add("lit", "named", "tagged");
+    $(".ix-bar i").style.transform = "scaleX(1)"; $(".ix-n").textContent = "100%";
+    await sleep(1200); return leave(false);
   }
-  requestAnimationFrame(draw);
-  const boot = $(".ix-boot");
-  const lines = [["> connecting to solana mainnet", 1], ["> loading city map", 1], [`> ${withImg.length || "—"} coins on the streets`, 1], ["> syncing next drop", 1]];
-  const bootRun = (async () => { for (const [l] of lines) { boot.insertAdjacentHTML("beforeend", `${esc(l)} … <span class="ok">OK</span>\n`); await sleep(short ? 90 : 260); } })();
-  await sleep(short ? 200 : 650);
-  cardsOn = true;
-  await sleep(short ? 150 : 650);
-  root.classList.add("slam");
-  if (navigator.vibrate && phone) try { navigator.vibrate(18); } catch { /* */ }
-  await bootRun;
 
-  // the bar: time and pictures together, never past what's really loaded until the time is up
-  const need = short ? 1100 : 2600, t1 = performance.now();
-  await new Promise((res) => {
-    const bar = $(".ix-bar i"), num = $(".ix-n");
-    const step = () => {
-      const tk = Math.min(1, (performance.now() - t1) / need);
-      const ik = urls.length ? loaded / urls.length : 1;
-      const p = short ? tk : Math.min(tk, 0.35 + ik * 0.65, 1);
-      const done = tk >= 1 && (short || ik >= 0.8 || performance.now() - t1 > need + 2500);
-      const show = done ? 1 : p;
-      bar.style.width = (show * 100).toFixed(1) + "%"; num.textContent = Math.round(show * 100) + "%";
-      if (done) return res();
-      requestAnimationFrame(step);
-    };
-    step();
-  });
-  $(".ix-pct span").textContent = "CITY READY";
-  if (short) return leave(false);
+  // ---- the short version (1.6 s)
+  if (short) {
+    C.start(); root.classList.add("in");
+    C.to({ sun: 1 }, 800, "inout"); C.to({ night: 1 }, 1000, "linear");
+    setTimeout(() => root.classList.add("flare"), 700);
+    await sleep(800); await cfgReady; root.classList.add("named", "tagged");
+    await loaded; if (leaving) return; $(".ix-pct span").textContent = t("ixReady", "CITY READY");
+    await sleep(Math.max(0, 1250 - (performance.now() - T0))); return leave(false);
+  }
+
+  // ---- the full timeline
+  C.start(); root.classList.add("in"); // bars in, the horizon line draws out, the caption types
+  await sleep(250);
+  root.classList.add("scene"); // the canvas fades up
+  C.to({ lift: 0 }, 850, "out");
+  await sleep(850);
+  C.to({ sun: 1 }, 1200, "inout"); C.to({ night: 0.45 }, 1200, "linear"); // the sun drops
+  await sleep(1200);
+  root.classList.add("flare"); C.to({ night: 1 }, 500, "linear"); // the last sliver goes under: the horizon flares, the city switches on
+  if (navigator.vibrate && phone && navigator.userActivation && navigator.userActivation.hasBeenActive) try { navigator.vibrate(12); } catch {}
+  await sleep(300);
+  await cfgReady; root.classList.add("named"); // NOW ENTERING, then the name letter by letter
+  await sleep(600);
+  root.classList.add("tagged");
+  await loaded; if (leaving) return;
+  $(".ix-pct span").textContent = t("ixReady", "CITY READY");
+  await sleep(Math.max(0, 3900 - (performance.now() - T0)));
   root.classList.add("ready");
-  setTimeout(() => { if (!leaving) leave(true); }, 9000);
+  autoT = setTimeout(() => leave(true), 9000);
 }

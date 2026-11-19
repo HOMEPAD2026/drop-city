@@ -6,15 +6,24 @@ import { openWallet } from "/wallet.js";
 // ---------------- languages (the static page: data-i18n keys; the code: t(key, fallback) — the dictionary is /i18n.js)
 import { t, tf, lang, setLang } from "/i18n.js";
 export { t, tf };
-const EN = {};
+// the English of each key is read from the page once (the first time it's seen), so switching back to English works
+const EN = {}, LANG_SELS = ["lang", "lang2", "lang3"];
+const ATTR = [["i18n", null], ["i18nPh", "placeholder"], ["i18nAl", "aria-label"], ["i18nTt", "title"]];
 function applyLang() {
   const LANG = lang(); document.documentElement.lang = LANG;
-  document.querySelectorAll("[data-i18n]").forEach((el) => { const k = el.dataset.i18n; if (!(k in EN)) EN[k] = el.textContent; el.textContent = t(k, EN[k]); });
-  for (const id of ["lang", "lang2"]) { const sel = $(id); if (sel) sel.value = LANG; }
+  for (const [ds, attr] of ATTR) {
+    const sel = "[data-" + ds.replace(/[A-Z]/g, (c) => "-" + c.toLowerCase()) + "]";
+    document.querySelectorAll(sel).forEach((el) => {
+      const k = el.dataset[ds], id = ds + ":" + k;
+      if (!(id in EN)) EN[id] = attr ? el.getAttribute(attr) || "" : el.textContent;
+      const v = t(k, EN[id]); if (attr) el.setAttribute(attr, v); else el.textContent = v;
+    });
+  }
+  for (const id of LANG_SELS) { const s = $(id); if (s) s.value = LANG; }
 }
 export function initLang(onChange) {
   applyLang();
-  for (const id of ["lang", "lang2"]) { const sel = $(id); if (sel) sel.onchange = () => { setLang(sel.value); applyLang(); onChange && onChange(); }; }
+  for (const id of LANG_SELS) { const sel = $(id); if (sel) sel.onchange = () => { setLang(sel.value); applyLang(); onChange && onChange(); }; }
 }
 
 // ---------------- sound (off until asked; Web Audio, no files)
@@ -71,15 +80,20 @@ async function castVote(pick, CFG) {
   } catch (e) { note(/reject|denied|cancel/i.test(String(e && e.message)) ? "Cancelled in your wallet." : String((e && e.message) || e).slice(0, 120), 4000); }
   paintVote(CFG);
 }
+/// the idea leading the vote, for the ticker: { symbol, votes } or null when nobody has voted yet
+export function voteLead() { if (!V || !V.votes || !V.ideas) return null; const mx = Math.max(0, ...V.votes); if (!mx) return null; const i = V.votes.indexOf(mx); return V.ideas[i] ? { symbol: V.ideas[i].symbol, votes: mx } : null; }
 export function tickVote() { const el = $("vclose"); if (!el || !V) return; const l = Math.max(0, V.closes - Date.now()); el.textContent = `${String(Math.floor(l / 60e3)).padStart(2, "0")}:${String(Math.floor((l % 60e3) / 1000)).padStart(2, "0")}`; }
 
 // ---------------- live trades
-const seenTr = new Set(); let firstTr = true;
+const seenTr = new Set(); let firstTr = true, lastItems = [];
+/// the newest n trades the feed has seen (for the ticker)
+export const lastTrades = (n = 3) => lastItems.slice(0, n);
 export async function paintLive(coins, onTrade) {
   const el = $("livebox"); if (!el) return;
   let items = [];
   if (DEMO) { const c = coins[Math.floor(Math.random() * coins.length)]; if (c) items = [{ sig: "d" + Date.now(), at: Date.now(), mint: c.mint, symbol: c.symbol, side: Math.random() < 0.7 ? "buy" : "sell", sol: +(Math.random() * 3).toFixed(3), usd: null, who: "Demo1111" }]; items = [...items, ...[...(paintLive.d || [])]].slice(0, 30); paintLive.d = items; }
   else { try { items = (await getJ("?trades=1")).items || []; } catch { return; } }
+  lastItems = items;
   const fresh = items.filter((x) => !seenTr.has(x.sig)); fresh.forEach((x) => seenTr.add(x.sig));
   if (!firstTr) fresh.slice(0, 4).forEach((x) => { tone(x.side === "buy" ? "buy" : "sell"); onTrade && onTrade(x); });
   firstTr = false;

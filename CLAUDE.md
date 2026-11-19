@@ -16,3 +16,9 @@ The owner's standing facts — keep every page, bot message, post and tweet true
 - **STREET mode (the owner, 2026-11-19):** the city opens on foot (roam.js) with a random crime-flavoured handle and a
   KayKit crew body (CC0). Handles stay generic (no game titles, studios, cities or characters from other games). Street
   cash / wanted stars are a toy score on the device — never describe them as rewards, tokens or anything on chain.
+- **The website (the owner, 2026-11-19):** one short page — a compact hero over the coast at dusk, EXPLORE (two rows of
+  cards, then Show all), the city band, and THE DESK: eight tabs (This hour · Ranks · Launch · Fees · Wallets · Check a CA ·
+  My coins · About; the head script picks the tab from the hash before first paint, every old #link still lands). The
+  entry intro "Last light" and the hero's sky are coast.js — original art drawn in code (sky, sun, skyline with the clock
+  tower, water, palms, neon). A warm coast-at-dusk mood is fine; never imitate a game's logo treatment, cover art,
+  characters or names, and never draw text into the canvas. Words live in i18n.js (en in the code, ko / zh / tr there).
