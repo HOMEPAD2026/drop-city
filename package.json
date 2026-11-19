@@ -2,7 +2,7 @@
   "name": "drop-city",
   "private": true,
   "type": "module",
-  "scripts": { "test": "node tests/pad.test.mjs && node tests/extra.test.mjs && node tests/tg.test.mjs && node --test tests/street.test.mjs" },
+  "scripts": { "test": "node tests/pad.test.mjs && node tests/extra.test.mjs && node tests/tg.test.mjs && node --test tests/street.test.mjs tests/jobs.test.mjs" },
   "dependencies": {
     "@noble/curves": "2.4.0",
     "@noble/hashes": "2.4.0",

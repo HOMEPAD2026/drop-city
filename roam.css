@@ -87,3 +87,26 @@ body.warp #city { animation: warp 0.4s; } @keyframes warp { 0% { filter: brightn
 
 /* behind the wheel: no jump / punch / wave */
 body.in-car #b-hit, body.in-car #b-jump, body.in-car #b-emote { display: none !important; }
+
+/* daily jobs + the week's board */
+.jobs { display: none; position: fixed; left: 18px; bottom: 70px; z-index: 5; width: 290px; border-radius: 16px; background: rgba(10, 10, 11, 0.86); border: 1px solid rgba(255, 255, 255, 0.12); backdrop-filter: blur(8px); overflow: hidden; max-height: calc(100dvh - 240px); overflow-y: auto; }
+body.street .jobs { display: block; } body.street.ph-open .jobs { display: none; }
+.jb-h { width: 100%; display: flex; align-items: center; gap: 8px; border: 0; background: none; padding: 10px 12px; text-align: left; }
+.jb-h b { font: 400 18px var(--head); font-style: italic; letter-spacing: 0.04em; } .jb-n { font: 800 12px var(--mono); color: #3dffb5; }
+.jb-h em { font-style: normal; font: 800 9px var(--mono); letter-spacing: 0.12em; color: #ffd36b; border: 1px solid rgba(255, 211, 107, 0.5); border-radius: 6px; padding: 2px 6px; }
+.jb-h i { margin-left: auto; font-style: normal; color: var(--dim); font: 700 16px var(--mono); }
+.jb-l { list-style: none; margin: 0; padding: 0 10px 8px; display: grid; gap: 6px; }
+.jb-l li { display: grid; grid-template-columns: 20px 1fr auto; gap: 8px; align-items: center; padding: 7px 8px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); }
+.jb-l li i { width: 18px; height: 18px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.25); font-style: normal; font: 800 11px var(--body); display: grid; place-items: center; color: #070708; }
+.jb-l li.ok i { background: #3dffb5; border-color: #3dffb5; } .jb-l li.ok b { color: var(--dim); text-decoration: line-through; }
+.jb-l b { display: block; font: 700 12.5px var(--body); } .jb-l small { display: block; color: var(--dim); font-size: 11px; } .jb-l small.hot { color: #ffd36b; font-weight: 700; }
+.jb-l em { font-style: normal; font: 700 11px var(--mono); color: var(--hot2); white-space: nowrap; }
+.jb-w { border-top: 1px solid rgba(255, 255, 255, 0.08); padding: 8px 12px 10px; }
+.jb-wh { display: flex; justify-content: space-between; align-items: baseline; } .jb-wh b { font: 800 11px var(--mono); letter-spacing: 0.14em; color: var(--dim); } .jb-wh span { font-size: 11px; color: var(--dim); } .jb-wh strong { color: #fff; font-family: var(--mono); }
+.jb-w ol { margin: 6px 0 4px; padding-left: 20px; font-size: 12px; } .jb-w ol li { padding: 2px 0; } .jb-w ol li span { display: inline-block; max-width: 170px; overflow: hidden; text-overflow: ellipsis; vertical-align: bottom; } .jb-w ol li b { float: right; font: 700 12px var(--mono); } .jb-w ol li.me { color: var(--hot); }
+.jb-w p { margin: 6px 0; color: var(--dim); font-size: 12px; } .jb-w small { color: var(--dim); font-size: 10.5px; }
+@media (max-width: 760px) {
+  .jobs { left: 8px; top: 178px; bottom: auto; width: auto; max-width: min(300px, calc(100vw - 16px)); max-height: calc(100dvh - 400px); }
+  .jb-h { padding: 7px 10px; } .jb-h b { font-size: 15px; }
+  body.street.card-open .jobs { display: none; }
+}
