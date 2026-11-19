@@ -5,11 +5,38 @@ import { $, esc, short, usd, hh, note, DEMO, loadCfg, loadCoins, loadSlot as get
 import { walletButton } from "/wallet.js";
 import { openDrop as drop, grind } from "/launch.js";
 import { feeBox, wireFees } from "/fees.js";
-import { showDrop, takeoverTick, initSound } from "/site-x.js";
+import { showDrop, takeoverTick, initSound, tone } from "/site-x.js";
+import { makeRoam, LOOKS, randomHandle } from "/roam.js?v=1";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } };
 let coins = [], slot = null, tab = "wanted", sel = new URLSearchParams(location.search).get("coin");
 const city = makeCity($("city"), { onPick: (m) => openCard(m) });
+// on foot (roam.js): a street name and a crew member on the first visit, then the streets; MAP is the old view
+const roam = makeRoam(city, { onOpen: (m) => openCard(m, true), toast: (t) => note(t), sound: tone });
+const go = (m) => { if (roam.active) roam.goTo(m); else city.flyTo(m); };
+async function setMode(m) {
+  if (m === "street" && !roam.active) { if (!(await roam.enter())) return; }
+  if (m === "map" && roam.active) { roam.leave(); document.body.classList.remove("ph-open"); }
+  try { localStorage.setItem("dc.mode", m); } catch { /* */ }
+  $("m-street").classList.toggle("on", m === "street"); $("m-map").classList.toggle("on", m === "map");
+}
+$("m-street").onclick = () => setMode("street"); $("m-map").onclick = () => setMode("map");
+$("m-phone").onclick = () => document.body.classList.toggle("ph-open");
+$("me-chip").onclick = () => openMe();
+function openMe() {
+  const w = document.createElement("div"); w.className = "mesheet"; let look = roam.me.look;
+  w.innerHTML = `<div><button type="button" class="x" aria-label="Close">×</button><h3>YOUR STREET NAME</h3><p>Kept on this device. Letters, numbers and _ (up to 20).</p>
+    <div class="row"><input id="me-in" maxlength="20" value="${esc(roam.me.name)}" autocomplete="off" spellcheck="false"><button type="button" class="dice" title="Random name">🎲</button></div>
+    <div class="looks">${Object.entries(LOOKS).map(([k, v]) => `<button type="button" data-l="${k}" class="${k === look ? "on" : ""}">${v.name}</button>`).join("")}</div>
+    <div class="ft"><button type="button" class="btn ghost" data-c>Cancel</button><button type="button" class="btn hot" data-s>Save</button></div>
+    <small class="fine">Street cash and wanted stars are just for fun — nothing here touches a wallet or the chain.</small></div>`;
+  document.body.appendChild(w);
+  const close = () => w.remove();
+  w.onclick = (e) => { if (e.target === w || e.target.closest(".x,[data-c]")) close(); };
+  w.querySelector(".dice").onclick = () => { w.querySelector("#me-in").value = randomHandle(); };
+  w.querySelectorAll("[data-l]").forEach((b) => (b.onclick = () => { look = b.dataset.l; w.querySelectorAll("[data-l]").forEach((x) => x.classList.toggle("on", x === b)); }));
+  w.querySelector("[data-s]").onclick = async () => { roam.setName(w.querySelector("#me-in").value); if (look !== roam.me.look) await roam.setLook(look); close(); };
+}
 const openDrop = () => drop({ cfg: CFG, onDone: () => { loadList(); loadSlot(); }, paintWallet: () => paintWallet() });
 
 async function load() {
@@ -17,6 +44,9 @@ async function load() {
   document.querySelectorAll("[data-name]").forEach((e) => (e.textContent = CFG.name)); document.title = CFG.name + " — the city";
   await Promise.all([loadList(), loadSlot()]);
   if (sel) { city.flyTo(sel); openCard(sel, true); }
+  let m = "street"; try { m = localStorage.getItem("dc.mode") || "street"; } catch { /* */ }
+  if (sel || /[?&]view=map\b/.test(location.search)) m = "map";
+  setMode(m);
 }
 async function loadList() { coins = await loadCoins(); city.setCoins(coins, new Date().getUTCHours()); paintPhone(); if (sel) openCard(sel, true); }
 async function loadSlot() {
@@ -24,7 +54,7 @@ async function loadSlot() {
   // a new hourly drop while the city is open: fly there, fireworks, the takeover
   if (was && slot && slot.state === "dropped" && slot.drop && (!was.drop || was.drop.mint !== slot.drop.mint)) {
     await loadList(); const c = coins.find((x) => x.mint === slot.drop.mint);
-    if (c) { city.flyTo(c.mint); const t = city.towers.get(c.mint); if (t) setTimeout(() => city.burst(t.group.position.x, t.h + 14, t.group.position.z, 1.6), 1200); showDrop(c); }
+    if (c) { if (!roam.active) city.flyTo(c.mint); const t = city.towers.get(c.mint); if (t) setTimeout(() => city.burst(t.group.position.x, t.h + 14, t.group.position.z, 1.6), 1200); showDrop(c); }
   }
 }
 setInterval(loadList, 20e3); setInterval(loadSlot, 15e3);
@@ -70,13 +100,13 @@ function paintPhone() {
       <li><b>The vault fights for the city:</b> buybacks and burns for the coins at the top of MOST WANTED.</li></ol>
       <p>Not financial advice. Coins can go to zero.</p>`;
   }
-  el.querySelectorAll("[data-m]").forEach((x) => (x.onclick = () => { city.flyTo(x.dataset.m); openCard(x.dataset.m); }));
+  el.querySelectorAll("[data-m]").forEach((x) => (x.onclick = () => { go(x.dataset.m); openCard(x.dataset.m, true); document.body.classList.remove("ph-open"); }));
 }
 
 // ---------------- a coin's card
 function openCard(mint, quiet) {
   const c = coins.find((x) => x.mint === mint); if (!c) return; sel = mint;
-  const el = $("card"); el.hidden = false;
+  const el = $("card"); el.hidden = false; document.body.classList.add("card-open");
   el.innerHTML = `<button type="button" class="x" aria-label="Close">×</button>
     <div class="wp"><div class="tag">WANTED</div>${c.image ? `<img src="${esc(c.image)}" alt="">` : ini(c)}<div class="stars">${stars(c)}</div></div>
     <h2>${esc(c.name)}</h2><span class="sym">$${esc(c.symbol)} · ${esc(short(c.mint))}</span>${c.quote ? `<span class="qtag">${esc(c.quote.id)} PAIR</span>` : ""}
@@ -85,7 +115,7 @@ function openCard(mint, quiet) {
     ${c.description ? `<p style="color:var(--dim);font-size:13px">${esc(c.description)}</p>` : ""}
     ${feeBox(c, CFG)}
     <div class="links"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade on pump.fun</a><a href="https://solscan.io/token/${esc(c.mint)}" target="_blank" rel="noopener">Solscan</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">Chart</a></div>`;
-  el.querySelector(".x").onclick = () => { el.hidden = true; sel = null; };
+  el.querySelector(".x").onclick = () => { el.hidden = true; sel = null; document.body.classList.remove("card-open"); };
   wireFees(el, c, CFG, loadList);
   if (!quiet) city.flyTo(mint);
 }
@@ -96,4 +126,4 @@ walletButton($("wallet"), () => { }).then((f) => (paintWallet = f));
 
 $("drop").onclick = () => openDrop();
 load();
-window.__dc = { city, openDrop, grind, coins: () => coins };
+window.__dc = { city, roam, setMode, openDrop, grind, coins: () => coins };

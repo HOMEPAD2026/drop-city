@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/pad.css?v=m2">
+<link rel="stylesheet" href="/roam.css?v=1">
+<link rel="modulepreload" href="/roam.js?v=1"><link rel="preload" href="/models/crew/moves.glb" as="fetch" crossorigin>
 <link rel="stylesheet" href="/intro.css?v=1"><script>try{if(sessionStorage.getItem("dc.intro")&&!/[?&]intro=1\b/.test(location.search))document.documentElement.classList.add("nointro")}catch(e){}setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on)i.remove(),document.documentElement.style.overflow=""},7000)</script>
 </head>
 <body>
@@ -26,6 +28,19 @@
   </nav>
   <div class="ph-body" id="ph-body"></div>
 </aside>
+<div class="hud" id="hud">
+  <button type="button" class="me-chip" id="me-chip" title="Your street name"><i class="av"></i><span><b id="me-name">…</b><small id="me-look"></small></span></button>
+  <div class="wl" id="wl" title="Wanted level"></div>
+  <div class="cash" id="cash" title="Street cash — a score for fun, nothing on chain">$0</div>
+  <div class="hpb" title="Health"><i id="hp"></i></div>
+  <button type="button" class="snd" id="snd" title="Sound">♪</button>
+</div>
+<div class="modes" id="modes"><button type="button" id="m-street" class="on">STREET</button><button type="button" id="m-map">MAP</button><button type="button" id="m-phone">PHONE</button></div>
+<div class="pad" id="pad"><div class="stick" id="stick"><i></i></div><button type="button" id="b-jump" aria-label="Jump">JUMP</button><button type="button" id="b-hit" aria-label="Punch">PUNCH</button></div>
+<button type="button" class="act" id="act" hidden></button>
+<div class="keys" id="keys"><b>WASD</b> move · <b>Shift</b> run · <b>Space</b> jump · <b>F</b> punch · <b>E</b> open a tower · drag to look</div>
+<div class="fx" id="fx"></div>
+<div class="loadst" id="loadst">SUITING UP…</div>
 <section class="card" id="card" hidden></section>
 <div class="sheet" id="sheet" hidden></div>
 <div class="toast" id="toast" hidden></div>

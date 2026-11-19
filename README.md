@@ -52,3 +52,13 @@ It answers /drop /new /top /main /coin /check /vote /fees /launch /gta6 /news /l
 the agent's hourly drops, new launches, graduations, big buys (`TG_WHALE_SOL`, default 2), GTA VI news (`TG_NEWS=0` turns it
 off) and a daily countdown to GTA VI (`GTA6_DATE`, default 2026-11-19). The scheduler (.github/workflows/drop.yml) calls
 `/api/tg?poll=1` after each agent tick.
+
+## On foot (STREET mode, `roam.js`)
+
+Opening the city puts you in the streets: a random crew handle (`dc.me` on the device, editable, 🎲) and one of four
+crew looks (KayKit Adventurers by Kay Lousberg, CC0 — `models/crew/*.glb`, moves in `models/crew/moves.glb`, the same
+rig and clips ARCIRCLE WORLD uses). WASD / thumb stick to move (Shift or a full push runs), Space / JUMP, F / PUNCH,
+E / tap to open the coin tower you're standing at; drag to look. Rival crews wander the plaza and fight back; ATMs crack
+after three punches; every crime raises the WANTED stars and three stars bring the helicopter. Street cash is a toy
+score kept on the device — nothing touches a wallet or the chain. MAP brings back the overview; `?view=map` or
+`?coin=<mint>` opens in it.

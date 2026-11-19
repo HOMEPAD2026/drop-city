@@ -13,3 +13,6 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   TTWofwAge91oFhZs7kpQdyrVRkmevgM88xijGvQFbKo, on pump.fun's QuoteControl list) as its pair — pad-config.js `quotes`. A TTWO
   coin's first buy and creator fees are in TTWO; the 60 / 30 / 10 split is the same. Agent drops stay SOL.
 - The agent's logos come from images/agent (the owner's mascot art); a drop's name is picked from those subjects.
+- **STREET mode (the owner, 2026-11-19):** the city opens on foot (roam.js) with a random crime-flavoured handle and a
+  KayKit crew body (CC0). Handles stay generic (no game titles, studios, cities or characters from other games). Street
+  cash / wanted stars are a toy score on the device — never describe them as rewards, tokens or anything on chain.

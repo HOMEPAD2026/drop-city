@@ -90,7 +90,7 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
   const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), v3 = new THREE.Vector3(), s3 = new THREE.Vector3(), col = new THREE.Color();
   const solids = [];
   gen.forEach(([x, z], i) => { const d = Math.hypot(x, z) / HALF, h = 7 + rnd() * (18 + 34 * d) + (rnd() < 0.07 ? 40 : 0), w = 10 + rnd() * 4;
-    m4.compose(v3.set(x, 0, z), q4.identity(), s3.set(w, h, w)); bodies.setMatrixAt(i, m4); bodies.setColorAt(i, col.setHex(PAL[(rnd() * PAL.length) | 0])); solids.push([x, z, h]); });
+    m4.compose(v3.set(x, 0, z), q4.identity(), s3.set(w, h, w)); bodies.setMatrixAt(i, m4); bodies.setColorAt(i, col.setHex(PAL[(rnd() * PAL.length) | 0])); solids.push([x, z, h, w]); });
   scene.add(bodies);
   // rooftop neon signs (generic words)
   const SIGNS = ["MOTEL", "24/7", "PAWN", "LIQUOR", "PUMP FM", "DINER", "CASINO", "TATTOO", "AUTO", "BAIL BONDS"];
@@ -238,15 +238,16 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
   let goal = null, idle = 0;
   const applyCam = () => { const c = Math.cos(orbit.pitch); cam.position.set(orbit.tx + Math.sin(orbit.yaw) * c * orbit.dist, orbit.ty + Math.sin(orbit.pitch) * orbit.dist, orbit.tz + Math.cos(orbit.yaw) * c * orbit.dist); cam.lookAt(orbit.tx, orbit.ty + 8, orbit.tz); };
   let drag = null; const pts = new Map();
-  canvas.addEventListener("pointerdown", (e) => { pts.set(e.pointerId, [e.clientX, e.clientY]); drag = { x: e.clientX, y: e.clientY, moved: 0 }; idle = 0; goal = null; });
+  let ctl = null; // someone else drives the camera (roam.js: on foot in the streets)
+  canvas.addEventListener("pointerdown", (e) => { if (ctl) return; pts.set(e.pointerId, [e.clientX, e.clientY]); drag = { x: e.clientX, y: e.clientY, moved: 0 }; idle = 0; goal = null; });
   addEventListener("pointermove", (e) => {
-    if (!pts.has(e.pointerId)) return; const [px, py] = pts.get(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
+    if (ctl || !pts.has(e.pointerId)) return; const [px, py] = pts.get(e.pointerId); pts.set(e.pointerId, [e.clientX, e.clientY]);
     if (pts.size === 2) { const [a, b] = [...pts.values()]; const d = Math.hypot(a[0] - b[0], a[1] - b[1]); if (drag.pinch) orbit.dist = clamp(orbit.dist * drag.pinch / d, 60, 520); drag.pinch = d; return; }
     if (!drag) return; const dx = e.clientX - px, dy = e.clientY - py; drag.moved += Math.abs(dx) + Math.abs(dy);
     orbit.yaw -= dx * 0.005; orbit.pitch = clamp(orbit.pitch + dy * 0.004, 0.18, 1.35);
   });
-  addEventListener("pointerup", (e) => { pts.delete(e.pointerId); if (drag && drag.moved < 6 && pts.size === 0) pick(e.clientX, e.clientY); if (!pts.size) drag = null; });
-  canvas.addEventListener("wheel", (e) => { e.preventDefault(); orbit.dist = clamp(orbit.dist * (1 + Math.sign(e.deltaY) * 0.1), 60, 520); idle = 0; }, { passive: false });
+  addEventListener("pointerup", (e) => { if (ctl) return; pts.delete(e.pointerId); if (drag && drag.moved < 6 && pts.size === 0) pick(e.clientX, e.clientY); if (!pts.size) drag = null; });
+  canvas.addEventListener("wheel", (e) => { if (ctl) return; e.preventDefault(); orbit.dist = clamp(orbit.dist * (1 + Math.sign(e.deltaY) * 0.1), 60, 520); idle = 0; }, { passive: false });
   const ray = new THREE.Raycaster(), ndc = new THREE.Vector2();
   function pick(x, y) { const r = canvas.getBoundingClientRect(); ndc.set(((x - r.left) / r.width) * 2 - 1, -((y - r.top) / r.height) * 2 + 1); ray.setFromCamera(ndc, cam);
     const hit = ray.intersectObjects([...towers.values()].flatMap((t) => [t.body, t.sign]), false)[0]; if (hit) { flyTo(hit.object.userData.mint); onPick(hit.object.userData.mint); } }
@@ -264,20 +265,26 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
     sea.material.uniforms.t.value = T;
     placeCars(dt); cars.instanceMatrix.needsUpdate = heads.instanceMatrix.needsUpdate = tails.instanceMatrix.needsUpdate = true;
     // the helicopter circles the newest tower (the plaza when there's none)
-    const nt = newest && towers.get(newest.mint), hc = heli.userData.c || (heli.userData.c = { x: 0, z: 0 });
+    const nt = heliAt ? { group: { position: heliAt }, h: 0 } : newest && towers.get(newest.mint), hc = heli.userData.c || (heli.userData.c = { x: 0, z: 0 });
     hc.x += ((nt ? nt.group.position.x : 0) - hc.x) * Math.min(1, dt * 0.5); hc.z += ((nt ? nt.group.position.z : 0) - hc.z) * Math.min(1, dt * 0.5);
-    const a = T * 0.18, hr = nt ? 34 : 70; heli.position.set(hc.x + Math.cos(a) * hr, Math.max(62, (nt ? nt.h : 0) + 40) + Math.sin(T * 0.7) * 2, hc.z + Math.sin(a) * hr); heli.rotation.y = -a; heli.userData.rotor.rotation.y = T * 30;
+    const a = T * (heliAt ? 0.5 : 0.18), hr = heliAt ? 22 : nt ? 34 : 70; heli.position.set(hc.x + Math.cos(a) * hr, Math.max(62, (nt ? nt.h : 0) + 40) + Math.sin(T * 0.7) * 2, hc.z + Math.sin(a) * hr); heli.rotation.y = -a; heli.userData.rotor.rotation.y = T * 30;
     stepBursts(dt);
     for (const [m, t] of towers) { const k = Math.max(0, Math.min(1, (T - (born.get(m) || 0)) / 1.4)); t.group.scale.y = k < 1 ? Math.max(0.001, 1 - Math.pow(1 - k, 3) + Math.sin(k * Math.PI) * 0.08) : 1; }
     heli.userData.blink.visible = (T % 1) < 0.15; heli.userData.beam.rotation.z = Math.sin(T * 0.6) * 0.35; heli.userData.beam.rotation.x = Math.cos(T * 0.45) * 0.3;
     for (const t of towers.values()) t.sign.position.y = t.h + 6 + Math.sin(T * 2 + t.h) * 0.6;
+    if (ctl) { ctl(dt, T); composer.render(); requestAnimationFrame(frame); return; }
     if (goal) { for (const k of ["tx", "tz", "ty", "dist"]) orbit[k] += (goal[k] - orbit[k]) * Math.min(1, dt * 2.5); }
     else if (idle > 6) { orbit.yaw += dt * 0.04; for (const k of ["tx", "tz", "ty"]) orbit[k] += (0 - orbit[k]) * dt * 0.3; }
     applyCam(); composer.render();
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
-  return { setCoins, flyTo, scene, cam, towers, burst };
+  let heliAt = null; // the helicopter hunts a spot (a wanted player) instead of circling the newest tower
+  const world = { HALF, SEA_X, RING, P, R, hub: 7.5 };
+  return { setCoins, flyTo, scene, cam, towers, burst, solids, bodies, world, canvas,
+    setControl(f) { ctl = f; drag = null; pts.clear(); goal = null; idle = 0; },
+    setHeliTarget(v) { heliAt = v; },
+    get orbit() { return orbit; } };
 }
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const hash = (s) => { let h = 0; for (const c of String(s)) h = (h * 31 + c.charCodeAt(0)) >>> 0; return h; };
