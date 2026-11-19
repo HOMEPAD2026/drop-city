@@ -19,6 +19,7 @@ export function dropState(slot, cfg) {
   if (slot.state === "dropping") return ["THE AGENT IS DROPPING…", "held"];
   if (slot.state === "failed") return ["THE AGENT IS RETRYING", "held"];
   if (slot.state === "off") return ["THE AGENT IS OFFLINE", ""];
+  if (slot.state === "paused") return ["DROPS PAUSED · BACK SOON", "held"];
   return ["THE AGENT DROPS ANY MINUTE", "open"];
 }
 /// wake the agent once when this hour has no drop yet (the server makes sure it drops only once)

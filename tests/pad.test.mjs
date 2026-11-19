@@ -138,6 +138,14 @@ clock = Date.UTC(2026, 10, 18, 11, 3);
 fakeKit.Connection.prototype.getBalance = async () => 1e6;
 const t3 = await AGT.tick({ budgetMs: 5e3 }), s3 = await P.slot();
 ok(t3.state === "no-sol" && s3.tries === 0, "an empty wallet waits without using up the hour's tries");
+ok(s3.state === "paused", "the site says the drops are paused while the wallet is empty");
+{ const msgs = []; process.env.TG_OWNER_CHAT = "42";
+  const AG2 = AG.makeAgent({ pad: P, now: () => clock, fetchImpl: async () => ({ ok: false, status: 500 }), kit: async () => fakeKit, tg: { send: async (chat, m) => { msgs.push([chat, m.text]); return {}; }, announceDrop: async () => null } });
+  docs.delete("agent/state.json"); await AG2.tick({ budgetMs: 5e3 }); clock += 60e3; await AG2.tick({ budgetMs: 5e3 });
+  ok(msgs.length === 1 && msgs[0][0] === "42" && /paused/.test(msgs[0][1]), "the owner hears once that the drops are paused (not the public chats)");
+  clock += 3.1 * 3600e3; await AG2.tick({ budgetMs: 5e3 });
+  ok(msgs.length === 2, "and again three hours later while it's still empty");
+  delete process.env.TG_OWNER_CHAT; }
 fakeKit.Connection.prototype.getBalance = async () => 2e9;
 clock = Date.UTC(2026, 10, 18, 10, 57); ok((await AGT.tick({ budgetMs: 5e3 })).state === "late", "no drop after :55 — the next hour gets it");
 const st = await AGT.status(); ok(st.agent === APUB && st.logs.some((l) => l.k === "drop"), "the status shows the agent and its drop");
