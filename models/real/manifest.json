@@ -1,0 +1,936 @@
+{
+ "generated": "2026-11-19",
+ "units": "metres, Y up (glTF)",
+ "packing": "All GLBs: EXT_meshopt_compression + KHR_mesh_quantization (gltf-transform meshopt); textures are WebP (EXT_texture_webp), max 1024 px. KTX2 was NOT used: toktx could not be installed in the asset session (no package, building KTX-Software from source was not permitted), so textures are WebP - three.js GLTFLoader reads EXT_texture_webp natively; the KTX2Loader in models.js is simply unused for these files.",
+ "orientation": "Characters face +Z. Car noses point +Z.",
+ "preview": "models/real/preview/*.png (headless three.js 0.186.1, SwiftShader)",
+ "total_bytes": 26152816,
+ "files": {
+  "models/real/chars/man-tee.glb": {
+   "source": "https://opengameart.org/content/character-guy-rigged",
+   "author": "EmoPreben (OpenGameArt)",
+   "licence": "CC0-1.0",
+   "height_m": 1.78,
+   "facing": "+Z",
+   "description": "Adult man, red hair, black T-shirt, jeans, red sneakers. Source 47,786 tris, decimated to 13,718.",
+   "notes": "One skinned mesh \"Body\", one material \"Body\" (albedo + normal, metallic 0, roughness 0.78 constant; the source Unity metallic/smoothness map was not used). Skeleton: the shared 65-joint Mixamo-named rig (\"mixamorig:Hips\" ... ; three.js sanitises these node names to \"mixamorigHips\" etc.), same joint names in every character and in anims.glb. Rest pose: A-pose. Feet at y=0, centred on x/z, metres, Y up.",
+   "bytes": 317632,
+   "triangles": 13718,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": [
+    "1024x1024",
+    "1024x1024"
+   ]
+  },
+  "models/real/chars/man-bald.glb": {
+   "source": "https://opengameart.org/content/bald-man-rigged",
+   "author": "EmoPreben (OpenGameArt)",
+   "licence": "CC0-1.0",
+   "height_m": 1.76,
+   "facing": "+Z",
+   "description": "Adult bald man with moustache, grey V-neck T-shirt, black trousers. This is the reference body the animations were baked on.",
+   "notes": "One skinned mesh \"Body\", one material \"Body\" (albedo + normal, metallic 0, roughness 0.78 constant; the source Unity metallic/smoothness map was not used). Skeleton: the shared 65-joint Mixamo-named rig (\"mixamorig:Hips\" ... ; three.js sanitises these node names to \"mixamorigHips\" etc.), same joint names in every character and in anims.glb. Rest pose: A-pose. Feet at y=0, centred on x/z, metres, Y up.",
+   "bytes": 160248,
+   "triangles": 8784,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": [
+    "1024x1024",
+    "1024x1024"
+   ]
+  },
+  "models/real/chars/woman-casual.glb": {
+   "source": "https://opengameart.org/content/basic-female-0",
+   "author": "EmoPreben (OpenGameArt)",
+   "licence": "CC0-1.0",
+   "height_m": 1.7,
+   "facing": "+Z",
+   "description": "Adult woman, brown hair, light-grey T-shirt, jeans, sneakers.",
+   "notes": "One skinned mesh \"Body\", one material \"Body\" (albedo + normal, metallic 0, roughness 0.78 constant; the source Unity metallic/smoothness map was not used). Skeleton: the shared 65-joint Mixamo-named rig (\"mixamorig:Hips\" ... ; three.js sanitises these node names to \"mixamorigHips\" etc.), same joint names in every character and in anims.glb. Rest pose: A-pose. Feet at y=0, centred on x/z, metres, Y up.",
+   "bytes": 254284,
+   "triangles": 8472,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": [
+    "1024x1024",
+    "1024x1024"
+   ]
+  },
+  "models/real/anims.glb": {
+   "source": "https://opengameart.org/content/universal-animation-library ; https://opengameart.org/content/universal-animation-library-2",
+   "author": "Quaternius",
+   "licence": "CC0-1.0",
+   "description": "Animation-only GLB (armature nodes, no mesh) on the shared Mixamo-named rig. Retargeted in Blender from the Universal Animation Library 1 + 2 mannequin rig (world-space rotation transfer from a T-pose reference, hips translation scaled to the 1.76 m reference body), 30 fps, resampled + meshopt.",
+   "clips": [
+    {
+     "name": "idle",
+     "duration_s": 2.5,
+     "loop": true,
+     "from": "UAL1 Idle_Loop"
+    },
+    {
+     "name": "walk",
+     "duration_s": 1.333,
+     "loop": true,
+     "from": "UAL1 Walk_Loop"
+    },
+    {
+     "name": "run",
+     "duration_s": 0.933,
+     "loop": true,
+     "from": "UAL1 Jog_Fwd_Loop"
+    },
+    {
+     "name": "sprint",
+     "duration_s": 0.667,
+     "loop": true,
+     "from": "UAL1 Sprint_Loop"
+    },
+    {
+     "name": "jump_start",
+     "duration_s": 1.333,
+     "loop": false,
+     "from": "UAL1 Jump_Start"
+    },
+    {
+     "name": "jump",
+     "duration_s": 2.5,
+     "loop": true,
+     "from": "UAL1 Jump_Loop"
+    },
+    {
+     "name": "jump_land",
+     "duration_s": 1.267,
+     "loop": false,
+     "from": "UAL1 Jump_Land"
+    },
+    {
+     "name": "fall",
+     "duration_s": 2.5,
+     "loop": true,
+     "from": "UAL1 Jump_Loop (same motion as jump; no dedicated fall clip in the library)"
+    },
+    {
+     "name": "punch",
+     "duration_s": 0.867,
+     "loop": false,
+     "from": "UAL1 Punch_Jab"
+    },
+    {
+     "name": "punch_cross",
+     "duration_s": 1,
+     "loop": false,
+     "from": "UAL1 Punch_Cross"
+    },
+    {
+     "name": "hit",
+     "duration_s": 0.333,
+     "loop": false,
+     "from": "UAL1 Hit_Chest"
+    },
+    {
+     "name": "die",
+     "duration_s": 2.4,
+     "loop": false,
+     "from": "UAL1 Death01"
+    },
+    {
+     "name": "dodge",
+     "duration_s": 1.467,
+     "loop": false,
+     "from": "UAL1 Roll (in place, no root motion)"
+    },
+    {
+     "name": "drive",
+     "duration_s": 1.667,
+     "loop": true,
+     "from": "UAL1 Driving_Loop (seated, hands on wheel)"
+    },
+    {
+     "name": "sit",
+     "duration_s": 1.667,
+     "loop": true,
+     "from": "UAL1 Sitting_Idle_Loop"
+    },
+    {
+     "name": "crouch_walk",
+     "duration_s": 2,
+     "loop": true,
+     "from": "UAL1 Crouch_Fwd_Loop"
+    },
+    {
+     "name": "phone",
+     "duration_s": 2.933,
+     "loop": true,
+     "from": "UAL2 Idle_TalkingPhone_Loop"
+    },
+    {
+     "name": "kick_knockback",
+     "duration_s": 0.833,
+     "loop": false,
+     "from": "UAL2 Hit_Knockback"
+    },
+    {
+     "name": "wave",
+     "duration_s": 1.967,
+     "loop": true,
+     "from": "authored here: UAL1 Idle_Loop body + procedural right-arm wave (no wave clip exists in UAL 1/2)"
+    },
+    {
+     "name": "cheer",
+     "duration_s": 1.567,
+     "loop": true,
+     "from": "authored here: UAL1 Idle_Loop body + procedural both-arms-up pump (no cheer clip exists in UAL 1/2)"
+    }
+   ],
+   "required_mapping": {
+    "idle": "idle",
+    "walk": "walk",
+    "sprint (run)": "sprint (plus a slower \"run\" jog)",
+    "jump": "jump_start / jump / jump_land",
+    "fall": "fall",
+    "punch (attack)": "punch (+ punch_cross)",
+    "hit (react)": "hit",
+    "die (death)": "die",
+    "dodge (roll)": "dodge",
+    "wave": "wave",
+    "cheer (victory)": "cheer",
+    "drive (seated idle)": "drive"
+   },
+   "notes": "Bind with THREE.AnimationMixer on any of the three characters (tracks target nodes by name). Clips contain rotation tracks for all joints plus a position track on the hips (in place, no root motion); the hips height was baked for the 1.76 m body, so on the 1.70 m woman the hips sit ~3 cm lower than her own rest height (visually fine; strip or scale the hips .position track if needed). Verified headless: every clip plays on all three characters (preview/chars-walk.png, preview/anim-clips.png).",
+   "bytes": 938084,
+   "triangles": 0,
+   "extensions": [
+    "EXT_meshopt_compression"
+   ],
+   "textures_px": []
+  },
+  "models/real/cars/coupe.glb": {
+   "source": "https://github.com/KhronosGroup/glTF-Sample-Assets/tree/main/Models/CarConcept",
+   "author": "Eric Chadwick / Darmstadt Graphics Group GmbH (2024), based on a CC0 model by \"Unity Fan\"",
+   "licence": "CC-BY-4.0",
+   "attribution": "\"Car Concept\" by Eric Chadwick, (c) 2024 Darmstadt Graphics Group GmbH, from the Khronos glTF-Sample-Assets repository, licensed CC BY 4.0 (https://creativecommons.org/licenses/by/4.0/). Based on a CC0 model by Unity Fan. Modified: simplified, interior/engine/wipers and Khronos logo textures removed.",
+   "length_m": 4.36,
+   "width_m": 2.55,
+   "height_m": 1.15,
+   "facing": "+Z (nose)",
+   "type": "sports coupe (unbranded concept car)",
+   "description": "Realistic unbranded concept sports coupe. Source 138k tris (after removing variants) -> 10,605 tris: interior (except seats/floor), engine, axles, brake parts, wipers and licence plate deleted, then Blender decimate.",
+   "notes": "Metres, Y up, wheels on y=0, centred on x/z. Nose points +Z (same as the characters' facing). Materials: \"Paint 1 Carmine\" and \"Paint 2 Carmine\" are the body paint (MeshPhysicalMaterial with clearcoat) - recolour them for variety; \"Glass\" is alpha-blended dark glass (transmission removed for phones); lights use emissive. All Khronos/3D Commerce logo textures (licence plate, tyre sidewall text) were stripped and KHR_materials_variants removed. Width includes mirrors. Decimation leaves some faceting on curved panels and rims.",
+   "bytes": 470268,
+   "triangles": 10605,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_materials_clearcoat",
+    "KHR_materials_emissive_strength",
+    "KHR_mesh_quantization",
+    "KHR_texture_transform"
+   ],
+   "textures_px": [
+    "512x512",
+    "1024x1024",
+    "512x512",
+    "64x32",
+    "32x32",
+    "128x128",
+    "512x128"
+   ]
+  },
+  "models/real/cars/sedan.glb": {
+   "source": "https://opengameart.org/content/low-poly-car-update-pack",
+   "author": "byzmod3d (OpenGameArt)",
+   "licence": "CC0-1.0",
+   "length_m": 3.95,
+   "width_m": 1.69,
+   "height_m": 1.18,
+   "facing": "+Z (nose)",
+   "type": "sedan / coupe (generic)",
+   "description": "Low-poly generic car (source object CARRO_001), flat-colour materials, no textures.",
+   "notes": "Metres, Y up, wheels on y=0, centred on x/z. Nose points +Z (same as the characters' facing). Body colour material: \"AZUL.001\" (blue) - recolour for variety.",
+   "bytes": 31840,
+   "triangles": 2346,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": []
+  },
+  "models/real/cars/pickup.glb": {
+   "source": "https://opengameart.org/content/low-poly-car-update-pack",
+   "author": "byzmod3d (OpenGameArt)",
+   "licence": "CC0-1.0",
+   "length_m": 4.52,
+   "width_m": 1.76,
+   "height_m": 1.42,
+   "facing": "+Z (nose)",
+   "type": "pickup",
+   "description": "Low-poly generic pickup (source object CARRO_003), flat-colour, white.",
+   "notes": "Metres, Y up, wheels on y=0, centred on x/z. Nose points +Z (same as the characters' facing). Body material \"Material.010\" (white) - recolour for variety.",
+   "bytes": 40912,
+   "triangles": 3324,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": []
+  },
+  "models/real/cars/police.glb": {
+   "source": "https://opengameart.org/content/low-poly-car-update-pack",
+   "author": "byzmod3d (OpenGameArt)",
+   "licence": "CC0-1.0",
+   "length_m": 4.31,
+   "width_m": 1.85,
+   "height_m": 1.38,
+   "facing": "+Z (nose)",
+   "type": "police sedan",
+   "description": "Low-poly generic black-and-white police sedan with roof light bar (source object CARRO_police). No text or emblems.",
+   "notes": "Metres, Y up, wheels on y=0, centred on x/z. Nose points +Z (same as the characters' facing). Can also be repainted as a plain sedan.",
+   "bytes": 41208,
+   "triangles": 2942,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": []
+  },
+  "models/real/props/street-lamp.glb": {
+   "source": "https://polyhaven.com/a/street_lamp_01",
+   "author": "Josh Dean (Poly Haven)",
+   "licence": "CC0-1.0",
+   "height_m": 3.87,
+   "facing": "symmetric lantern post (head centred over the base)",
+   "description": "Ornate cast-iron street lamp with glass panes; 30,610 -> 4,802 tris.",
+   "notes": "Metres, Y up, base at y=0, centred on x/z. Material \"street_lamp_01_glass\" is the lantern glass - give it an emissive colour at night.",
+   "bytes": 218928,
+   "triangles": 4802,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": [
+    "1024x1024",
+    "1024x1024",
+    "1024x1024",
+    "1024x1024"
+   ]
+  },
+  "models/real/props/traffic-light.glb": {
+   "source": "https://opengameart.org/content/lowpoly-modular-street-pack",
+   "author": "Quaternius",
+   "licence": "CC0-1.0",
+   "height_m": 4.08,
+   "facing": "pole at the origin side, arm reaches ~1.8 m toward +Z with the signal head at its end",
+   "description": "Pole with overhanging arm and 3-lamp signal (TrafficLight_2), scaled x3.6 from the 1.13 m source. Low-poly flat-colour - the least realistic prop here (no CC0 realistic traffic light was reachable).",
+   "notes": "Metres, Y up, base at y=0, centred on x/z. Lamp materials \"Red.003\", \"Yellow.002\", \"Green.004\" can be switched emissive to animate the signal.",
+   "bytes": 11752,
+   "triangles": 398,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": []
+  },
+  "models/real/props/bench.glb": {
+   "source": "https://polyhaven.com/a/modular_street_seating",
+   "author": "Stuart Attenborrow (Poly Haven)",
+   "licence": "CC0-1.0",
+   "length_m": 2.45,
+   "height_m": 0.87,
+   "facing": "backrest on the -Z side, seat faces +Z",
+   "description": "Contemporary city bench with backrest and armrests assembled from the Poly Haven modular street seating kit (pieces as laid out in the source scene); 12,500 -> 4,801 tris, 512 px textures.",
+   "notes": "Metres, Y up, base at y=0, centred on x/z.",
+   "bytes": 251220,
+   "triangles": 4801,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": [
+    "512x512",
+    "512x512",
+    "512x512",
+    "512x512",
+    "512x512",
+    "512x512",
+    "512x512",
+    "512x512",
+    "512x512"
+   ]
+  },
+  "models/real/props/trash-bin.glb": {
+   "source": "https://polyhaven.com/a/metal_trash_can",
+   "author": "GurJas Studios (Poly Haven)",
+   "licence": "CC0-1.0",
+   "height_m": 0.91,
+   "description": "Galvanised metal trash can (clean variant), lid removed (the source lid lies beside the can).",
+   "notes": "Metres, Y up, base at y=0, centred on x/z.",
+   "bytes": 325828,
+   "triangles": 4880,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": [
+    "1024x1024",
+    "1024x1024",
+    "1024x1024"
+   ]
+  },
+  "models/real/props/hydrant.glb": {
+   "source": "https://polyhaven.com/a/fire_hydrant",
+   "author": "Gonçalo Felício (Poly Haven)",
+   "licence": "CC0-1.0",
+   "height_m": 0.8,
+   "description": "Red fire hydrant with caps and chain (clean variant); 43,158 -> 3,919 tris.",
+   "notes": "Metres, Y up, base at y=0, centred on x/z.",
+   "bytes": 264152,
+   "triangles": 3919,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": [
+    "1024x1024",
+    "1024x1024",
+    "1024x1024"
+   ]
+  },
+  "models/real/props/palm-straight.glb": {
+   "source": "https://opengameart.org/content/free-palm-treez-v3",
+   "author": "Nobiax / Yughues (OpenGameArt)",
+   "licence": "CC0-1.0",
+   "height_m": 6.99,
+   "description": "Realistic palm tree, alpha-cutout fronds.",
+   "notes": "Metres, Y up, base at y=0, centred on x/z. Material is alpha-test (alphaMode MASK, cutoff 0.5) and double-sided; diffuse 1024, normal 512.",
+   "bytes": 375276,
+   "triangles": 940,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": [
+    "512x512",
+    "1024x1024"
+   ]
+  },
+  "models/real/props/palm-bend.glb": {
+   "source": "https://opengameart.org/content/free-palm-treez-v3",
+   "author": "Nobiax / Yughues (OpenGameArt)",
+   "licence": "CC0-1.0",
+   "height_m": 5.88,
+   "facing": "trunk leans toward +X (crown ~3 m off the base)",
+   "description": "Realistic palm with a curved trunk, alpha-cutout fronds.",
+   "notes": "Metres, Y up, base at y=0, centred on x/z. Alpha-test, double-sided.",
+   "bytes": 375460,
+   "triangles": 940,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": [
+    "512x512",
+    "1024x1024"
+   ]
+  },
+  "models/real/props/bush-large.glb": {
+   "source": "https://opengameart.org/content/bushes",
+   "author": "Nobiax / Yughues (OpenGameArt)",
+   "licence": "CC0-1.0",
+   "height_m": 1.57,
+   "description": "Large leafy bush. (bush_01)",
+   "notes": "Metres, Y up, base at y=0, centred on x/z. Alpha-test, double-sided; diffuse 1024, normal 512.",
+   "bytes": 85576,
+   "triangles": 556,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": [
+    "512x512",
+    "1024x1024"
+   ]
+  },
+  "models/real/props/bush-flowering.glb": {
+   "source": "https://opengameart.org/content/bushes",
+   "author": "Nobiax / Yughues (OpenGameArt)",
+   "licence": "CC0-1.0",
+   "height_m": 1.02,
+   "description": "Flowering shrub with small violet flowers. (bush_03)",
+   "notes": "Metres, Y up, base at y=0, centred on x/z. Alpha-test, double-sided; diffuse 1024, normal 512.",
+   "bytes": 109528,
+   "triangles": 2044,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": [
+    "512x512",
+    "1024x1024"
+   ]
+  },
+  "models/real/props/bush-low.glb": {
+   "source": "https://opengameart.org/content/bushes",
+   "author": "Nobiax / Yughues (OpenGameArt)",
+   "licence": "CC0-1.0",
+   "height_m": 1.09,
+   "description": "Low rounded leafy bush. (bush_05)",
+   "notes": "Metres, Y up, base at y=0, centred on x/z. Alpha-test, double-sided; diffuse 1024, normal 512.",
+   "bytes": 174328,
+   "triangles": 880,
+   "extensions": [
+    "EXT_meshopt_compression",
+    "EXT_texture_webp",
+    "KHR_mesh_quantization"
+   ],
+   "textures_px": [
+    "512x512",
+    "1024x1024"
+   ]
+  },
+  "images/real/tex/asphalt-albedo-1k.webp": {
+   "source": "https://polyhaven.com/a/asphalt_02",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 418120,
+   "size_px": 1024,
+   "tile_m": 3.0,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/asphalt-albedo-512.webp": {
+   "source": "https://polyhaven.com/a/asphalt_02",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 92274,
+   "size_px": 512,
+   "tile_m": 3.0,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/asphalt-normal-1k.webp": {
+   "source": "https://polyhaven.com/a/asphalt_02",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 492200,
+   "size_px": 1024,
+   "tile_m": 3.0,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/asphalt-normal-512.webp": {
+   "source": "https://polyhaven.com/a/asphalt_02",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 99306,
+   "size_px": 512,
+   "tile_m": 3.0,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/asphalt-rough-1k.webp": {
+   "source": "https://polyhaven.com/a/asphalt_02",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 389652,
+   "size_px": 1024,
+   "tile_m": 3.0,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/asphalt-rough-512.webp": {
+   "source": "https://polyhaven.com/a/asphalt_02",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 99110,
+   "size_px": 512,
+   "tile_m": 3.0,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/sidewalk-pavers-albedo-1k.webp": {
+   "source": "https://polyhaven.com/a/concrete_pavement",
+   "author": "Charlotte Baglioni (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 277876,
+   "size_px": 1024,
+   "tile_m": 1.8,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/sidewalk-pavers-albedo-512.webp": {
+   "source": "https://polyhaven.com/a/concrete_pavement",
+   "author": "Charlotte Baglioni (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 54586,
+   "size_px": 512,
+   "tile_m": 1.8,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/sidewalk-pavers-normal-1k.webp": {
+   "source": "https://polyhaven.com/a/concrete_pavement",
+   "author": "Charlotte Baglioni (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 492692,
+   "size_px": 1024,
+   "tile_m": 1.8,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/sidewalk-pavers-normal-512.webp": {
+   "source": "https://polyhaven.com/a/concrete_pavement",
+   "author": "Charlotte Baglioni (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 83322,
+   "size_px": 512,
+   "tile_m": 1.8,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/sidewalk-pavers-rough-1k.webp": {
+   "source": "https://polyhaven.com/a/concrete_pavement",
+   "author": "Charlotte Baglioni (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 84938,
+   "size_px": 1024,
+   "tile_m": 1.8,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/sidewalk-pavers-rough-512.webp": {
+   "source": "https://polyhaven.com/a/concrete_pavement",
+   "author": "Charlotte Baglioni (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 8516,
+   "size_px": 512,
+   "tile_m": 1.8,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/concrete-albedo-1k.webp": {
+   "source": "https://polyhaven.com/a/concrete_floor_02",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 421040,
+   "size_px": 1024,
+   "tile_m": 2.0,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/concrete-albedo-512.webp": {
+   "source": "https://polyhaven.com/a/concrete_floor_02",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 94514,
+   "size_px": 512,
+   "tile_m": 2.0,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/concrete-normal-1k.webp": {
+   "source": "https://polyhaven.com/a/concrete_floor_02",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 201386,
+   "size_px": 1024,
+   "tile_m": 2.0,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/concrete-normal-512.webp": {
+   "source": "https://polyhaven.com/a/concrete_floor_02",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 36476,
+   "size_px": 512,
+   "tile_m": 2.0,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/concrete-rough-1k.webp": {
+   "source": "https://polyhaven.com/a/concrete_floor_02",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 169114,
+   "size_px": 1024,
+   "tile_m": 2.0,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/concrete-rough-512.webp": {
+   "source": "https://polyhaven.com/a/concrete_floor_02",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 37646,
+   "size_px": 512,
+   "tile_m": 2.0,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/wall-brick-albedo-1k.webp": {
+   "source": "https://polyhaven.com/a/red_brick_03",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 331136,
+   "size_px": 1024,
+   "tile_m": 1.0,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/wall-brick-albedo-512.webp": {
+   "source": "https://polyhaven.com/a/red_brick_03",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 67382,
+   "size_px": 512,
+   "tile_m": 1.0,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/wall-brick-normal-1k.webp": {
+   "source": "https://polyhaven.com/a/red_brick_03",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 372948,
+   "size_px": 1024,
+   "tile_m": 1.0,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/wall-brick-normal-512.webp": {
+   "source": "https://polyhaven.com/a/red_brick_03",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 74308,
+   "size_px": 512,
+   "tile_m": 1.0,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/wall-brick-rough-1k.webp": {
+   "source": "https://polyhaven.com/a/red_brick_03",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 137134,
+   "size_px": 1024,
+   "tile_m": 1.0,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/wall-brick-rough-512.webp": {
+   "source": "https://polyhaven.com/a/red_brick_03",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 31754,
+   "size_px": 512,
+   "tile_m": 1.0,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/wall-concrete-panels-albedo-1k.webp": {
+   "source": "https://polyhaven.com/a/concrete_wall_008",
+   "author": "Dario Barresi, Charlotte Baglioni (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 104464,
+   "size_px": 1024,
+   "tile_m": 2.71,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/wall-concrete-panels-albedo-512.webp": {
+   "source": "https://polyhaven.com/a/concrete_wall_008",
+   "author": "Dario Barresi, Charlotte Baglioni (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 17380,
+   "size_px": 512,
+   "tile_m": 2.71,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/wall-concrete-panels-normal-1k.webp": {
+   "source": "https://polyhaven.com/a/concrete_wall_008",
+   "author": "Dario Barresi, Charlotte Baglioni (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 48480,
+   "size_px": 1024,
+   "tile_m": 2.71,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/wall-concrete-panels-normal-512.webp": {
+   "source": "https://polyhaven.com/a/concrete_wall_008",
+   "author": "Dario Barresi, Charlotte Baglioni (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 5118,
+   "size_px": 512,
+   "tile_m": 2.71,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/wall-concrete-panels-rough-1k.webp": {
+   "source": "https://polyhaven.com/a/concrete_wall_008",
+   "author": "Dario Barresi, Charlotte Baglioni (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 11802,
+   "size_px": 1024,
+   "tile_m": 2.71,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/wall-concrete-panels-rough-512.webp": {
+   "source": "https://polyhaven.com/a/concrete_wall_008",
+   "author": "Dario Barresi, Charlotte Baglioni (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 1444,
+   "size_px": 512,
+   "tile_m": 2.71,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/wall-plaster-albedo-1k.webp": {
+   "source": "https://polyhaven.com/a/painted_plaster_wall",
+   "author": "Amal Kumar (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 175976,
+   "size_px": 1024,
+   "tile_m": 2.0,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/wall-plaster-albedo-512.webp": {
+   "source": "https://polyhaven.com/a/painted_plaster_wall",
+   "author": "Amal Kumar (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 16226,
+   "size_px": 512,
+   "tile_m": 2.0,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/wall-plaster-normal-1k.webp": {
+   "source": "https://polyhaven.com/a/painted_plaster_wall",
+   "author": "Amal Kumar (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 317490,
+   "size_px": 1024,
+   "tile_m": 2.0,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/wall-plaster-normal-512.webp": {
+   "source": "https://polyhaven.com/a/painted_plaster_wall",
+   "author": "Amal Kumar (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 35762,
+   "size_px": 512,
+   "tile_m": 2.0,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/wall-plaster-rough-1k.webp": {
+   "source": "https://polyhaven.com/a/painted_plaster_wall",
+   "author": "Amal Kumar (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 17456,
+   "size_px": 1024,
+   "tile_m": 2.0,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/wall-plaster-rough-512.webp": {
+   "source": "https://polyhaven.com/a/painted_plaster_wall",
+   "author": "Amal Kumar (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 2332,
+   "size_px": 512,
+   "tile_m": 2.0,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/sand-albedo-1k.webp": {
+   "source": "https://polyhaven.com/a/sand_01",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 179228,
+   "size_px": 1024,
+   "tile_m": 1.5,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/sand-albedo-512.webp": {
+   "source": "https://polyhaven.com/a/sand_01",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 50610,
+   "size_px": 512,
+   "tile_m": 1.5,
+   "notes": "sRGB colour"
+  },
+  "images/real/tex/sand-normal-1k.webp": {
+   "source": "https://polyhaven.com/a/sand_01",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 328698,
+   "size_px": 1024,
+   "tile_m": 1.5,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/sand-normal-512.webp": {
+   "source": "https://polyhaven.com/a/sand_01",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 99632,
+   "size_px": 512,
+   "tile_m": 1.5,
+   "notes": "OpenGL convention (+Y up, three.js default)"
+  },
+  "images/real/tex/sand-rough-1k.webp": {
+   "source": "https://polyhaven.com/a/sand_01",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 62334,
+   "size_px": 1024,
+   "tile_m": 1.5,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/tex/sand-rough-512.webp": {
+   "source": "https://polyhaven.com/a/sand_01",
+   "author": "Rob Tuytel (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 19100,
+   "size_px": 512,
+   "tile_m": 1.5,
+   "notes": "linear greyscale roughness (use as roughnessMap; three.js reads the G channel, which equals the grey value)"
+  },
+  "images/real/hdri/dusk-coast-1k.hdr": {
+   "source": "https://polyhaven.com/a/the_sky_is_on_fire",
+   "author": "Greg Zaal, Rico Cilliers (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 1526564,
+   "content": "sunset/twilight over an ocean promenade, apartment blocks on the shore",
+   "notes": "RGBE equirect 1024x512 (phones) - RGBELoader / HDRLoader"
+  },
+  "images/real/hdri/dusk-coast-2k.hdr": {
+   "source": "https://polyhaven.com/a/the_sky_is_on_fire",
+   "author": "Greg Zaal, Rico Cilliers (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 5996454,
+   "content": "sunset/twilight over an ocean promenade, apartment blocks on the shore",
+   "notes": "RGBE equirect 2048x1024 (desktop)"
+  },
+  "images/real/hdri/dusk-coast-2048.webp": {
+   "source": "https://polyhaven.com/a/the_sky_is_on_fire",
+   "author": "Greg Zaal, Rico Cilliers (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 112792,
+   "content": "sunset/twilight over an ocean promenade, apartment blocks on the shore",
+   "notes": "LDR tonemapped 2048x1024 equirect for a visible background (Poly Haven tonemapped JPG, downscaled)"
+  },
+  "images/real/hdri/night-city-1k.hdr": {
+   "source": "https://polyhaven.com/a/blue_lagoon_night",
+   "author": "Greg Zaal (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 1596565,
+   "content": "night, seaside promenade with street lights, city lights on the horizon",
+   "notes": "RGBE equirect 1024x512 (phones) - RGBELoader / HDRLoader"
+  },
+  "images/real/hdri/night-city-2k.hdr": {
+   "source": "https://polyhaven.com/a/blue_lagoon_night",
+   "author": "Greg Zaal (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 6299487,
+   "content": "night, seaside promenade with street lights, city lights on the horizon",
+   "notes": "RGBE equirect 2048x1024 (desktop)"
+  },
+  "images/real/hdri/night-city-2048.webp": {
+   "source": "https://polyhaven.com/a/blue_lagoon_night",
+   "author": "Greg Zaal (Poly Haven)",
+   "licence": "CC0-1.0",
+   "bytes": 113468,
+   "content": "night, seaside promenade with street lights, city lights on the horizon",
+   "notes": "LDR tonemapped 2048x1024 equirect for a visible background (Poly Haven tonemapped JPG, downscaled)"
+  }
+ }
+}
