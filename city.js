@@ -222,8 +222,35 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
       a.needsUpdate = true; b.p.material.opacity = Math.max(0, 1 - b.life / 2.4);
       if (b.life > 2.4) { scene.remove(b.p); b.p.geometry.dispose(); b.p.material.dispose(); bursts.splice(k, 1); } }
   }
+  // ---------------- turf: the four sides of the city, each held by one of the four biggest coins (by market cap)
+  const TURF_NAMES = ["NORTH SIDE", "EAST DOCKS", "SOUTH STRIP", "WEST BEACH"], TURF_COL = [0xff2e88, 0x5ce1ff, 0xffd36b, 0x3dffb5];
+  const turfG = new THREE.Group(); scene.add(turfG); let turf = [];
+  const turfTag = (text, col) => { const c = document.createElement("canvas"); c.width = 512; c.height = 96; const x = c.getContext("2d"); x.font = "italic 900 64px Anton, Impact, sans-serif"; x.textAlign = "center"; x.textBaseline = "middle";
+    x.shadowColor = col; x.shadowBlur = 18; x.fillStyle = col; x.fillText(text, 256, 52); x.fillStyle = "#fff"; x.shadowBlur = 0; x.fillText(text, 256, 52); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t; };
+  function setTurf(coins) {
+    for (const o of [...turfG.children]) { turfG.remove(o); o.traverse((m) => { if (m.material) { if (m.material.map && !logoCache.has(m.userData.mint || "")) m.material.map.dispose(); m.material.dispose(); } if (m.geometry) m.geometry.dispose(); }); }
+    const top = coins.filter((c) => c.mcapUsd > 0).sort((a, b) => b.mcapUsd - a.mcapUsd).slice(0, 4);
+    turf = TURF_NAMES.map((name, i) => ({ name, coin: top[i] || null, color: TURF_COL[i] }));
+    turf.forEach((t, i) => {
+      if (!t.coin) return;
+      const a0 = (i / 4) * Math.PI * 2 - Math.PI / 4 - Math.PI / 2; // north = −z, then clockwise
+      const ring = new THREE.Mesh(new THREE.RingGeometry(RING + 26, HALF + 20, 24, 1, -a0 - Math.PI / 2, Math.PI / 2), new THREE.MeshBasicMaterial({ color: t.color, transparent: true, opacity: 0.07, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }));
+      ring.rotation.x = -Math.PI / 2; ring.position.y = 0.05; turfG.add(ring);
+      const mid = a0 + Math.PI / 4, bx = Math.cos(mid) * 125, bz = Math.sin(mid) * 125;
+      const logo = new THREE.Sprite(new THREE.SpriteMaterial({ map: logoTex(t.coin), toneMapped: false })); logo.userData.mint = t.coin.mint; logo.scale.setScalar(20); logo.position.set(bx, 92, bz); turfG.add(logo);
+      const tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: turfTag(`$${t.coin.symbol} TURF`, "#" + t.color.toString(16).padStart(6, "0")), transparent: true, toneMapped: false })); tag.scale.set(40, 7.5, 1); tag.position.set(bx, 76, bz); turfG.add(tag);
+      t.at = [bx, bz];
+    });
+  }
+  /// which side of the city a spot is on (outside the plaza): { name, coin, color } or null
+  function turfAt(x, z) {
+    if (Math.hypot(x, z) < RING + 26) return null;
+    const a = Math.atan2(z, x) + Math.PI / 2 + Math.PI / 4, i = ((Math.floor(a / (Math.PI / 2)) % 4) + 4) % 4;
+    return turf[i] || null;
+  }
   function setCoins(coins, hourNow) {
     for (const t of towers.values()) scene.remove(t.group); towers.clear();
+    setTurf(coins);
     hand.rotation.y = -((hourNow / 24) * Math.PI * 2 - Math.PI / 2) - Math.PI / 2;
     // today's drops on their hour lots; the rest outside the plaza by market cap
     const today = new Date().toISOString().slice(0, 10), used = new Set();
@@ -298,7 +325,7 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
   let heliAt = null; // the helicopter hunts a spot (a wanted player) instead of circling the newest tower
   const world = { HALF, SEA_X, RING, P, R, hub: 7.5 };
   const CAR_COLORS = [0xff2e88, 0x111111, 0xffffff, 0x1a1a1a, 0x2b2b2b, 0xd91a6b];
-  return { setCoins, flyTo, scene, cam, towers, burst, solids, bodies, world, canvas, traffic, carColor: (i) => CAR_COLORS[i % 6],
+  return { setCoins, flyTo, scene, cam, towers, burst, solids, bodies, world, canvas, traffic, carColor: (i) => CAR_COLORS[i % 6], turfAt, get turf() { return turf; },
     setControl(f) { ctl = f; drag = null; pts.clear(); goal = null; idle = 0; },
     setHeliTarget(v) { heliAt = v; },
     get orbit() { return orbit; } };

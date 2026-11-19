@@ -110,3 +110,11 @@ body.street .jobs { display: block; } body.street.ph-open .jobs { display: none;
   .jb-h { padding: 7px 10px; } .jb-h b { font-size: 15px; }
   body.street.card-open .jobs { display: none; }
 }
+
+/* whose turf you're on */
+.turf { position: fixed; right: 18px; top: 82px; z-index: 5; text-align: right; padding: 6px 12px; border-right: 4px solid var(--tc, #ff2e88); background: linear-gradient(270deg, rgba(10, 10, 11, 0.8), rgba(10, 10, 11, 0)); pointer-events: none; }
+body:not(.street) .turf { display: none; }
+.turf small { display: block; font: 800 10px var(--mono); letter-spacing: 0.2em; color: var(--dim); } .turf b { font: 400 22px var(--head); font-style: italic; color: var(--tc, #fff); text-shadow: 0 0 14px var(--tc, #ff2e88); }
+.turf.in { animation: turfin 0.5s cubic-bezier(0.3, 1.4, 0.5, 1); } @keyframes turfin { from { transform: translateX(40px); opacity: 0; } }
+body.card-open .turf { display: none; }
+@media (max-width: 760px) { .turf { top: 136px; right: 8px; padding: 4px 8px; } .turf b { font-size: 16px; } .turf small { font-size: 9px; } }
