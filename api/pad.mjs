@@ -81,12 +81,12 @@ async function simQuote(id, dev) {
 }
 /// a crew launch (SOL pair), simulated with the agent's wallet as the launcher and n−1 made-up crew wallets: the v0 size
 /// through the lookup table and its result, and how many transactions the plain route needs (nothing signed or sent)
-async function simCrew(n) {
-  const c = cfg(); if (!c.agent) return { error: "no agent wallet to simulate with" };
+async function simCrew(n, as) {
+  const c = cfg(); if (!c.agent && !as) return { error: "no agent wallet to simulate with" };
   const { crewBps } = await import("../lib/_pad.mjs");
   const K = await import("../lib/_agentkit.mjs"), conn = new K.Connection(process.env.SOLANA_RPC_URL || "https://api.mainnet-beta.solana.com", "confirmed"), sdk = new K.OnlinePumpSdk(conn);
   const [global, feeConfig] = await Promise.all([sdk.fetchGlobal(), sdk.fetchFeeConfig().catch(() => null)]);
-  const creator = new K.PublicKey(c.agent), mint = K.Keypair.generate().publicKey, bps = crewBps(n, c.split.creator);
+  const creator = new K.PublicKey(as || c.agent), mint = K.Keypair.generate().publicKey, bps = crewBps(n, c.split.creator);
   const shares = [{ address: creator, shareBps: bps[0] }, ...bps.slice(1).map((b) => ({ address: K.Keypair.generate().publicKey, shareBps: b })), { address: new K.PublicKey(c.vault), shareBps: c.split.vault }, { address: new K.PublicKey(c.buyer), shareBps: c.split.buyer }];
   const bh = await conn.getLatestBlockhash("confirmed"), o = { global, feeConfig, creator, mint, name: "Simulated Crew Coin Long Name 32", symbol: "SIMCREWCOIN", uri: "https://tpt4oh98wh6pordk.public.blob.vercel-storage.com/meta/f794454d11ab95a483d07728.json", devBuyLamports: 0, treasury: new K.PublicKey(c.vault), shares, blockhash: bh.blockhash, slipBps: 300 };
   const out = { crew: n, bps };
@@ -99,7 +99,7 @@ export async function GET(req) {
   const q = new URL(req.url).searchParams;
   if (q.has("cfg")) { let lut = null; if (blobEnabled()) try { const d = await pad().store.get("agent/lut.json"); lut = d && d.address; } catch {} return json(200, { ...publicCfg(), lut }, "public, max-age=30"); }
   if (q.has("simquote")) { if (limited("sq:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" }); try { return json(200, await simQuote(q.get("simquote"), q.get("dev")), "no-store"); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 300) }); } }
-  if (q.has("simcrew")) { if (limited("sc:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" }); try { return json(200, await simCrew(Math.max(1, Math.min(4, Number(q.get("simcrew")) || 2))), "no-store"); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 300) }); } }
+  if (q.has("simcrew")) { if (limited("sc:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" }); try { return json(200, await simCrew(Math.max(1, Math.min(4, Number(q.get("simcrew")) || 2)), C.isPubkey(q.get("as") || "") ? q.get("as") : null), "no-store"); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 300) }); } }
   if (q.has("quotes")) { try { return json(200, await quotes(), "public, max-age=300, s-maxage=600"); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 200) }); } }
   if (q.has("holder")) { // a wallet's main-coin balance → its street perk (cosmetic)
     const w = String(q.get("holder") || ""), main = cfg().main;
