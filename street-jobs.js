@@ -80,7 +80,7 @@ export function streetJobs(A, { pid = () => "" } = {}) {
   hooks.step.push(() => { if (pkg && pkgMesh) pkgMesh.position.set(S.pos.x, 2.2, S.pos.z); });
 
   async function maybeSend() {
-    const now = Date.now(); if (W.s === sent || now - sendAt < 30e3 || !pid()) return;
+    const now = Date.now(); if (!W.s || W.s === sent || now - sendAt < 30e3 || !pid()) return;
     sendAt = now; const r = await post({ action: "score", id: pid(), name: me.name, score: W.s }).catch(() => null);
     if (r && r.ok) { sent = W.s; board = r.j; paint(); }
   }

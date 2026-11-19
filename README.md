@@ -62,3 +62,14 @@ E / tap to open the coin tower you're standing at; drag to look. Rival crews wan
 after three punches; every crime raises the WANTED stars and three stars bring the helicopter. Street cash is a toy
 score kept on the device — nothing touches a wallet or the chain. MAP brings back the overview; `?view=map` or
 `?coin=<mint>` opens in it.
+
+### The streets' add-ons (`street-*.js`, each hangs off `roam.api.hooks`)
+
+- **Others** (`street-net.js`, `lib/_street.mjs`): POST `{action: "here"}` once a second → everyone near you (warm memory, Blob shards between instances); punches land on other players; keys 1 / 2 or 👋 wave and cheer.
+- **Cars** (`street-car.js`): walk up to a passing car → STEAL CAR (a wanted star); WASD / stick drive, Shift boost; GET OUT parks it.
+- **Daily jobs** (`street-jobs.js`): three a day for everyone (seeded by the date), +100 each, +200 for all three, streak titles; the week's street board at GET `?street` (POST `{action: "score"}`).
+- **Police raid**: a coin whose creator sells it (seen in the trades feed) gets tape and red / blue lights for a day (`raids.json`, the list's `raid`).
+- **Turf** (`street-turf.js`): the four biggest coins hold the city's four sides.
+- **Mugshot** (`mugshot.js`): every coin card makes a 1200×630 booking card.
+- **Holder perks** (`street-perks.js`, GET `?holder=<wallet>`): main-coin balance → CREW / MADE / BOSS looks.
+- **Crew launch**: the creator's 60 % split in equal parts with up to three more wallets (`crewBps`, `splitCheck`); GET `?simcrew=n&as=<funded wallet>` simulates one.
