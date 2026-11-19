@@ -66,12 +66,14 @@ async function load() {
   CFG = await loadCfg();
   document.querySelectorAll("[data-name]").forEach((e) => (e.textContent = CFG.name)); document.title = CFG.name + " — the city";
   await Promise.all([loadList(), loadSlot()]);
-  if (sel) { city.flyTo(sel); openCard(sel, true); }
-  let m = "street"; try { m = localStorage.getItem("dc.mode") || "street"; } catch { /* */ }
-  if (sel || /[?&]view=map\b/.test(location.search)) m = "map";
-  setMode(m);
+  // the city always opens on foot (the owner, 2026-11-19: entering the city starts with your character); a coin's link
+  // puts you at its tower's door with its card open; MAP only when asked for (?view=map, or the MAP button this visit)
+  // (on a phone the card would cover your character: there you arrive at the door and tap the tower to open it)
+  if (sel && !matchMedia("(max-width: 760px)").matches) openCard(sel, true);
+  await setMode(/[?&]view=map\b/.test(location.search) ? "map" : "street");
+  if (sel) { if (roam.active) roam.goTo(sel); else city.flyTo(sel); }
 }
-async function loadList() { coins = await loadCoins(); city.setCoins(coins, new Date().getUTCHours()); paintPhone(); if (sel) openCard(sel, true); }
+async function loadList() { coins = await loadCoins(); city.setCoins(coins, new Date().getUTCHours()); paintPhone(); if (sel && !$("card")?.hidden) openCard(sel, true); }
 async function loadSlot() {
   const was = slot; slot = await getSlot(); paintClock();
   // a new hourly drop while the city is open: fly there, fireworks, the takeover
