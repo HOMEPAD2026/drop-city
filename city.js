@@ -121,10 +121,13 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
   const traffic = Array.from({ length: CARS }, (_, i) => ({ road: (rnd() * (N + 1)) | 0, ax: rnd() < 0.5, dir: rnd() < 0.5 ? 1 : -1, s: rnd() * N * P, v: 10 + rnd() * 14 }));
   traffic.forEach((c, i) => cars.setColorAt(i, col.setHex([0xff2e88, 0x111111, 0xffffff, 0x1a1a1a, 0x2b2b2b, 0xd91a6b][i % 6])));
   scene.add(cars, heads, tails);
+  const Z0 = new THREE.Matrix4().makeScale(0, 0, 0);
   const placeCars = (dt) => traffic.forEach((c, i) => {
-    c.s = (c.s + c.v * dt * c.dir + N * P) % (N * P);
+    if (c.hold) { cars.setMatrixAt(i, Z0); heads.setMatrixAt(i, Z0); tails.setMatrixAt(i, Z0); if ((c.hold -= dt) <= 0) c.hold = 0; return; } // taken off the road (stolen), back later
+    c.s = (c.s + c.v * dt * c.dir * (c.slow || 1) + N * P) % (N * P);
     const along = -HALF + c.s, line = -HALF + c.road * P + (c.dir > 0 ? -2.6 : 2.6);
     const x = c.ax ? along : line, z = c.ax ? line : along, yaw = c.ax ? (c.dir > 0 ? Math.PI / 2 : -Math.PI / 2) : (c.dir > 0 ? 0 : Math.PI);
+    c.x = x; c.z = z; c.yaw = yaw;
     q4.setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw); m4.compose(v3.set(x, 0.05, z), q4, s3.set(1, 1, 1)); cars.setMatrixAt(i, m4);
     const fx = Math.sin(yaw), fz = Math.cos(yaw);
     m4.compose(v3.set(x + fx * 2.25, 0.8, z + fz * 2.25), q4, s3.set(1, 1, 1)); heads.setMatrixAt(i, m4);
@@ -281,7 +284,8 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
   requestAnimationFrame(frame);
   let heliAt = null; // the helicopter hunts a spot (a wanted player) instead of circling the newest tower
   const world = { HALF, SEA_X, RING, P, R, hub: 7.5 };
-  return { setCoins, flyTo, scene, cam, towers, burst, solids, bodies, world, canvas,
+  const CAR_COLORS = [0xff2e88, 0x111111, 0xffffff, 0x1a1a1a, 0x2b2b2b, 0xd91a6b];
+  return { setCoins, flyTo, scene, cam, towers, burst, solids, bodies, world, canvas, traffic, carColor: (i) => CAR_COLORS[i % 6],
     setControl(f) { ctl = f; drag = null; pts.clear(); goal = null; idle = 0; },
     setHeliTarget(v) { heliAt = v; },
     get orbit() { return orbit; } };

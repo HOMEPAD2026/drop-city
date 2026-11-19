@@ -29,7 +29,7 @@ let movesP = null; const srcP = {};
 const moves = () => movesP || (movesP = gl("/models/crew/moves.glb").then((g) => new Map(g.animations.map((c) => [c.name, c]))).catch((e) => { movesP = null; throw e; }));
 const src = (f) => srcP[f] || (srcP[f] = gl(`/models/crew/${f}.glb`).catch((e) => { delete srcP[f]; throw e; }));
 // the game's names → the KayKit clips (there is no "run": moving is walk or sprint)
-const AS = { idle: "Idle_A", walk: "Walking_A", sprint: "Running_A", jump: "Jump_Full_Short", hit: "Hit_A", die: "Death_A", punch: "Melee_Unarmed_Attack_Punch_A", wave: "Waving", cheer: "Cheering", spawn: "Spawn_Ground", dodge: "Dodge_Forward" };
+const AS = { idle: "Idle_A", walk: "Walking_A", sprint: "Running_A", jump: "Jump_Full_Short", hit: "Hit_A", die: "Death_A", punch: "Melee_Unarmed_Attack_Punch_A", wave: "Waving", cheer: "Cheering", spawn: "Spawn_Ground", dodge: "Dodge_Forward", drive: "Sit_Chair_Idle" };
 const HOLD = new Set(["Death_A"]);
 const NAME_OF = Object.fromEntries(Object.entries(AS).map(([k, v]) => [v, k]));
 export const clipName = (c) => NAME_OF[c] || "idle";

@@ -84,3 +84,6 @@ body.warp #city { animation: warp 0.4s; } @keyframes warp { 0% { filter: brightn
   #b-emote { display: block; position: fixed; right: 132px; bottom: calc(100px + env(safe-area-inset-bottom)); width: 46px; height: 46px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.2); background: rgba(20, 20, 24, 0.75); font-size: 20px; touch-action: none; }
 }
 @media (max-width: 760px) { .here { font-size: 11px; } }
+
+/* behind the wheel: no jump / punch / wave */
+body.in-car #b-hit, body.in-car #b-jump, body.in-car #b-emote { display: none !important; }
