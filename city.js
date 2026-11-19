@@ -179,6 +179,12 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
     if (coin.image) { const im = new Image(); im.crossOrigin = "anonymous"; im.onload = () => draw(im); im.src = coin.image; }
     logoCache.set(coin.mint, t); return t;
   };
+  const tapeMat = (() => { const c = document.createElement("canvas"); c.width = 512; c.height = 32; const x = c.getContext("2d");
+    x.fillStyle = "#ffd21f"; x.fillRect(0, 0, 512, 32); x.fillStyle = "#111"; x.font = "900 20px Inter, Arial, sans-serif"; x.textBaseline = "middle";
+    x.textAlign = "center"; x.fillText("POLICE LINE · DO NOT CROSS", 256, 17);
+    const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; t.repeat.set(1.5, 1);
+    return new THREE.MeshBasicMaterial({ map: t, side: THREE.DoubleSide, toneMapped: false }); })();
+  const noMat = new THREE.MeshBasicMaterial({ visible: false }), postG = new THREE.CylinderGeometry(0.12, 0.12, 1.5, 6), postM = new THREE.MeshStandardMaterial({ color: 0x222222 });
   const crownMat = new THREE.MeshStandardMaterial({ color: 0xffd6e8, emissive: 0xff2e88, emissiveIntensity: 0.9, metalness: 0.95, roughness: 0.15 });
   const towerOf = (coin, x, z, scale) => {
     const g = new THREE.Group(); g.position.set(x, 0, z);
@@ -191,7 +197,14 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
       const beamG = new THREE.CylinderGeometry(1.2, 3, 220, 16, 1, true); beamG.translate(0, 110, 0);
       g.add(new THREE.Mesh(beamG, new THREE.MeshBasicMaterial({ color: 0xff2e88, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }))); }
     body.userData.mint = coin.mint; sign.userData.mint = coin.mint;
-    return { group: g, body, sign, coin, h };
+    // the police raided it (its creator sold in the last day): tape round the foot, red and blue lights on the roof
+    let lights = null;
+    if (coin.raid) {
+      const w = 9 * scale + 4, tape = new THREE.Mesh(new THREE.BoxGeometry(w, 0.7, w), [tapeMat, tapeMat, noMat, noMat, tapeMat, tapeMat]); tape.position.y = 1.1; g.add(tape);
+      for (const [x, z] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { const p = new THREE.Mesh(postG, postM); p.position.set((x * w) / 2, 0.75, (z * w) / 2); g.add(p); }
+      lights = [0xff2340, 0x2f6bff].map((c, k) => { const l = new THREE.Mesh(new THREE.SphereGeometry(1.1 * scale, 12, 8), new THREE.MeshBasicMaterial({ color: c, toneMapped: false })); l.position.set((k ? 2.2 : -2.2) * scale, h + 1.2, 0); g.add(l); return l; });
+    }
+    return { group: g, body, sign, coin, h, lights };
   };
   // ---------------- motion: towers rise when they're new, graduations fire off, the helicopter follows the newest
   const born = new Map(), wasMade = new Set(); let firstSet = true, newest = null;
@@ -274,7 +287,7 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
     stepBursts(dt);
     for (const [m, t] of towers) { const k = Math.max(0, Math.min(1, (T - (born.get(m) || 0)) / 1.4)); t.group.scale.y = k < 1 ? Math.max(0.001, 1 - Math.pow(1 - k, 3) + Math.sin(k * Math.PI) * 0.08) : 1; }
     heli.userData.blink.visible = (T % 1) < 0.15; heli.userData.beam.rotation.z = Math.sin(T * 0.6) * 0.35; heli.userData.beam.rotation.x = Math.cos(T * 0.45) * 0.3;
-    for (const t of towers.values()) t.sign.position.y = t.h + 6 + Math.sin(T * 2 + t.h) * 0.6;
+    for (const t of towers.values()) { t.sign.position.y = t.h + 6 + Math.sin(T * 2 + t.h) * 0.6; if (t.lights) { const on = (T * 3) % 1 < 0.5; t.lights[0].visible = on; t.lights[1].visible = !on; } }
     if (ctl) { ctl(dt, T); composer.render(); requestAnimationFrame(frame); return; }
     if (goal) { for (const k of ["tx", "tz", "ty", "dist"]) orbit[k] += (goal[k] - orbit[k]) * Math.min(1, dt * 2.5); }
     else if (idle > 6) { orbit.yaw += dt * 0.04; for (const k of ["tx", "tz", "ty"]) orbit[k] += (0 - orbit[k]) * dt * 0.3; }

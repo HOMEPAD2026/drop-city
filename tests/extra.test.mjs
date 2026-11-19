@@ -54,4 +54,29 @@ const h = oauth1("POST", "https://api.twitter.com/1.1/statuses/update.json", { i
   { ck: "xvz1evFS4wEEPTGEFPHBog", cs: "kAcSOqF21Fu85e7zjz7ZN2U4ZRhfV3WpwPAoE3Z7kBw", tk: "370773112-GmHxMAgYyLbNEtIKZeRNFsMKPR9EyMZeS9weJAEb", ts: "LswwdoUaIvS8ltyTt5jkRh4J50vUPVVHtR2YPi5kE" },
   "kYjzVBB8Y0ZFabxSWbWovY3uYSQ2pTgmZeNu2VS4cg", 1318622958);
 ok(h.includes('oauth_signature="hCtSmYh%2BiHYCEqBWrE7C7hYmtUk%3D"'), "the OAuth signature matches X's example");
+
+// ---------------- the police raid: a coin's creator selling it shows on the list for a day
+{
+  const RM = "Raid" + "1".repeat(40), RC = kp().pub, CURVE = kp().pub;
+  docs.set(`coins/${RM}.json`, { mint: RM, kind: "user", creator: RC, curve: CURVE, vault: kp().pub, name: "Raided", symbol: "RAID", launchedAt: Math.floor(clock / 1000) - 600 });
+  docs.delete("index.json");
+  const seenSig = "S" + "2".repeat(60), other = kp().pub;
+  C.CFG.solUsd = 150;
+  C.CFG.rpc = async (m, p) => {
+    if (m === "getSignaturesForAddress") return p[0] === CURVE ? [{ signature: seenSig, blockTime: Math.floor(clock / 1000) }] : [];
+    if (m === "getTransaction") return { transaction: { message: { accountKeys: [RC, CURVE, other] } }, meta: { preBalances: [1e9, 5e9, 0], postBalances: [2e9, 4e9, 0] } };
+    if (m === "getMultipleAccounts") return { value: [] };
+    return null;
+  };
+  const X2 = makeExtra({ pad: makePad({ store, now: () => clock }), now: () => clock });
+  const tr = await X2.trades();
+  ok(tr.items.some((t) => t.mint === RM && t.side === "sell"), "the creator's sell is in the trades feed");
+  const raids = docs.get("raids.json");
+  ok(raids && raids[RM] && raids[RM].sol === 1 && raids[RM].n === 1, "a creator's sell raids the tower");
+  const L2 = await makePad({ store, now: () => clock }).list();
+  ok(L2.items.find((x) => x.mint === RM).raid.sol === 1, "the list carries the raid");
+  clock += 25 * 3600e3;
+  const L3 = await makePad({ store, now: () => clock }).list();
+  ok(!L3.items.find((x) => x.mint === RM).raid, "a raid is over after a day");
+}
 console.log(`extra: ${pass} passed, ${fail} failed`); if (fail) process.exit(1);

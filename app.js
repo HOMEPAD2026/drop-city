@@ -107,6 +107,7 @@ function paintPhone() {
   el.querySelectorAll("[data-m]").forEach((x) => (x.onclick = () => { go(x.dataset.m); openCard(x.dataset.m, true); document.body.classList.remove("ph-open"); }));
 }
 
+const ago = (t) => { const m = Math.max(1, Math.round((Date.now() - t) / 60e3)); return m < 60 ? `${m} min ago` : `${Math.round(m / 60)} h ago`; };
 // ---------------- a coin's card
 function openCard(mint, quiet) {
   const c = coins.find((x) => x.mint === mint); if (!c) return; sel = mint;
@@ -116,6 +117,7 @@ function openCard(mint, quiet) {
     <h2>${esc(c.name)}</h2><span class="sym">$${esc(c.symbol)} · ${esc(short(c.mint))}</span>${c.quote ? `<span class="qtag">${esc(c.quote.id)} PAIR</span>` : ""}
     <div class="kv"><div><b>${usd(c.mcapUsd)}</b><small>Market cap</small></div><div><b>${c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>Price</small></div><div><b>${c.hour ? c.hour.slice(11, 13) + ":00" : "–"}</b><small>Dropped</small></div></div>
     <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? "MADE — graduated to PumpSwap" : `bonding curve ${(c.progress || 0).toFixed(1)}%`}</small>
+    ${c.raid ? `<div class="raid"><b>🚨 POLICE RAID</b><span>Its creator sold ${Number(c.raid.sol).toFixed(c.raid.sol < 1 ? 3 : 2)} SOL of it ${ago(c.raid.at)} — seen on chain${c.raid.sig ? ` · <a href="https://solscan.io/tx/${esc(c.raid.sig)}" target="_blank" rel="noopener">the sale</a>` : ""}. The tape comes down after a day without another sale.</span></div>` : ""}
     ${c.description ? `<p style="color:var(--dim);font-size:13px">${esc(c.description)}</p>` : ""}
     ${feeBox(c, CFG)}
     <div class="links"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">Trade on pump.fun</a><a href="https://solscan.io/token/${esc(c.mint)}" target="_blank" rel="noopener">Solscan</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">Chart</a></div>`;
