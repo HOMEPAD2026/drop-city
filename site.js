@@ -34,7 +34,7 @@ async function refresh() {
 async function start() {
   CFG = await loadCfg();
   document.querySelectorAll("[data-name]").forEach((e) => (e.textContent = CFG.name));
-  const title = () => (document.title = `${CFG.name} — ${t("title", "one drop every hour")}`);
+  const title = () => (document.title = `${CFG.name} — ${t("title", "the launchpad you can play")}`);
   // a coin page (/coin/<mint>) keeps the title the server gave it
   if (!window.__COIN) title();
   initLang(() => { if (!window.__COIN) title(); paintAll(); paintFees(); paintVote(CFG).then(paintTicker); paintWallets(CFG); });
