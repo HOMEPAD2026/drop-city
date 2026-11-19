@@ -11,8 +11,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="icon" href="/images/icon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/site.css?v=m2">
+<link rel="stylesheet" href="/intro.css?v=1"><script>try{if(sessionStorage.getItem("dc.intro")&&!/[?&]intro=1\b/.test(location.search))document.documentElement.classList.add("nointro")}catch(e){}setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on)i.remove(),document.documentElement.style.overflow=""},7000)</script>
 </head>
 <body>
+<div id="intro"></div>
 <nav class="nav" id="nav">
   <a class="logo" href="/"><b data-name>DROP CITY</b></a>
   <div class="navlinks" id="links"><a href="#main-coin" data-i18n="nMain">Main coin</a><a href="#explore" data-i18n="nExplore">Explore</a><a href="#vote" data-i18n="nVote">Vote</a><a href="#live" data-i18n="nLive">Live</a><a href="#launch" data-i18n="nLaunch">Launch</a><a href="/city" data-i18n="nCity">Play the city</a><a href="#check" data-i18n="nCheck">Check a CA</a><a href="#creators" data-i18n="nCreators">Creators</a></div>
@@ -129,5 +131,6 @@
 <nav class="bbar" aria-label="Quick"><button type="button" data-drop data-i18n="bLaunch">Launch</button><a href="#explore" data-i18n="bExplore">Explore</a><a href="#vote" data-i18n="bVote">Vote</a><a href="/city" data-i18n="bCity">City</a></nav>
 <script src="/solwallet.js" defer></script>
 <script type="module" src="/site.js"></script>
+<script type="module" async src="/intro.js?v=1"></script>
 </body>
 </html>
