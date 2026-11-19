@@ -140,3 +140,16 @@ body.street .toast, .toast { bottom: 72px; }
   body.street .jobs { top: calc(var(--th, 52px) + 90px); max-height: calc(100dvh - var(--th, 52px) - 310px); } body.street .turf { top: calc(var(--th, 52px) + 90px); } .jobs.open ~ .turf { display: none !important; }
   body.street .toast { top: calc(var(--th, 52px) + 144px); }
 }
+
+/* the minimap and the target's edge arrow */
+.mmap { display: none; position: fixed; right: 18px; top: 140px; width: 150px; height: 150px; border-radius: 50%; z-index: 5; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5); pointer-events: none; }
+body.street .mmap { display: block; } body.street.card-open .mmap { display: none; }
+.wp { position: fixed; z-index: 6; transform: translate(-50%, -50%); pointer-events: none; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+body:not(.street) .wp { display: none; }
+.wp i { width: 0; height: 0; border-left: 11px solid transparent; border-right: 11px solid transparent; border-bottom: 18px solid #ffd36b; transform: rotate(calc(var(--r, 0rad) + 90deg)); filter: drop-shadow(0 0 6px #ffb02e); }
+.wp b { font: 800 11px var(--mono); color: #ffd36b; background: rgba(10, 10, 11, 0.8); padding: 2px 6px; border-radius: 6px; white-space: nowrap; }
+@media (max-width: 760px) {
+  .mmap { width: 104px; height: 104px; right: 8px; top: calc(var(--th, 52px) + 90px); }
+  body.street .turf { top: calc(var(--th, 52px) + 200px); }
+  .jobs.open ~ .mmap { display: none !important; }
+}

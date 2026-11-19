@@ -76,6 +76,20 @@ export function streetJobs(A, { pid = () => "" } = {}) {
       pkgMesh.visible = true; A.toast(`Take it to $${t.coin.symbol}'s tower — 2 minutes.`); paint();
     } };
   });
+  // the job's target for the map and the beam (street-map.js): the package's tower, the pickup, the newest drop,
+  // an unvisited tower, a working ATM — the first job not done yet that has a place
+  hooks.step.push(() => {
+    const open = (id) => J.picks.includes(id) && !J.done.includes(id);
+    let tg = null;
+    const tw = (m) => { const t = city.towers.get(m); return t ? { x: t.group.position.x, z: t.group.position.z, label: "$" + t.coin.symbol } : null; };
+    const nearest = (list) => { let b = null, bd = 1e9; for (const p of list) { const d = Math.hypot(p.x - S.pos.x, p.z - S.pos.z); if (d < bd) { bd = d; b = p; } } return b; };
+    if (pkg) tg = tw(pkg.to);
+    else if (open("deliver")) tg = { x: 0, z: 0, label: "PACKAGE" };
+    else if (open("newest")) { const m = newest(); tg = m ? tw(m) : null; }
+    else if (open("visit")) tg = nearest([...city.towers.values()].filter((t) => !J.seen.includes(t.coin.mint)).map((t) => ({ x: t.group.position.x, z: t.group.position.z, label: "$" + t.coin.symbol })));
+    else if (open("atm")) tg = nearest(A.atms.filter((a) => a.cd <= 0).map((a) => ({ x: a.x, z: a.z, label: "ATM" })));
+    A.target = tg;
+  });
   // the package rides with you (above your head)
   hooks.step.push(() => { if (pkg && pkgMesh) pkgMesh.position.set(S.pos.x, 2.2, S.pos.z); });
 
