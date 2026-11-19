@@ -79,4 +79,23 @@ ok(h.includes('oauth_signature="hCtSmYh%2BiHYCEqBWrE7C7hYmtUk%3D"'), "the OAuth 
   const L3 = await makePad({ store, now: () => clock }).list();
   ok(!L3.items.find((x) => x.mint === RM).raid, "a raid is over after a day");
 }
+
+// ---------------- a cold start keeps the trades that came after the last saved one (the feed once froze for hours)
+{
+  const TM = "Cold" + "3".repeat(40), TC = kp().pub, CV = kp().pub;
+  docs.set(`coins/${TM}.json`, { mint: TM, kind: "user", creator: TC, curve: CV, vault: kp().pub, name: "Cold", symbol: "COLD", launchedAt: Math.floor(clock / 1000) - 7200 });
+  docs.delete("index.json");
+  docs.set("trades.json", { at: clock - 3600e3, items: [{ sig: "OLD" + "1".repeat(60), at: clock - 3600e3, mint: TM, symbol: "COLD", side: "buy", sol: 0.1 }] });
+  const NEW = "N" + "4".repeat(70), buyer = kp().pub;
+  C.CFG.rpc = async (m, p) => {
+    if (m === "getSignaturesForAddress") return p[0] === CV ? [{ signature: NEW, blockTime: Math.floor(clock / 1000) - 60 }, { signature: "OLD" + "1".repeat(60), blockTime: Math.floor((clock - 3600e3) / 1000) }] : [];
+    if (m === "getTransaction") return { transaction: { message: { accountKeys: [buyer, CV] } }, meta: { preBalances: [5e9, 1e9], postBalances: [4e9, 2e9] } };
+    if (m === "getMultipleAccounts") return { value: [] };
+    return null;
+  };
+  const X3 = makeExtra({ pad: makePad({ store, now: () => clock }), now: () => clock });
+  const tr = await X3.trades();
+  ok(tr.items.some((t) => t.sig === NEW && t.side === "buy" && t.sol === 1), "a fresh instance keeps a trade newer than the last saved one");
+  ok(tr.scan && tr.scan.ok >= 1 && tr.scan.err === 0, "the feed says how its read went");
+}
 console.log(`extra: ${pass} passed, ${fail} failed`); if (fail) process.exit(1);

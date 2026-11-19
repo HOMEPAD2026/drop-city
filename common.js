@@ -3,7 +3,7 @@ export const API = "/api/pad";
 export const $ = (id) => document.getElementById(id);
 export const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 export const short = (a) => (a ? a.slice(0, 4) + "…" + a.slice(-4) : "");
-export const usd = (v) => (v == null ? "–" : v >= 1e6 ? "$" + (v / 1e6).toFixed(2) + "M" : v >= 1e3 ? "$" + (v / 1e3).toFixed(1) + "K" : "$" + v.toFixed(0));
+export const usd = (v) => (v == null ? "–" : v >= 1e6 ? "$" + (v / 1e6).toFixed(2) + "M" : v >= 1e3 ? "$" + (v / 1e3).toFixed(1) + "K" : v >= 10 ? "$" + v.toFixed(0) : v >= 0.01 ? "$" + v.toFixed(2) : v > 0 ? "<$0.01" : "$0");
 export const hh = (ms) => new Date(ms).toISOString().slice(11, 16);
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 export const getJ = (q) => fetch(API + q, { cache: "no-store" }).then((r) => r.json());
