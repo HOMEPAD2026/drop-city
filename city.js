@@ -54,15 +54,24 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
 
   // the street grid: blocks of B, roads of R
   const B = 30, R = 12, N = 9, P = B + R, HALF = (N * P) / 2;
-  const roadTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 256; const x = c.getContext("2d");
-    x.fillStyle = "#2c2830"; x.fillRect(0, 0, 256, 256);
-    for (let i = 0; i < 900; i++) { x.fillStyle = `rgba(255,255,255,${Math.random() * 0.04})`; x.fillRect(Math.random() * 256, Math.random() * 256, 2, 2); }
-    x.fillStyle = "#ff2e88"; for (let i = 0; i < 8; i++) x.fillRect(126, i * 32 + 4, 4, 18);
-    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t; })();
-  const land = new THREE.Mesh(new THREE.PlaneGeometry(N * P + 60, N * P + 60), new THREE.MeshStandardMaterial({ color: 0x302b35, roughness: 0.6, metalness: 0.05 }));
+  // floors from ARCIRCLE WORLD (images/city): KART's neon-city asphalt on the roads (our lines drawn over it), a
+  // paint-splashed asphalt on the blocks, RAID QUEENS' gold-ringed marble on CLOCK PLAZA. Canvas stand-ins until they load.
+  const TL = new THREE.TextureLoader(), ANI = Math.min(8, renderer.capabilities.getMaxAnisotropy());
+  const roadTexs = [];
+  const roadTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 512; const x = c.getContext("2d");
+    const paint = (img) => {
+      if (img) x.drawImage(img, 0, 0, 512, 512); else { x.fillStyle = "#2c2830"; x.fillRect(0, 0, 512, 512); }
+      x.fillStyle = "rgba(255,255,255,0.75)"; x.fillRect(14, 0, 7, 512); x.fillRect(491, 0, 7, 512); // the road's edge lines
+      x.fillStyle = "#ff2e88"; x.fillRect(250, 40, 12, 200); x.fillRect(250, 296, 12, 200); // the middle dashes
+      for (const t of roadTexs) t.needsUpdate = true; };
+    paint(null);
+    const im = new Image(); im.onload = () => paint(im); im.src = "/images/city/road.webp";
+    const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANI; return t; })();
+  const tex = (u, rep, srgb = true) => { const t = TL.load(u); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(rep, rep); if (srgb) t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = ANI; return t; };
+  const land = new THREE.Mesh(new THREE.PlaneGeometry(N * P + 60, N * P + 60), new THREE.MeshStandardMaterial({ color: 0x9a94b8, map: tex("/images/city/street.webp", (N * P + 60) / 16), roughness: 0.7, metalness: 0.05 }));
   land.rotation.x = -Math.PI / 2; land.position.set(0, -0.05, 0); scene.add(land);
   for (let i = 0; i <= N; i++) for (const rot of [0, 1]) {
-    const t = roadTex.clone(); t.needsUpdate = true; t.repeat.set(1, (N * P) / 32);
+    const t = roadTex.clone(); t.needsUpdate = true; t.repeat.set(1, (N * P) / R); roadTexs.push(t);
     const m = new THREE.Mesh(new THREE.PlaneGeometry(R, N * P), new THREE.MeshStandardMaterial({ map: t, roughness: 0.5, metalness: 0.1 }));
     m.rotation.x = -Math.PI / 2; if (rot) m.rotation.z = Math.PI / 2;
     const c = -HALF + i * P; if (rot) m.position.set(0, 0.01, c); else m.position.set(c, 0.01, 0); scene.add(m);
@@ -148,7 +157,7 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
 
   // ---------------- CLOCK PLAZA: 24 hour lots on a ring, the hour numbers painted on the ground
   const RING = 46, plaza = new THREE.Group(); scene.add(plaza);
-  const plazaFloor = new THREE.Mesh(new THREE.CircleGeometry(RING + 22, 72), new THREE.MeshStandardMaterial({ color: 0x3a3340, roughness: 0.5, metalness: 0.1 }));
+  const plazaFloor = new THREE.Mesh(new THREE.CircleGeometry(RING + 22, 72), new THREE.MeshStandardMaterial({ color: 0xe6dce8, map: tex("/images/city/plaza.webp", 1), emissive: 0xffc861, emissiveMap: tex("/images/city/plaza-e.webp", 1), emissiveIntensity: 0.9, roughness: 0.45, metalness: 0.1 }));
   plazaFloor.rotation.x = -Math.PI / 2; plazaFloor.position.y = 0.03; plaza.add(plazaFloor);
   const ringLine = new THREE.Mesh(new THREE.RingGeometry(RING - 0.4, RING + 0.4, 96), new THREE.MeshBasicMaterial({ color: 0xff2e88, toneMapped: false }));
   ringLine.rotation.x = -Math.PI / 2; ringLine.position.y = 0.06; plaza.add(ringLine);
@@ -156,7 +165,7 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
   const ghosts = [];
   for (let h = 0; h < 24; h++) {
     const [x, z] = lotPos(h);
-    const lab = new THREE.Mesh(new THREE.PlaneGeometry(9, 3), new THREE.MeshBasicMaterial({ map: signTex(String(h).padStart(2, "0") + ":00", "#ffffff"), transparent: true, opacity: 0.55, toneMapped: false }));
+    const lab = new THREE.Mesh(new THREE.PlaneGeometry(9, 3), new THREE.MeshBasicMaterial({ map: signTex(String(h).padStart(2, "0") + ":00", "#ffd6e8"), transparent: true, opacity: 0.32, toneMapped: false }));
     lab.rotation.x = -Math.PI / 2; lab.rotation.z = -Math.atan2(z, x) - Math.PI / 2; lab.position.set(x * 1.27, 0.08, z * 1.27); plaza.add(lab);
     const g = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(9, 14, 9)), new THREE.LineBasicMaterial({ color: 0xff2e88, transparent: true, opacity: 0.35, toneMapped: false }));
     g.position.set(x, 7, z); plaza.add(g); ghosts.push(g);

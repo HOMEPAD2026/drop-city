@@ -1,0 +1,13 @@
+The city's background music (played in a shuffled order by music.js), from ARCIRCLE WORLD's playlist:
+
+kpop-1.mp3  "Epic K-pop Music" by ribhavagrawal (Pixabay #488526)
+kpop-2.mp3  "Tell Me" (K-pop) by kontraa (Pixabay #244611)
+kpop-3.mp3  "Modern K-pop" by kulakovka (Pixabay #308489)
+kpop-4.mp3  "Han River Nights" (ambient K-pop) by ultrafi (Pixabay #476579)
+kpop-5.mp3  "Neon Run" (K-pop) by sounovamusic (Pixabay #473070)
+kpop-6.mp3  "K-pop" by kulakovka (Pixabay #308509)
+
+Source: pixabay.com, under the Pixabay Content License. 128 kbps MP3 for streaming.
+
+Floors (images/city) from ARCIRCLE WORLD: road.webp (ARCIRCLE KART's Nexus Circuit road), street.webp (a hunting
+ground's floor), plaza.webp + plaza-e.webp (RAID QUEENS' sky plaza) — made with Meshy for ARCIRCLE.

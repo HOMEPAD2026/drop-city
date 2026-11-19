@@ -73,3 +73,9 @@ score kept on the device — nothing touches a wallet or the chain. MAP brings b
 - **Mugshot** (`mugshot.js`): every coin card makes a 1200×630 booking card.
 - **Holder perks** (`street-perks.js`, GET `?holder=<wallet>`): main-coin balance → CREW / MADE / BOSS looks.
 - **Crew launch**: the creator's 60 % split in equal parts with up to three more wallets (`crewBps`, `splitCheck`); GET `?simcrew=n&as=<funded wallet>` simulates one.
+
+### Floors and music (from ARCIRCLE WORLD)
+
+`images/city`: road.webp (ARCIRCLE KART's Nexus Circuit asphalt; the city draws its own lines over it), street.webp (the
+blocks), plaza.webp + plaza-e.webp (RAID QUEENS' gold-ringed marble on CLOCK PLAZA, its glow map). `audio/music`: six K-pop
+tracks under the Pixabay Content License (CREDITS.txt), played shuffled by `music.js` from the first tap; ♫ in the mode bar.

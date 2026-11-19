@@ -12,6 +12,7 @@ import { streetCar } from "/street-car.js";
 import { streetJobs } from "/street-jobs.js";
 import { streetTurf } from "/street-turf.js";
 import { streetPerks } from "/street-perks.js";
+import { makeMusic } from "/music.js";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } };
 let coins = [], slot = null, tab = "wanted", sel = new URLSearchParams(location.search).get("coin");
@@ -19,6 +20,7 @@ const city = makeCity($("city"), { onPick: (m) => openCard(m) });
 // on foot (roam.js): a street name and a crew member on the first visit, then the streets; MAP is the old view
 const roam = makeRoam(city, { onOpen: (m) => openCard(m, true), toast: (t) => note(t), sound: tone });
 streetCar(roam.api); const net = streetNet(roam.api); const jobs = streetJobs(roam.api, { pid: () => net.pid }); streetTurf(roam.api); const perks = streetPerks(roam);
+const music = makeMusic({ button: $("m-music"), notify: (t) => note(t, 2600) });
 const go = (m) => { if (roam.active) roam.goTo(m); else city.flyTo(m); };
 async function setMode(m) {
   if (m === "street" && !roam.active) { if (!(await roam.enter())) return; }
@@ -136,4 +138,4 @@ walletButton($("wallet"), () => { }).then((f) => (paintWallet = f));
 
 $("drop").onclick = () => openDrop();
 load();
-window.__dc = { city, roam, net, jobs, setMode, openDrop, grind, coins: () => coins };
+window.__dc = { city, roam, net, jobs, music, setMode, openDrop, grind, coins: () => coins };
