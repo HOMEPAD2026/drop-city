@@ -344,7 +344,7 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
   let heliAt = null; // the helicopter hunts a spot (a wanted player) instead of circling the newest tower
   const world = { HALF, SEA_X, RING, P, R, hub: 7.5 };
   const CAR_COLORS = [0xff2e88, 0x111111, 0xffffff, 0x1a1a1a, 0x2b2b2b, 0xd91a6b];
-  return { setCoins, flyTo, scene, cam, towers, burst, solids, bodies, world, canvas, traffic, carColor: (i) => CAR_COLORS[i % 6], turfAt, get turf() { return turf; },
+  return { renderer, setCoins, flyTo, scene, cam, towers, burst, solids, bodies, world, canvas, traffic, carColor: (i) => CAR_COLORS[i % 6], turfAt, get turf() { return turf; },
     setLow, get low() { return low; },
     setControl(f) { ctl = f; drag = null; pts.clear(); goal = null; idle = 0; },
     setHeliTarget(v) { heliAt = v; },

@@ -11,3 +11,7 @@ Source: pixabay.com, under the Pixabay Content License. 128 kbps MP3 for streami
 
 Floors (images/city) from ARCIRCLE WORLD: road.webp (ARCIRCLE KART's Nexus Circuit road), street.webp (a hunting
 ground's floor), plaza.webp + plaza-e.webp (RAID QUEENS' sky plaza) — made with Meshy for ARCIRCLE.
+
+Models (models/street) from ARCIRCLE WORLD, made with Meshy for ARCIRCLE: car.glb (ARCIRCLE KART's ROCKET ROADSTER),
+street-lamp / park-bench / flower-planter (the town's plaza pieces), neon-tree (KART's Nexus Circuit). Packed with meshopt
++ KTX2 (the transcoder in vendor/three/basis).

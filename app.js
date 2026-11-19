@@ -18,6 +18,8 @@ import { streetMap } from "/street-map.js";
 import { streetVault } from "/street-vault.js";
 import { streetTrades } from "/street-trades.js";
 import { streetFx } from "/street-fx.js";
+import { streetProps } from "/street-props.js";
+import { streetPolice } from "/street-police.js";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } };
 let coins = [], slot = null, tab = "wanted", sel = new URLSearchParams(location.search).get("coin");
@@ -25,7 +27,7 @@ const city = makeCity($("city"), { onPick: (m) => openCard(m) });
 // on foot (roam.js): a street name and a crew member on the first visit, then the streets; MAP is the old view
 let fx = null; // street-fx.js (made below) plays the street's sounds; the site's tone until then
 const roam = makeRoam(city, { onOpen: (m) => openCard(m, true), toast: (t) => note(t), sound: (k) => (fx ? fx.play(k) : tone(k)) });
-roam.api.car = streetCar(roam.api); const net = streetNet(roam.api); roam.api.net = net; const jobs = streetJobs(roam.api, { pid: () => net.pid }); const vault = streetVault(roam.api, { slot: () => slot, pid: () => net.pid }); streetMap(roam.api); const trades = streetTrades(roam.api); fx = streetFx(roam.api); streetTurf(roam.api); const perks = streetPerks(roam);
+roam.api.car = streetCar(roam.api); const net = streetNet(roam.api); roam.api.net = net; const jobs = streetJobs(roam.api, { pid: () => net.pid }); const vault = streetVault(roam.api, { slot: () => slot, pid: () => net.pid }); streetMap(roam.api); const trades = streetTrades(roam.api); fx = streetFx(roam.api); streetProps(roam.api); streetPolice(roam.api); streetTurf(roam.api); const perks = streetPerks(roam);
 // the top bar's real height (it wraps on narrow phones): the street's HUD rows sit under it (roam.css --th)
 const topH = () => { const b = [...document.querySelectorAll(".top > *")].filter((e) => getComputedStyle(e).display !== "none").map((e) => e.getBoundingClientRect().bottom); document.documentElement.style.setProperty("--th", Math.ceil(Math.max(44, ...b)) + "px"); };
 addEventListener("resize", topH); new MutationObserver(topH).observe(document.body, { attributes: true, attributeFilter: ["class"] }); document.fonts && document.fonts.ready.then(topH); topH();

@@ -79,3 +79,14 @@ score kept on the device — nothing touches a wallet or the chain. MAP brings b
 `images/city`: road.webp (ARCIRCLE KART's Nexus Circuit asphalt; the city draws its own lines over it), street.webp (the
 blocks), plaza.webp + plaza-e.webp (RAID QUEENS' gold-ringed marble on CLOCK PLAZA, its glow map). `audio/music`: six K-pop
 tracks under the Pixabay Content License (CREDITS.txt), played shuffled by `music.js` from the first tap; ♫ in the mode bar.
+
+### More of the streets (2026-11-19)
+
+- `street-vault.js`: the hour's vault falls into the plaza when the hour's coin drops; the first to open it (POST `{action: "vault"}`, GET `?vault=<hour>`) is FIRST ON THE SCENE.
+- `street-trades.js`: live trades (GET `?trades`) burst from their towers.
+- `street-map.js`: the minimap and the job target's beam + edge arrow.
+- `street-fx.js`: hit-stop, combo, squash, coins to the cash, star stamp, siren edge, JOB DONE; Web Audio sounds (♪).
+- `street-police.js`: cruisers from three stars; caught on foot costs a third of the street cash.
+- `street-props.js` + `models.js`: ARCIRCLE WORLD's lamps, benches, planters, neon trees (meshopt + KTX2); the stolen car is the ROCKET ROADSTER.
+- `perf.js` + `lib/_diag.mjs`: light graphics on slow devices; GET `?diag` shows real devices' frame rates and errors.
+- Agent health: `agent/state.json` → the site's DROPS PAUSED; DMs to `TG_OWNER_CHAT` (env) when the agent's wallet is empty or low.

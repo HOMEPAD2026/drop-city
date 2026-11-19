@@ -3,6 +3,7 @@
 // leaves it parked where it stands; the road gets its car back a little later. Rivals in the way are knocked flat;
 // walls stop you. Other players see your car (street-net.js draws it with carOf). Traffic doesn't stop for people on foot.
 const PALETTE = [0xff2e88, 0x111111, 0xf4f4f4, 0x1a1a1a, 0x2b2b2b, 0xd91a6b, 0xffd36b, 0x3dffb5, 0x5ce1ff, 0x9b6bff, 0xff7a3d, 0xc0c0c0];
+import { load } from "/models.js";
 export function streetCar(A) {
   const { THREE, S, root, city, hooks, PHONE } = A;
   // one convertible, drawn from boxes: the paint's material per colour, the rest shared
@@ -18,7 +19,17 @@ export function streetCar(A) {
     head: new THREE.MeshBasicMaterial({ color: 0xfff1c9, toneMapped: false, side: THREE.DoubleSide }), tailL: new THREE.MeshBasicMaterial({ color: 0xff2350, toneMapped: false, side: THREE.DoubleSide }) };
   const paints = new Map();
   const paint = (hex) => { if (!paints.has(hex)) paints.set(hex, new THREE.MeshStandardMaterial({ color: hex, metalness: 0.35, roughness: 0.3, emissive: hex, emissiveIntensity: 0.1 })); return paints.get(hex); };
-  function carOf(ci = 1, hex = null) {
+  // the real car: ARCIRCLE KART's ROCKET ROADSTER (models/street/car.glb, packed by ARCIRCLE WORLD; its nose at −X like
+  // the karts', turned to face +Z here), fitted to 4.6 m; the drawn convertible until it's in (and for the police)
+  let real = null;
+  load(city.renderer, "/models/street/car.glb").then((g) => { const o = g.scene; o.rotation.y = Math.PI / 2; o.updateMatrixWorld(true);
+    const b = new THREE.Box3().setFromObject(o), sz = b.getSize(new THREE.Vector3()), k = 4.6 / Math.max(sz.x, sz.z); o.scale.multiplyScalar(k); o.updateMatrixWorld(true);
+    const b2 = new THREE.Box3().setFromObject(o), c = b2.getCenter(new THREE.Vector3()); o.position.x -= c.x; o.position.z -= c.z; o.position.y -= b2.min.y; real = o; }).catch((e) => console.warn("car", e));
+  const GOLD = new THREE.Color(0xffd36b);
+  function carOf(ci = 1, hex = null, box = false) {
+    if (real && !box) { const c = new THREE.Group(), o = real.clone(true); c.add(o); c.userData.real = true;
+      if (ci === 7) o.traverse((m) => { if (m.isMesh) { m.material = m.material.clone(); m.material.emissive = GOLD; m.material.emissiveIntensity = 0.35; } }); // a holder's car glows gold
+      return c; }
     const c = new THREE.Group(), pm = paint(hex != null ? hex : PALETTE[(ci - 1 + PALETTE.length) % PALETTE.length]);
     for (const g of [G.body, G.nose, G.tail]) c.add(new THREE.Mesh(g, pm));
     c.add(new THREE.Mesh(G.glass, M.glass));
@@ -85,7 +96,7 @@ export function streetCar(A) {
     for (const c of city.traffic) { if (c.hold || c.x == null) continue; const d = Math.hypot(c.x - car.pos.x, c.z - car.pos.z); if (d < 3.2) { car.v *= 0.4; car.pos.addScaledVector(before.clone().sub(car.pos).normalize(), 0.6); A.shake(0.35); c.slow = 0; setTimeout(() => (c.slow = 1), 1500); break; } }
     car.mesh.position.copy(car.pos); car.mesh.rotation.y = car.yaw;
     car.mesh.rotation.z = -steer * Math.min(1, Math.abs(car.v) / TOP) * 0.06;
-    for (const [k, w] of car.mesh.children.entries()) if (k >= 4 && k < 8) w.rotation.x += car.v * dt / 0.42;
+    if (!car.mesh.userData.real) for (const [k, w] of car.mesh.children.entries()) if (k >= 4 && k < 8) w.rotation.x += car.v * dt / 0.42;
     S.pos.copy(car.pos); S.yaw = car.yaw;
     const seat = new THREE.Vector3(0.45, 0.35, 0.1).applyAxisAngle(new THREE.Vector3(0, 1, 0), car.yaw).add(car.pos);
     S.hero.obj.position.copy(seat); S.hero.obj.rotation.y = car.yaw; S.hero.play("drive");

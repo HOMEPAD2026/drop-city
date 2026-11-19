@@ -63,7 +63,7 @@ export function streetMap(A) {
         arrow.hidden = !off || dist < 6;
         if (off) { let ax = behind ? -v.x : v.x, ay = behind ? -v.y : v.y; const m = Math.max(Math.abs(ax) / 0.86, Math.abs(ay) / 0.78, 1e-3); ax /= m; ay /= m;
           // kept inside the part of the screen the controls and the HUD leave free
-          const th = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--th")) || 52, mx = 70, top = PHONE ? th + 150 : 150, bot = PHONE ? 190 : 80;
+          const th = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--th")) || 52, mx = 70, top = PHONE ? th + 250 : 150, bot = PHONE ? 190 : 80;
           arrow.style.left = Math.max(mx, Math.min(innerWidth - mx, ((ax + 1) / 2) * innerWidth)) + "px"; arrow.style.top = Math.max(top, Math.min(innerHeight - bot, ((1 - ay) / 2) * innerHeight)) + "px"; arrow.style.setProperty("--r", Math.atan2(-ay, ax) + "rad");
           arrow.querySelector("b").textContent = `${tg.label || ""} ${dist} m`; }
       }
