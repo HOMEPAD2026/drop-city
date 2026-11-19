@@ -14,7 +14,7 @@ import { blobStore, blobEnabled } from "../lib/_blob.mjs";
 import { makeAgent } from "../lib/_agent.mjs";
 import { makeExtra } from "../lib/_extra.mjs";
 import { makeTg } from "../lib/_tg.mjs";
-import { makeStreet, holderOf } from "../lib/_street.mjs";
+import { makeStreet, holderOf, makeVault } from "../lib/_street.mjs";
 import { makeDiag } from "../lib/_diag.mjs";
 import * as C from "../lib/_chain.mjs";
 import { readFileSync } from "node:fs";
@@ -29,6 +29,8 @@ const extra = () => (EX = EX || makeExtra({ pad: pad() }));
 const agent = () => (AG = AG || makeAgent({ pad: pad(), extra: extra(), tg: makeTg({ pad: pad(), extra: extra() }) }));
 let ST = null;
 const street = () => (ST = ST || makeStreet({ store: blobEnabled() ? blobStore() : null }));
+let VT = null;
+const vault = () => (VT = VT || makeVault({ store: blobStore() }));
 let DG = null;
 const diag = () => (DG = DG || makeDiag({ store: blobStore() }));
 let HTML = null;
@@ -110,6 +112,7 @@ export async function GET(req) {
     if (limited("h:" + ipOf(req), 20, 60e3)) return json(429, { error: "slow down" });
     try { return json(200, await holderOf(C.rpc, w, main), "public, max-age=30"); } catch (e) { return json(502, { error: "couldn't read the balance" }); }
   }
+  if (q.has("vault")) { try { const v = await vault().of(String(q.get("vault") || "")); return json(200, { hour: q.get("vault"), by: v ? v.name : null, at: v ? v.at : null }, "public, max-age=3"); } catch (e) { return json(502, { error: "vault unavailable" }); } }
   if (q.has("diag")) { try { return json(200, await diag().view(), "no-store"); } catch (e) { return json(502, { error: "diag unavailable" }); } }
   if (q.has("street")) { try { return json(200, { here: street().count(), ...(blobEnabled() ? await street().board() : { rows: [] }) }, "public, max-age=15, s-maxage=20"); } catch (e) { return json(502, { error: "street board unavailable" }); } }
   if (!blobEnabled()) return json(503, { error: "the store isn't connected yet" });
@@ -154,6 +157,7 @@ export async function POST(req) {
   if (b.action === "here") { if (limited("here:" + ip, 150, 60e3)) return json(429, { error: "slow down" }); const r = await street().beat(b); return json(r.status, r.body); }
   if (!blobEnabled()) return json(503, { error: "the store isn't connected yet" });
   if (b.action === "diag") { if (limited("diag:" + ip, 6, 60e3)) return json(429, { error: "slow down" }); const r = await diag().report(b, req.headers.get("user-agent") || ""); return json(r.status, r.body); }
+  if (b.action === "vault") { if (limited("vault:" + ip, 12, 60e3)) return json(429, { error: "slow down" }); const r = await vault().open(b); return json(r.status, r.body); }
   if (b.action === "score") { if (limited("score:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); const r = await street().score(b); return json(r.status, r.body); }
   const lim = { register: 30, meta: 20, logo: 20, vote: 10 }[b.action];
   if (!lim) return json(400, { error: "unknown action" });

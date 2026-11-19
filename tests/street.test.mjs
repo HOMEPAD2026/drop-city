@@ -46,3 +46,13 @@ test("holding the main coin picks a perk tier", async () => {
   const h = await holderOf(rpc, "W1", "MAIN", 1e6); assert.equal(h.amount, 1.1e6); assert.equal(h.perk, "made"); assert.equal(h.tiers.length, PERKS.length);
   await holderOf(rpc, "W1", "MAIN", 1e6 + 1000); assert.equal(calls, 1, "a minute's cache");
 });
+
+import { makeVault, hourNow } from "../lib/_street.mjs";
+test("the hour's vault goes to the first player, once", async () => {
+  const m = new Map(), store = { get: async (k) => m.get(k) ?? null, put: async (k, v, o = {}) => { if (o.create && m.has(k)) throw new Error("exists"); m.set(k, v); return {}; } };
+  let t = Date.UTC(2026, 10, 19, 6, 5); const V = makeVault({ store, now: () => t }), h = hourNow(t);
+  const a = await V.open({ id: "aaaaaaaaaa", name: "NeonAce11", hour: h }), b = await V.open({ id: "bbbbbbbbbb", name: "SlickBoss22", hour: h });
+  assert.equal(a.body.won, true); assert.equal(b.body.won, false); assert.equal(b.body.by, "NeonAce11");
+  assert.equal((await V.open({ id: "cccccccccc", name: "LateOne33", hour: "2026-11-19T05" })).status, 409);
+  const V2 = makeVault({ store, now: () => t }); assert.equal((await V2.open({ id: "dddddddddd", name: "Other44", hour: h })).body.by, "NeonAce11", "another instance sees the same winner");
+});

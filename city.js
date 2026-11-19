@@ -219,9 +219,9 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
   // ---------------- motion: towers rise when they're new, graduations fire off, the helicopter follows the newest
   const born = new Map(), wasMade = new Set(); let firstSet = true, newest = null;
   const bursts = [];
-  function burst(x, y, z, big = 1) {
-    const n = Math.round((PHONE ? 90 : 160) * big), pos = new Float32Array(n * 3), vel = [], col = new Float32Array(n * 3), cc = [[1, 0.18, 0.53], [1, 1, 1], [1, 0.44, 0.68]];
-    for (let i = 0; i < n; i++) { pos.set([x, y, z], i * 3); const a = Math.random() * 6.283, b = Math.acos(2 * Math.random() - 1), sp = (12 + Math.random() * 18) * big; vel.push([Math.sin(b) * Math.cos(a) * sp, Math.cos(b) * sp * 0.8 + 6, Math.sin(b) * Math.sin(a) * sp]); col.set(cc[i % 3], i * 3); }
+  function burst(x, y, z, big = 1, colors = null) {
+    const n = Math.round((PHONE ? 90 : 160) * big), pos = new Float32Array(n * 3), vel = [], col = new Float32Array(n * 3), cc = colors || [[1, 0.18, 0.53], [1, 1, 1], [1, 0.44, 0.68]];
+    for (let i = 0; i < n; i++) { pos.set([x, y, z], i * 3); const a = Math.random() * 6.283, b = Math.acos(2 * Math.random() - 1), sp = (12 + Math.random() * 18) * big; vel.push([Math.sin(b) * Math.cos(a) * sp, Math.cos(b) * sp * 0.8 + 6, Math.sin(b) * Math.sin(a) * sp]); col.set(cc[i % cc.length], i * 3); }
     const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(pos, 3)); g.setAttribute("color", new THREE.BufferAttribute(col, 3));
     const p = new THREE.Points(g, new THREE.PointsMaterial({ size: 2.2, vertexColors: true, transparent: true, opacity: 1, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }));
     scene.add(p); bursts.push({ p, vel, life: 0 });
