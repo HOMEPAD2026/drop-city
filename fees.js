@@ -11,7 +11,7 @@ const fmt = (x) => (x >= 1 ? x.toFixed(3) : x >= 0.001 ? x.toFixed(4) : x > 0 ? 
 export function feeBox(c, CFG) {
   const s = CFG.split || { creator: 6000, vault: 3000, buyer: 1000 }, main = c.mint === CFG.main;
   const rows = c.noSplit || main ? `<div class="fb-r"><span>${main ? "The dev (100%)" : "The creator (100%)"}</span><b data-fb="all">…</b></div>`
-    : [[c.kind === "drop" ? "The agent → THE VAULT" : "The creator", s.creator], ["THE VAULT", s.vault], [`Buys $${esc(CFG.ticker || "")}`, s.buyer]].map(([n, b], i) => `<div class="fb-r"><span>${n} <small>${b / 100}%</small></span><b data-fb="p${i}">…</b></div>`).join("");
+    : [...(c.crew ? c.crew.map((m, i) => [`${i === 0 && m.address === c.creator ? "Crew lead" : "Crew"} ${esc(short(m.address))}`, m.bps]) : [[c.kind === "drop" ? "The agent → THE VAULT" : "The creator", s.creator]]), ["THE VAULT", s.vault], [`Buys $${esc(CFG.ticker || "")}`, s.buyer]].map(([n, b], i) => `<div class="fb-r"><span>${n} <small>${b / 100}%</small></span><b data-fb="p${i}">…</b></div>`).join("");
   return `<div class="fbox" data-fbox><div class="fb-h"><span class="mc-k">CREATOR FEES</span><button type="button" class="fb-re" data-fb="re" title="Read again">↻</button></div>
     <div class="fb-big"><b data-fb="sum">…</b> <small>${c.quote ? esc(c.quote.id) : "SOL"} waiting</small></div>
     <div class="fb-rows">${rows}</div>
@@ -28,7 +28,7 @@ export async function wireFees(root, c, CFG, onDone) {
   const paint = (lam) => {
     const v = Math.max(0, lam) / D; q("sum").textContent = fmt(v);
     if (solo) q("all").textContent = fmt(v) + " " + U;
-    else [s.creator, s.vault, s.buyer].forEach((b, i) => (q("p" + i).textContent = fmt((v * b) / 10000) + " " + U));
+    else [...(c.crew ? c.crew.map((m) => m.bps) : [s.creator]), s.vault, s.buyer].forEach((b, i) => { const e = q("p" + i); if (e) e.textContent = fmt((v * b) / 10000) + " " + U; });
     q("go").disabled = !(v > 0.00001); box.classList.toggle("has", v > 0.00001);
   };
   const read = async () => {

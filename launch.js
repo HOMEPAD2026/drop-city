@@ -2,6 +2,9 @@
 // register the coin. Used by the website and the city. Nothing custodial: the server hosts the details and checks the chain.
 import { $, esc, sleep, post, note, DEMO, sol, kit, conn } from "/common.js";
 import { openWallet } from "/wallet.js";
+// the crew's shares: the same rule as the server's (lib/_pad.mjs crewBps) — equal parts, the launcher keeps the odd bps
+export const CREW_MAX = 4;
+export const crewBps = (n, total) => { n = Math.max(1, Math.min(CREW_MAX, n | 0)); const each = Math.floor(total / n); return Array.from({ length: n }, (_, i) => (i === 0 ? total - each * (n - 1) : each)); };
 
 // the first buy as a share of the supply, bought in the launch transaction itself. On a fresh pump.fun curve
 // (30 SOL × 1.073B tokens virtual) t tokens cost x0·t / (y0 − t) SOL, plus the trade fee (about 1.25 %).
@@ -40,10 +43,12 @@ export function openDrop(o = {}) {
       <label>Telegram<input data-f="telegram" placeholder="https://t.me/…"></label>
       <label class="w">Website<input data-f="website" placeholder="https://…"></label>
       ${QS.length ? `<div class="w pairset"><span class="lbl">Pair — what your coin trades against</span><div class="seg pairs" data-f="pairs"><button type="button" class="on" data-q="">SOL</button>${QS.map((x) => `<button type="button" data-q="${esc(x.id)}">${esc(x.id)}</button>`).join("")}</div><small class="pairline" data-f="pairline">Bought and sold with SOL — the usual pump.fun coin.</small></div>` : ""}
+      <div class="w crewset"><span class="lbl">Crew (optional) — split your ${(CFG.split.creator / 100)}% with up to ${CREW_MAX - 1} more wallets</span>
+        <div class="crew" data-f="crew"></div><button type="button" class="btn ghost addcrew" data-f="addcrew">+ Add a crew wallet</button><small class="crewline" data-f="crewline">Just you: the whole ${(CFG.split.creator / 100)}% is yours.</small></div>
       <label class="w buyset"><span class="lbl">Your first buy (optional) — bought in the same signing, before anyone else</span>
         <span class="custom"><input data-f="devsol" inputmode="decimal" placeholder="0" style="max-width:180px"> <b data-f="unit">SOL</b></span><small class="buyline" data-f="buyline">Leave it empty for no first buy.</small></label>
     </div><div class="lprev"><p class="cap">PREVIEW</p><div data-f="prev"></div></div></div>
-    <div class="note"><b>Fees, locked on chain<span data-f="feeunit"></span>:</b> ${(CFG.split.creator / 100)}% you · ${(CFG.split.vault / 100)}% THE VAULT · ${(CFG.split.buyer / 100)}% buys $${esc(CFG.ticker)}.${CFG.suffix ? ` <b>Your coin's address will end in ${esc(CFG.suffix)}</b> — found in this browser, the key never leaves it.` : ""} No launch fee; about 0.03 SOL of network costs.</div>
+    <div class="note"><b>Fees, locked on chain<span data-f="feeunit"></span>:</b> <span data-f="you">${(CFG.split.creator / 100)}% you</span> · ${(CFG.split.vault / 100)}% THE VAULT · ${(CFG.split.buyer / 100)}% buys $${esc(CFG.ticker)}.${CFG.suffix ? ` <b>Your coin's address will end in ${esc(CFG.suffix)}</b> — found in this browser, the key never leaves it.` : ""} No launch fee; about 0.03 SOL of network costs.</div>
     <ol class="steps" data-f="steps" hidden></ol><p class="err" data-f="err" hidden></p>
     <div class="foot"><button type="button" class="btn ghost" data-f="close">Close</button><button type="button" class="btn hot" data-f="go">Launch on pump.fun</button></div></div>`;
   const q = (k) => sh.querySelector(`[data-f="${k}"]`);
@@ -63,6 +68,14 @@ export function openDrop(o = {}) {
     f.quote = QS.find((x) => x.id === b.dataset.q) || null; q("unit").textContent = f.quote ? f.quote.id : "SOL";
     q("pairline").textContent = f.quote ? `Bought and sold with ${f.quote.name || f.quote.id} on pump.fun. Your first buy and the creator fees are in ${f.quote.id}; you still pay about 0.03 SOL of network costs.` : "Bought and sold with SOL — the usual pump.fun coin.";
     q("feeunit").textContent = f.quote ? `, paid in ${f.quote.id}` : ""; q("devsol").value = ""; f.dev = 0; buyline(); prev(); };
+  // the crew: wallets that share the creator's part in equal shares, locked on chain with the rest of the split
+  const crewList = () => [...q("crew").querySelectorAll("input")].map((i) => i.value.trim()).filter(Boolean);
+  const crewLine = () => { const n = 1 + crewList().length, bps = crewBps(n, CFG.split.creator);
+    q("crewline").textContent = n === 1 ? `Just you: the whole ${CFG.split.creator / 100}% is yours.` : `A crew of ${n}: ${bps.map((b) => b / 100 + "%").join(" · ")} — you first, then each crew wallet. Locked forever, paid out to everyone at once.`;
+    q("addcrew").hidden = q("crew").children.length >= CREW_MAX - 1; q("you").textContent = n === 1 ? `${CFG.split.creator / 100}% you` : `${CFG.split.creator / 100}% you and your crew of ${n}`; };
+  q("addcrew").onclick = () => { if (busy || q("crew").children.length >= CREW_MAX - 1) return; const r = document.createElement("div"); r.className = "crow";
+    r.innerHTML = `<input placeholder="Solana wallet address" autocomplete="off" spellcheck="false" maxlength="44"><button type="button" aria-label="Remove">×</button>`;
+    r.querySelector("button").onclick = () => { r.remove(); crewLine(); }; r.querySelector("input").oninput = crewLine; q("crew").appendChild(r); r.querySelector("input").focus(); crewLine(); };
   q("symbol").oninput = (e) => { e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); };
   q("file").onchange = async (e) => {
     const file = e.target.files && e.target.files[0]; if (!file) return;
@@ -91,6 +104,10 @@ export function openDrop(o = {}) {
     // pump.fun's fee split can't hold one wallet twice: the vault, the buyer and the agent can't be a coin's creator
     const role = S.key === CFG.vault ? "THE VAULT's wallet" : S.key === CFG.buyer ? `the wallet that buys $${CFG.ticker}` : S.key === CFG.agent ? "the agent's wallet" : "";
     if (role) return err(`This is ${role} — it already gets a share of every coin, so it can't be the creator too. Switch to another wallet (a new account in Phantom works) and launch from there.`);
+    const crew = crewList(), B58 = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
+    if (crew.some((a) => !B58.test(a))) return err("A crew wallet isn't a Solana address.");
+    if (new Set([S.key, ...crew]).size !== crew.length + 1) return err("Each crew wallet must be different (and not your own).");
+    if (crew.some((a) => a === CFG.vault || a === CFG.buyer || a === CFG.agent)) return err("THE VAULT, the buyer and the agent can't be in a crew — they already get their share.");
     busy = true; err(""); q("go").disabled = true; q("steps").hidden = false;
     q("steps").innerHTML = STEPS.map(([k, t]) => `<li data-s="${k}"><i></i><span>${esc(t)}<small></small></span></li>`).join("");
     let cur = "find", g0 = null;
@@ -111,7 +128,8 @@ export function openDrop(o = {}) {
       cur = "sign"; step("sign", "doing");
       const K = await kit(), c = await conn(), me = new K.PublicKey(S.key), mint = K.Keypair.fromSecretKey(Uint8Array.from(g.secret));
       const V = new K.PublicKey(CFG.vault), Bw = new K.PublicKey(CFG.buyer);
-      const shares = [{ address: me, shareBps: CFG.split.creator }, { address: V, shareBps: CFG.split.vault }, { address: Bw, shareBps: CFG.split.buyer }];
+      const cb = crewBps(1 + crew.length, CFG.split.creator);
+      const shares = [{ address: me, shareBps: cb[0] }, ...crew.map((a, i) => ({ address: new K.PublicKey(a), shareBps: cb[i + 1] })), { address: V, shareBps: CFG.split.vault }, { address: Bw, shareBps: CFG.split.buyer }];
       const sdk = new K.OnlinePumpSdk(c);
       const Q = f.quote, quote = Q ? { mint: Q.mint, program: Q.program } : null;
       const [global, feeConfig, bh, bal, quoteControl] = await Promise.all([sdk.fetchGlobal(), sdk.fetchFeeConfig().catch(() => null), c.getLatestBlockhash("confirmed"), c.getBalance(me), Q ? sdk.fetchQuoteControl().catch(() => null) : null]);
@@ -157,7 +175,7 @@ export function openDrop(o = {}) {
       if (cur === "split" || cur === "list") {
         q("go").textContent = "Finish the fee split"; q("go").onclick = async () => {
           q("go").disabled = true; err(""); step("split", "doing");
-          try { const r = await finishSplit({ mint: g0.pub, S, CFG }); step("split", "ok", r.sig ? scan(r.sig) : "already locked"); step("list", r.listed ? "ok" : "bad", r.listed ? "" : esc(r.why || "")); if (r.listed) { q("go").outerHTML = `<a class="btn hot" href="/city?coin=${esc(g0.pub)}">See its tower</a>`; o.onDone && o.onDone(); } else q("go").disabled = false; }
+          try { const r = await finishSplit({ mint: g0.pub, S, CFG, crew }); step("split", "ok", r.sig ? scan(r.sig) : "already locked"); step("list", r.listed ? "ok" : "bad", r.listed ? "" : esc(r.why || "")); if (r.listed) { q("go").outerHTML = `<a class="btn hot" href="/city?coin=${esc(g0.pub)}">See its tower</a>`; o.onDone && o.onDone(); } else q("go").disabled = false; }
           catch (y) { step("split", "bad"); err(why(y)); logsBox(q("err"), y); q("go").disabled = false; }
         };
       }
@@ -165,7 +183,7 @@ export function openDrop(o = {}) {
   };
 }
 /// a launch whose split didn't land: the creator's wallet signs the split alone, then the coin registers
-export async function finishSplit({ mint, S, CFG }) {
+export async function finishSplit({ mint, S, CFG, crew = [] }) {
   const K = await kit(), c = await conn(), me = new K.PublicKey(S.key), m = new K.PublicKey(mint);
   const [acc, cv] = await Promise.all([c.getAccountInfo(K.feeSharingConfigPda(m)), c.getAccountInfo(K.bondingCurvePda(m))]);
   if (!cv) throw new Error("this coin has no pump.fun bonding curve");
@@ -173,7 +191,8 @@ export async function finishSplit({ mint, S, CFG }) {
   let sig = null;
   if (!(sc && sc.adminRevoked)) {
     if (sc && !sc.admin.equals(me)) throw new Error("Connect the wallet that launched this coin.");
-    const shares = [{ address: me, shareBps: CFG.split.creator }, { address: new K.PublicKey(CFG.vault), shareBps: CFG.split.vault }, { address: new K.PublicKey(CFG.buyer), shareBps: CFG.split.buyer }];
+    const cb = crewBps(1 + crew.length, CFG.split.creator);
+    const shares = [{ address: me, shareBps: cb[0] }, ...crew.map((a, i) => ({ address: new K.PublicKey(a), shareBps: cb[i + 1] })), { address: new K.PublicKey(CFG.vault), shareBps: CFG.split.vault }, { address: new K.PublicKey(CFG.buyer), shareBps: CFG.split.buyer }];
     const bh = await c.getLatestBlockhash("confirmed");
     const tx = await K.splitTx({ creator: me, mint: m, treasury: new K.PublicKey(CFG.vault), shares, blockhash: bh.blockhash, sharingConfig: sc });
     const [signed] = typeof S.p.signAllTransactions === "function" ? await S.p.signAllTransactions([tx]) : [await S.p.signTransaction(tx)];

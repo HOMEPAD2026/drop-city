@@ -69,6 +69,17 @@ process.env.PAD_SUFFIX = "Xy"; docs.delete(`coins/${NOSPLIT}.json`);
 const L = await P.list();
 ok(L.items.length === 2 && L.items[0].progress === 0 && L.items[0].mcapUsd > 0, "the list reads the coin's curve live");
 ok(splitCheck(C.decodeSharing(scOf(MINT2, [[OTHER.pub, 6000], [VAULT, 3000], [BUYER, 1000]])), MINT2).ok, "splitCheck reads the three holders");
+// ---------------- a crew: the creator's 60 % in equal parts between 2–4 wallets
+{ const { crewBps } = await import("../lib/_pad.mjs"); const k3 = [kp().pub, kp().pub, kp().pub];
+  ok(crewBps(1, 6000).join() === "6000" && crewBps(2, 6000).join() === "3000,3000" && crewBps(4, 6000).join() === "1500,1500,1500,1500" && crewBps(3, 1000).join() === "334,333,333", "crew shares: equal parts, the launcher keeps the odd bps");
+  const c3 = splitCheck(C.decodeSharing(scOf(MINT2, [[k3[0], 2000], [k3[1], 2000], [k3[2], 2000], [VAULT, 3000], [BUYER, 1000]])), MINT2);
+  ok(c3.ok && c3.crew.length === 3 && k3.includes(c3.creator), "a crew of three passes, with its wallets");
+  ok(!splitCheck(C.decodeSharing(scOf(MINT2, [[k3[0], 4000], [k3[1], 2000], [VAULT, 3000], [BUYER, 1000]])), MINT2).ok, "an uneven crew doesn't");
+  const k5 = [kp().pub, kp().pub, kp().pub, kp().pub, kp().pub];
+  ok(!splitCheck(C.decodeSharing(scOf(MINT2, [...k5.map((a) => [a, 1200]), [VAULT, 3000], [BUYER, 1000]])), MINT2).ok, "five in a crew is too many");
+  ok(!splitCheck(C.decodeSharing(scOf(MINT2, [[k3[0], 3000], [k3[1], 3000], [VAULT, 2000], [BUYER, 2000]])), MINT2).ok, "the vault and the buyer keep their shares");
+  ok(!splitCheck(C.decodeSharing(scOf(MINT2, [[k3[0], 3000], [k3[1], 3000], [VAULT, 3000], [BUYER, 1000]], false)), MINT2).ok, "an unlocked crew split doesn't pass"); }
+
 
 // ---------------- metadata and logo
 const m = await P.meta({ name: "Night Owl", symbol: "OWL", description: "hoot", image: "https://blob.test/logos/x.png", twitter: "https://x.com/a", website: "javascript:x" });

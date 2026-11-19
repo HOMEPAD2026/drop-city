@@ -403,3 +403,9 @@ img, svg, video, canvas { max-width: 100%; }
 
 .raid { margin: 12px 0 4px; padding: 10px 12px; border-radius: 12px; background: repeating-linear-gradient(-45deg, rgba(255, 210, 31, 0.12) 0 12px, rgba(0, 0, 0, 0.2) 12px 24px); border: 1px solid rgba(255, 210, 31, 0.6); }
 .raid b { display: block; font: 800 12px var(--mono); letter-spacing: 0.12em; color: #ffd21f; } .raid span { font-size: 12.5px; }
+
+/* the launch form's crew */
+.crewset { display: grid; gap: 6px; } .crewset .lbl { font: 700 12px var(--mono, monospace); letter-spacing: 0.06em; text-transform: uppercase; }
+.crew { display: grid; gap: 6px; } .crow { display: flex; gap: 6px; } .crow input { flex: 1; min-width: 0; font-family: var(--mono, monospace) !important; font-size: 13px !important; }
+.crow button { width: 40px; flex: none; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.16); background: none; color: inherit; font-size: 20px; }
+.addcrew { justify-self: start; padding: 8px 14px !important; font-size: 11px !important; } .crewline { color: var(--dim, #9a9498); font-size: 12px; }
