@@ -39,7 +39,7 @@ export function streetCar(A) {
     return best;
   }
   function getIn(n) {
-    if (n.kind === "road") { const c = n.c; c.hold = 1e9; car.slot = n.i; car.ci = (n.i % 6) + 1; car.pos.set(c.x, 0, c.z); car.yaw = c.yaw; car.mesh = carOf(0, city.carColor(n.i)); A.crime(1); A.pop("CAR STOLEN", car.pos, "#ffd36b", 2.4); }
+    if (n.kind === "road") { const c = n.c; c.hold = 1e9; car.slot = n.i; car.ci = S.perk === "boss" || S.perk === "made" ? 7 : (n.i % 6) + 1; car.pos.set(c.x, 0, c.z); car.yaw = c.yaw; car.mesh = carOf(car.ci); /* a holder's car comes out gold */ A.crime(1); A.pop("CAR STOLEN", car.pos, "#ffd36b", 2.4); }
     else { const p = n.p; parked.splice(parked.indexOf(p), 1); car.mesh = p.mesh; car.pos.copy(p.pos); car.yaw = p.yaw; car.ci = p.ci; car.slot = p.slot; }
     root.add(car.mesh); car.v = 0; S.inCar = true; S.carColor = car.ci; S.yaw = car.yaw; S.camYaw = car.yaw + Math.PI;
     savedDist = S.camDist; S.camDist = Math.max(S.camDist, PHONE ? 13 : 12);

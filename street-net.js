@@ -5,6 +5,7 @@
 // health on their screen, nothing more.
 import { post } from "/common.js";
 
+const TINT = { boss: 0xffe08a, made: 0xffd0e4 };
 const ONCE = new Set(["punch", "hit", "jump", "wave", "cheer", "spawn", "die"]);
 export function streetNet(A) {
   const { THREE, S, me, root, makeBody, tagOf, pop, hooks, PHONE } = A;
@@ -34,10 +35,10 @@ export function streetNet(A) {
     for (const r of rows) {
       let o = others.get(r.id);
       if (!o) { o = { row: r, body: null, loading: false, pos: new THREE.Vector3(r.x, r.y, r.z), yaw: r.r, lastC: "", lastE: "" }; others.set(r.id, o); }
-      if (o.row.look !== r.look && o.body) { root.remove(o.body.obj); o.body = null; }
+      if ((o.row.look !== r.look || (o.row.p || "") !== (r.p || "")) && o.body) { root.remove(o.body.obj); o.body = null; }
       if (o.row.name !== r.name && o.tag) { o.tag.material.map.dispose(); o.tag.material.map = A.tagTex(r.name, "#5ce1ff"); }
       o.row = r; o.seen = t;
-      if (!o.body && !o.loading) { o.loading = true; makeBody(r.look).then((b) => { o.loading = false; if (!others.has(r.id)) return; o.body = b; o.tag = tagOf(o.row.name, "#5ce1ff"); b.obj.add(o.tag); b.obj.position.copy(o.pos); root.add(b.obj); }).catch(() => { o.loading = false; }); }
+      if (!o.body && !o.loading) { o.loading = true; makeBody(r.look, { tint: TINT[r.p] || null }).then((b) => { o.loading = false; if (!others.has(r.id)) return; o.body = b; o.tag = tagOf(o.row.name, r.p === "boss" || r.p === "made" ? "#ffd36b" : "#5ce1ff"); b.obj.add(o.tag); b.obj.position.copy(o.pos); root.add(b.obj); }).catch(() => { o.loading = false; }); }
       if (r.e && r.e !== o.lastE && o.body) o.body.play(r.e, { once: true });
       o.lastE = r.e;
     }

@@ -152,12 +152,14 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
   }
 
   // ---------------- you
+  const PERK_TINT = { boss: 0xffe08a, made: 0xffd0e4 }, PERK_TAG = { boss: "#ffd36b", made: "#ffd36b", crew: "#ff6fae" };
   async function build() {
     if (S.hero) { root.remove(S.hero.obj); S.hero = null; }
-    const b = await makeBody(me.look); S.hero = b;
-    S.tag = tagOf(me.name, "#ff2e88"); b.obj.add(S.tag);
+    const b = await makeBody(me.look, { tint: PERK_TINT[S.perk] || null }); S.hero = b;
+    S.tag = tagOf(me.name, PERK_TAG[S.perk] || "#ff2e88"); b.obj.add(S.tag);
     b.obj.position.copy(S.pos); root.add(b.obj);
   }
+  async function setPerk(p) { if ((p || "") === (S.perk || "")) return; S.perk = p || ""; if (S.hero) { const yaw = S.yaw, was = S.hero; await build(); S.yaw = yaw; if (S.inCar) S.hero.play("drive"); void was; } paintHud(); }
   function setName(n) { me.name = cleanHandle(n) || me.name; saveMe(me); if (S.tag) { S.tag.material.map.dispose(); S.tag.material.map = tagTex(me.name, "#ff2e88"); } paintHud(); }
   async function setLook(l) { if (!LOOKS[l]) return; me.look = l; saveMe(me); if (S.hero) { const yaw = S.yaw; await build(); S.yaw = yaw; } paintHud(); }
   function hurtMe(dmg, from) {
@@ -242,7 +244,7 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
   function flash(kind) { document.body.classList.remove("hurt"); void document.body.offsetWidth; document.body.classList.add(kind); setTimeout(() => document.body.classList.remove(kind), 300); }
   function paintHud() {
     const n = $("me-name"); if (n) n.textContent = me.name;
-    const l = $("me-look"); if (l) l.textContent = LOOKS[me.look].name;
+    const l = $("me-look"); if (l) l.textContent = LOOKS[me.look].name + (S.perk ? " · " + S.perk.toUpperCase() : "");
     const c = $("cash"); if (c) c.textContent = "$" + Math.round(me.cash).toLocaleString("en-US");
     const w = $("wl"); if (w) { w.innerHTML = Array.from({ length: 5 }, (_, i) => `<i class="${i < S.wanted ? "on" : ""}">★</i>`).join(""); w.classList.toggle("hot", S.wanted >= 3); }
     const h = $("hp"); if (h) { h.style.width = S.hp + "%"; h.parentElement.classList.toggle("low", S.hp < 35); }
@@ -333,5 +335,5 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
   // what the add-ons get to work with
   const api = { THREE, S, me, root, city, cam, hooks, makeBody, tagOf, tagTex, pop, bigText, flash, hurtMe, crime, collide, paintHud, sound, toast, saveMe, onOpen, PHONE, rivals, atms, keys, stick, clipName,
     shake: (k) => { shake = Math.max(shake, k); } };
-  return { enter, leave, goTo, me, setName, setLook, get active() { return S.active; }, get ready() { return S.ready; }, randomHandle, state: S, rivals, api, hooks };
+  return { enter, leave, goTo, me, setName, setLook, setPerk, get active() { return S.active; }, get ready() { return S.ready; }, randomHandle, state: S, rivals, api, hooks };
 }

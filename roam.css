@@ -118,3 +118,6 @@ body:not(.street) .turf { display: none; }
 .turf.in { animation: turfin 0.5s cubic-bezier(0.3, 1.4, 0.5, 1); } @keyframes turfin { from { transform: translateX(40px); opacity: 0; } }
 body.card-open .turf { display: none; }
 @media (max-width: 760px) { .turf { top: 136px; right: 8px; padding: 4px 8px; } .turf b { font-size: 16px; } .turf small { font-size: 9px; } }
+
+.mesheet .perks { margin: 12px 0 0; padding: 10px 12px; border-radius: 12px; background: rgba(255, 211, 107, 0.08); border: 1px solid rgba(255, 211, 107, 0.35); font-size: 12px; color: var(--dim); }
+.mesheet .perks b { display: block; font: 800 11px var(--mono); letter-spacing: 0.14em; color: #ffd36b; margin-bottom: 2px; } .mesheet .perks i { font-style: normal; font-weight: 800; color: var(--ink); } .mesheet .perks i.on { color: #070708; background: #ffd36b; border-radius: 4px; padding: 0 4px; }

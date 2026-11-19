@@ -14,7 +14,8 @@ import { blobStore, blobEnabled } from "../lib/_blob.mjs";
 import { makeAgent } from "../lib/_agent.mjs";
 import { makeExtra } from "../lib/_extra.mjs";
 import { makeTg } from "../lib/_tg.mjs";
-import { makeStreet } from "../lib/_street.mjs";
+import { makeStreet, holderOf } from "../lib/_street.mjs";
+import * as C from "../lib/_chain.mjs";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -83,6 +84,12 @@ export async function GET(req) {
   if (q.has("cfg")) { let lut = null; if (blobEnabled()) try { const d = await pad().store.get("agent/lut.json"); lut = d && d.address; } catch {} return json(200, { ...publicCfg(), lut }, "public, max-age=30"); }
   if (q.has("simquote")) { if (limited("sq:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" }); try { return json(200, await simQuote(q.get("simquote"), q.get("dev")), "no-store"); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 300) }); } }
   if (q.has("quotes")) { try { return json(200, await quotes(), "public, max-age=300, s-maxage=600"); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 200) }); } }
+  if (q.has("holder")) { // a wallet's main-coin balance → its street perk (cosmetic)
+    const w = String(q.get("holder") || ""), main = cfg().main;
+    if (!C.isPubkey(w) || !main) return json(400, { error: main ? "bad wallet" : "no main coin set" });
+    if (limited("h:" + ipOf(req), 20, 60e3)) return json(429, { error: "slow down" });
+    try { return json(200, await holderOf(C.rpc, w, main), "public, max-age=30"); } catch (e) { return json(502, { error: "couldn't read the balance" }); }
+  }
   if (q.has("street")) { try { return json(200, { here: street().count(), ...(blobEnabled() ? await street().board() : { rows: [] }) }, "public, max-age=15, s-maxage=20"); } catch (e) { return json(502, { error: "street board unavailable" }); } }
   if (!blobEnabled()) return json(503, { error: "the store isn't connected yet" });
   try {

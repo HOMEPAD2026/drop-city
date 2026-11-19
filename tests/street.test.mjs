@@ -38,3 +38,11 @@ test("the week's board keeps each player's best", async () => {
   await st.score({ id: "p1xxxxxxxx", name: "Ace11", score: 500 }); await st.score({ id: "p2xxxxxxxx", name: "Boss22", score: 900 }); await st.score({ id: "p1xxxxxxxx", name: "Ace11", score: 300 });
   const b = await st.board(); assert.deepEqual(b.rows.map((r) => [r.name, r.s]), [["Boss22", 900], ["Ace11", 500]]); assert.equal(b.week, mondayOf(Date.UTC(2026, 10, 19)));
 });
+import { perkOf, holderOf, PERKS } from "../lib/_street.mjs";
+test("holding the main coin picks a perk tier", async () => {
+  assert.equal(perkOf(0), null); assert.equal(perkOf(5).id, "crew"); assert.equal(perkOf(1e6).id, "made"); assert.equal(perkOf(2.5e7).id, "boss");
+  const acc = (ui) => ({ account: { data: { parsed: { info: { tokenAmount: { uiAmountString: String(ui) } } } } } });
+  let calls = 0; const rpc = async (m, p) => { calls++; assert.equal(m, "getTokenAccountsByOwner"); assert.deepEqual(p[1], { mint: "MAIN" }); return { value: [acc(600000), acc(500000)] }; };
+  const h = await holderOf(rpc, "W1", "MAIN", 1e6); assert.equal(h.amount, 1.1e6); assert.equal(h.perk, "made"); assert.equal(h.tiers.length, PERKS.length);
+  await holderOf(rpc, "W1", "MAIN", 1e6 + 1000); assert.equal(calls, 1, "a minute's cache");
+});

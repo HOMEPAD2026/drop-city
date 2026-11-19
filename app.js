@@ -11,13 +11,14 @@ import { streetNet } from "/street-net.js";
 import { streetCar } from "/street-car.js";
 import { streetJobs } from "/street-jobs.js";
 import { streetTurf } from "/street-turf.js";
+import { streetPerks } from "/street-perks.js";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } };
 let coins = [], slot = null, tab = "wanted", sel = new URLSearchParams(location.search).get("coin");
 const city = makeCity($("city"), { onPick: (m) => openCard(m) });
 // on foot (roam.js): a street name and a crew member on the first visit, then the streets; MAP is the old view
 const roam = makeRoam(city, { onOpen: (m) => openCard(m, true), toast: (t) => note(t), sound: tone });
-streetCar(roam.api); const net = streetNet(roam.api); const jobs = streetJobs(roam.api, { pid: () => net.pid }); streetTurf(roam.api);
+streetCar(roam.api); const net = streetNet(roam.api); const jobs = streetJobs(roam.api, { pid: () => net.pid }); streetTurf(roam.api); const perks = streetPerks(roam);
 const go = (m) => { if (roam.active) roam.goTo(m); else city.flyTo(m); };
 async function setMode(m) {
   if (m === "street" && !roam.active) { if (!(await roam.enter())) return; }
@@ -34,6 +35,7 @@ function openMe() {
     <div class="row"><input id="me-in" maxlength="20" value="${esc(roam.me.name)}" autocomplete="off" spellcheck="false"><button type="button" class="dice" title="Random name">🎲</button></div>
     <div class="looks">${Object.entries(LOOKS).map(([k, v]) => `<button type="button" data-l="${k}" class="${k === look ? "on" : ""}">${v.name}</button>`).join("")}</div>
     <div class="ft"><button type="button" class="btn ghost" data-c>Cancel</button><button type="button" class="btn hot" data-s>Save</button></div>
+    <div class="perks"><b>HOLDER PERKS</b><span>Hold $${esc(CFG.ticker || "")} in the connected wallet: <i class="${perks.perk === "crew" ? "on" : ""}">CREW</i> any amount · <i class="${perks.perk === "made" ? "on" : ""}">MADE</i> 1M · <i class="${perks.perk === "boss" ? "on" : ""}">BOSS</i> 10M — a gold name tag, outfit and car. Looks only.</span></div>
     <small class="fine">Street cash and wanted stars are just for fun — nothing here touches a wallet or the chain.</small></div>`;
   document.body.appendChild(w);
   const close = () => w.remove();
