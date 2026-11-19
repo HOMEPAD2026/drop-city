@@ -8,7 +8,7 @@ The owner's standing facts — keep every page, bot message, post and tweet true
 - **The 60 / 30 / 10 split** (creator · THE VAULT · the main-coin buyer) applies only to coins **launched on the platform**:
   the agent's hourly drops (its 60 % goes on to THE VAULT, keeping a 0.5 SOL reserve) and everyone's own launches.
 - Replies to the owner are in Korean; bot messages, site copy and tweets are in English.
-- The site's name, ticker and CA suffix come from config (Vercel env); code and generated promo material stay name-neutral.
+- The site's name, ticker and CA suffix come from config (Vercel env); code and generated promo material stay name-neutral. Promo material may carry the configured name when the owner asks for it (2026-11-19: the site tour video as GTAFUN); it never imitates a game's logo, art or characters, and the video ends with a "not affiliated" line.
 - **Pairs (the owner, 2026-11-18):** a launch can pick SOL or TTWO (Backpack's tokenized Take-Two share,
   TTWofwAge91oFhZs7kpQdyrVRkmevgM88xijGvQFbKo, on pump.fun's QuoteControl list) as its pair — pad-config.js `quotes`. A TTWO
   coin's first buy and creator fees are in TTWO; the 60 / 30 / 10 split is the same. Agent drops stay SOL.
