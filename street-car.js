@@ -17,7 +17,7 @@ export function streetCar(A) {
   const M = { tyre: new THREE.MeshStandardMaterial({ color: 0x0b0b0c, roughness: 0.9 }), glass: new THREE.MeshStandardMaterial({ color: 0x9fd8ff, transparent: true, opacity: 0.35, roughness: 0.05, metalness: 0.2 }),
     head: new THREE.MeshBasicMaterial({ color: 0xfff1c9, toneMapped: false, side: THREE.DoubleSide }), tailL: new THREE.MeshBasicMaterial({ color: 0xff2350, toneMapped: false, side: THREE.DoubleSide }) };
   const paints = new Map();
-  const paint = (hex) => { if (!paints.has(hex)) paints.set(hex, new THREE.MeshStandardMaterial({ color: hex, metalness: 0.75, roughness: 0.25, emissive: hex, emissiveIntensity: 0.06 })); return paints.get(hex); };
+  const paint = (hex) => { if (!paints.has(hex)) paints.set(hex, new THREE.MeshStandardMaterial({ color: hex, metalness: 0.35, roughness: 0.3, emissive: hex, emissiveIntensity: 0.1 })); return paints.get(hex); };
   function carOf(ci = 1, hex = null) {
     const c = new THREE.Group(), pm = paint(hex != null ? hex : PALETTE[(ci - 1 + PALETTE.length) % PALETTE.length]);
     for (const g of [G.body, G.nose, G.tail]) c.add(new THREE.Mesh(g, pm));

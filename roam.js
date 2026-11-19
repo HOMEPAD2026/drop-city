@@ -80,6 +80,8 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
   const S = { active: false, ready: false, hero: null, tag: null, pos: new THREE.Vector3(0, 0, 18), vy: 0, ground: true, yaw: 0, hp: 100, down: 0, hurtT: 0,
     camYaw: 0, camPitch: 0.34, camDist: PHONE ? 9.5 : 8.5, blend: 1, from: new THREE.Vector3(), wanted: 0, wantT: 0, atkLock: 0, near: null };
   const root = new THREE.Group(); root.visible = false; scene.add(root);
+  // a warm light that walks with you (the streets at dusk read better close up); it lives in root, so it goes off on MAP
+  const lamp = new THREE.PointLight(0xffd6e8, 60, 34, 1.6); lamp.position.set(0, 7, 0); root.add(lamp);
   // the street's add-ons (street-*.js) hang off these: punch(fx, fz) -> hit?, step(dt), act() -> { label, key, run } | null
   // (the first one wins the action button), key(k, down) -> used?, drive(dt, input) -> true while it moves you (a car)
   const hooks = { punch: [], step: [], act: [], key: [], drive: null };
@@ -278,6 +280,7 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
     if (!S.ground) { S.vy -= GRAV * dt; S.pos.y += S.vy * dt; if (S.pos.y <= 0) { S.pos.y = 0; S.vy = 0; S.ground = true; city.burst(S.pos.x, 0.2, S.pos.z, 0.06); } }
     if (!driving) { collide(S.pos); hero.obj.position.copy(S.pos); hero.obj.rotation.y = S.yaw; }
     hero.update(dt);
+    lamp.position.set(S.pos.x, S.pos.y + 7, S.pos.z);
     S.atkLock = Math.max(0, S.atkLock - dt); S.hurtT = Math.max(0, S.hurtT - dt); if (S.lookT) S.lookT = Math.max(0, S.lookT - dt);
     // the others
     for (const n of rivals) stepRival(n, dt);

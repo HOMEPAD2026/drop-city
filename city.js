@@ -15,9 +15,9 @@ const rnd = (() => { let s = 7; return () => ((s = (s * 1664525 + 1013904223) >>
 export function makeCity(canvas, { onPick = () => {} } = {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: !PHONE, powerPreference: "high-performance" });
   renderer.setPixelRatio(Math.min(devicePixelRatio, PHONE ? 1.5 : 2));
-  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.3;
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x14060d, 0.0044);
+  scene.fog = new THREE.FogExp2(0x2a1020, 0.0036);
   const cam = new THREE.PerspectiveCamera(PHONE ? 58 : 46, 1, 1, 3000);
 
   // ---------------- sky: a dusk gradient, a low sun over the sea
@@ -35,8 +35,9 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
     const g = new THREE.BufferGeometry(); g.setAttribute("position", new THREE.BufferAttribute(p, 3));
     scene.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xffffff, size: 2.2, sizeAttenuation: false, fog: false, transparent: true, opacity: 0.8 }))); }
 
-  scene.add(new THREE.HemisphereLight(0xffa6cc, 0x0a0608, 0.8));
-  const sun = new THREE.DirectionalLight(0xff7fb4, 1.2); sun.position.set(-300, 120, -80); scene.add(sun);
+  scene.add(new THREE.HemisphereLight(0xffc2dc, 0x3a2030, 1.6));
+  { const fill = new THREE.DirectionalLight(0x9fb8ff, 0.7); fill.position.set(260, 160, 200); scene.add(fill); } // a cool fill from the land side: the streets read at dusk
+  const sun = new THREE.DirectionalLight(0xff9cc6, 2.0); sun.position.set(-300, 120, -80); scene.add(sun);
 
   // ---------------- the sea to the west, the beach, the land
   const sea = new THREE.Mesh(new THREE.PlaneGeometry(3000, 3000), new THREE.ShaderMaterial({ fog: false, uniforms: { t: { value: 0 } },
@@ -48,21 +49,21 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
         float fogd = clamp(length(w.xz) / 1500.0, 0., 1.); c = mix(c, vec3(0.3,0.05,0.16), fogd*0.6); gl_FragColor = vec4(c,1.); }` }));
   sea.rotation.x = -Math.PI / 2; sea.position.set(-1600, -0.6, 0); scene.add(sea);
   const SEA_X = -175;
-  const beach = new THREE.Mesh(new THREE.PlaneGeometry(40, 560), new THREE.MeshLambertMaterial({ color: 0x2a1a20 }));
+  const beach = new THREE.Mesh(new THREE.PlaneGeometry(40, 560), new THREE.MeshLambertMaterial({ color: 0x4a3038 }));
   beach.rotation.x = -Math.PI / 2; beach.position.set(SEA_X + 4, -0.3, 0); scene.add(beach);
 
   // the street grid: blocks of B, roads of R
   const B = 30, R = 12, N = 9, P = B + R, HALF = (N * P) / 2;
   const roadTex = (() => { const c = document.createElement("canvas"); c.width = c.height = 256; const x = c.getContext("2d");
-    x.fillStyle = "#0d0c0e"; x.fillRect(0, 0, 256, 256);
+    x.fillStyle = "#2c2830"; x.fillRect(0, 0, 256, 256);
     for (let i = 0; i < 900; i++) { x.fillStyle = `rgba(255,255,255,${Math.random() * 0.04})`; x.fillRect(Math.random() * 256, Math.random() * 256, 2, 2); }
     x.fillStyle = "#ff2e88"; for (let i = 0; i < 8; i++) x.fillRect(126, i * 32 + 4, 4, 18);
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t; })();
-  const land = new THREE.Mesh(new THREE.PlaneGeometry(N * P + 60, N * P + 60), new THREE.MeshStandardMaterial({ color: 0x0c0b0d, roughness: 0.3, metalness: 0.3 }));
+  const land = new THREE.Mesh(new THREE.PlaneGeometry(N * P + 60, N * P + 60), new THREE.MeshStandardMaterial({ color: 0x302b35, roughness: 0.6, metalness: 0.05 }));
   land.rotation.x = -Math.PI / 2; land.position.set(0, -0.05, 0); scene.add(land);
   for (let i = 0; i <= N; i++) for (const rot of [0, 1]) {
     const t = roadTex.clone(); t.needsUpdate = true; t.repeat.set(1, (N * P) / 32);
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(R, N * P), new THREE.MeshStandardMaterial({ map: t, roughness: 0.25, metalness: 0.35 }));
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(R, N * P), new THREE.MeshStandardMaterial({ map: t, roughness: 0.5, metalness: 0.1 }));
     m.rotation.x = -Math.PI / 2; if (rot) m.rotation.z = Math.PI / 2;
     const c = -HALF + i * P; if (rot) m.position.set(0, 0.01, c); else m.position.set(c, 0.01, 0); scene.add(m);
   }
@@ -72,7 +73,7 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
     x.fillStyle = "#000"; x.fillRect(0, 0, 64, 256);
     for (let r = 0; r < 32; r++) for (let q = 0; q < 6; q++) { const on = Math.random() < 0.2; const k = Math.random(); x.fillStyle = on ? (k < 0.14 ? "#ff2e88" : k < 0.3 ? "#b86d8f" : k < 0.65 ? "#8a8086" : "#c9bfc4") : "#070607"; x.fillRect(4 + q * 10, 4 + r * 8, 6, 5); }
     const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.SRGBColorSpace; return t; })();
-  const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveMap: winTex, emissiveIntensity: 0.75, roughness: 0.35, metalness: 0.45 });
+  const bodyMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveMap: winTex, emissiveIntensity: 0.9, roughness: 0.55, metalness: 0.15 });
   bodyMat.onBeforeCompile = (sh) => { // windows tile with the building's size (world-space UVs on the sides)
     sh.vertexShader = sh.vertexShader.replace("#include <uv_vertex>", "#include <uv_vertex>\n#ifdef USE_EMISSIVEMAP\nvec4 wp0 = instanceMatrix * vec4(position,1.0); vEmissiveMapUv = vec2((wp0.x + wp0.z) / 18.0, wp0.y / 96.0);\n#endif");
   };
@@ -86,7 +87,7 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
   const gen = lots.filter(() => rnd() < keep);
   const boxG = new THREE.BoxGeometry(1, 1, 1); boxG.translate(0, 0.5, 0);
   const bodies = new THREE.InstancedMesh(boxG, bodyMat, gen.length);
-  const PAL = [0x2a2629, 0x1f1c1f, 0x332a30, 0x262326, 0x3a2b33, 0x1a1719];
+  const PAL = [0x5a4f57, 0x463f48, 0x6a5560, 0x50474f, 0x735563, 0x3f383f];
   const m4 = new THREE.Matrix4(), q4 = new THREE.Quaternion(), v3 = new THREE.Vector3(), s3 = new THREE.Vector3(), col = new THREE.Color();
   const solids = [];
   gen.forEach(([x, z], i) => { const d = Math.hypot(x, z) / HALF, h = 7 + rnd() * (18 + 34 * d) + (rnd() < 0.07 ? 40 : 0), w = 10 + rnd() * 4;
@@ -107,14 +108,14 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
     const trunkG = new THREE.CylinderGeometry(0.35, 0.6, 1, 6); trunkG.translate(0, 0.5, 0);
     const trunks = new THREE.InstancedMesh(trunkG, new THREE.MeshLambertMaterial({ color: 0x1a1216 }), spots.length);
     const leafG = new THREE.ConeGeometry(4.2, 1.6, 7); leafG.translate(0, -0.6, 0);
-    const leaves = new THREE.InstancedMesh(leafG, new THREE.MeshLambertMaterial({ color: 0x140a0f, emissive: 0x2a0716 }), spots.length);
+    const leaves = new THREE.InstancedMesh(leafG, new THREE.MeshLambertMaterial({ color: 0x2a1420, emissive: 0x3a0a20 }), spots.length);
     spots.forEach(([x, z], i) => { const h = 11 + rnd() * 6; m4.compose(v3.set(x, 0, z), q4.setFromAxisAngle(new THREE.Vector3(0, 0, 1), (rnd() - 0.5) * 0.18), s3.set(1, h, 1)); trunks.setMatrixAt(i, m4);
       m4.compose(v3.set(x, h, z), q4.identity(), s3.set(1, 1, 1)); leaves.setMatrixAt(i, m4); });
     scene.add(trunks, leaves); }
 
   // ---------------- traffic: head- and tail-lights moving along the roads
   const CARS = PHONE ? 40 : 90, carG = new THREE.BoxGeometry(2.2, 1.2, 4.4); carG.translate(0, 0.6, 0);
-  const cars = new THREE.InstancedMesh(carG, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.3, metalness: 0.6 }), CARS);
+  const cars = new THREE.InstancedMesh(carG, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.35, metalness: 0.3 }), CARS);
   const lightG = new THREE.PlaneGeometry(1.8, 0.5);
   const heads = new THREE.InstancedMesh(lightG, new THREE.MeshBasicMaterial({ color: 0xfff1c9, toneMapped: false, side: THREE.DoubleSide }), CARS);
   const tails = new THREE.InstancedMesh(lightG, new THREE.MeshBasicMaterial({ color: 0xff2350, toneMapped: false, side: THREE.DoubleSide }), CARS);
@@ -147,7 +148,7 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
 
   // ---------------- CLOCK PLAZA: 24 hour lots on a ring, the hour numbers painted on the ground
   const RING = 46, plaza = new THREE.Group(); scene.add(plaza);
-  const plazaFloor = new THREE.Mesh(new THREE.CircleGeometry(RING + 22, 72), new THREE.MeshStandardMaterial({ color: 0x0a090b, roughness: 0.15, metalness: 0.7 }));
+  const plazaFloor = new THREE.Mesh(new THREE.CircleGeometry(RING + 22, 72), new THREE.MeshStandardMaterial({ color: 0x3a3340, roughness: 0.5, metalness: 0.1 }));
   plazaFloor.rotation.x = -Math.PI / 2; plazaFloor.position.y = 0.03; plaza.add(plazaFloor);
   const ringLine = new THREE.Mesh(new THREE.RingGeometry(RING - 0.4, RING + 0.4, 96), new THREE.MeshBasicMaterial({ color: 0xff2e88, toneMapped: false }));
   ringLine.rotation.x = -Math.PI / 2; ringLine.position.y = 0.06; plaza.add(ringLine);
@@ -189,7 +190,7 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
   const towerOf = (coin, x, z, scale) => {
     const g = new THREE.Group(); g.position.set(x, 0, z);
     const h = (14 + (coin.graduated ? 100 : coin.progress || 0) * 0.62) * scale;
-    const body = new THREE.Mesh(boxG, bodyMat.clone()); body.material.color.setHex(0x2a2629); body.scale.set(9 * scale, h, 9 * scale); g.add(body);
+    const body = new THREE.Mesh(boxG, bodyMat.clone()); body.material.color.setHex(0x5a4f57); body.scale.set(9 * scale, h, 9 * scale); g.add(body);
     const trim = new THREE.LineSegments(new THREE.EdgesGeometry(new THREE.BoxGeometry(9 * scale, h, 9 * scale)), new THREE.LineBasicMaterial({ color: NEON[hash(coin.mint) % NEON.length], toneMapped: false }));
     trim.position.y = h / 2; g.add(trim);
     const sign = new THREE.Sprite(new THREE.SpriteMaterial({ map: logoTex(coin), toneMapped: false })); sign.scale.setScalar(9 * scale); sign.position.y = h + 6 * scale; g.add(sign);
