@@ -88,6 +88,7 @@ export function streetJobs(A, { pid = () => "" } = {}) {
 
   function paint(quiet) {
     if (!el) return;
+    el.classList.toggle("open", open);
     const done = J.done.length, rows = (board && board.rows) || [];
     if (quiet && !open) { const c = el.querySelector(".jb-n"); if (c) c.textContent = `${done}/3`; }
     const li = J.picks.map((id) => { const j = JOBS[id], p = Math.min(j.n, J.prog[id] || 0), ok = J.done.includes(id);

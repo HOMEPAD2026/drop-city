@@ -310,6 +310,15 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
   const composer = new EffectComposer(renderer); composer.addPass(new RenderPass(scene, cam));
   const bloom = new UnrealBloomPass(new THREE.Vector2(256, 256), PHONE ? 0.55 : 0.8, 0.5, 0.72); composer.addPass(bloom); composer.addPass(new OutputPass());
   const resize = () => { const w = canvas.clientWidth, h = canvas.clientHeight; renderer.setSize(w, h, false); composer.setSize(w, h); cam.aspect = w / h; cam.updateProjectionMatrix(); };
+  // light graphics (perf.js turns it on for a slow device, or the player picks it): no bloom, one pixel a CSS pixel, a
+  // third of the traffic, fewer stars
+  let low = false; const DPR = Math.min(devicePixelRatio, PHONE ? 1.5 : 2), LOW_CARS = Math.round(CARS / 3);
+  const draw = () => (low ? renderer.render(scene, cam) : composer.render());
+  function setLow(v) {
+    v = !!v; if (v === low) return; low = v;
+    renderer.setPixelRatio(low ? Math.min(DPR, 1) : DPR); resize();
+    traffic.forEach((c, i) => { if (i >= LOW_CARS) c.hold = low ? 1e12 : c.hold > 1e11 ? 0 : c.hold; });
+  }
   addEventListener("resize", resize); resize();
   let last = performance.now(), T = 0;
   function frame(now) {
@@ -325,10 +334,10 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
     for (const [m, t] of towers) { const k = Math.max(0, Math.min(1, (T - (born.get(m) || 0)) / 1.4)); t.group.scale.y = k < 1 ? Math.max(0.001, 1 - Math.pow(1 - k, 3) + Math.sin(k * Math.PI) * 0.08) : 1; }
     heli.userData.blink.visible = (T % 1) < 0.15; heli.userData.beam.rotation.z = Math.sin(T * 0.6) * 0.35; heli.userData.beam.rotation.x = Math.cos(T * 0.45) * 0.3;
     for (const t of towers.values()) { t.sign.position.y = t.h + 6 + Math.sin(T * 2 + t.h) * 0.6; if (t.lights) { const on = (T * 3) % 1 < 0.5; t.lights[0].visible = on; t.lights[1].visible = !on; } }
-    if (ctl) { ctl(dt, T); composer.render(); requestAnimationFrame(frame); return; }
+    if (ctl) { ctl(dt, T); draw(); requestAnimationFrame(frame); return; }
     if (goal) { for (const k of ["tx", "tz", "ty", "dist"]) orbit[k] += (goal[k] - orbit[k]) * Math.min(1, dt * 2.5); }
     else if (idle > 6) { orbit.yaw += dt * 0.04; for (const k of ["tx", "tz", "ty"]) orbit[k] += (0 - orbit[k]) * dt * 0.3; }
-    applyCam(); composer.render();
+    applyCam(); draw();
     requestAnimationFrame(frame);
   }
   requestAnimationFrame(frame);
@@ -336,6 +345,7 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
   const world = { HALF, SEA_X, RING, P, R, hub: 7.5 };
   const CAR_COLORS = [0xff2e88, 0x111111, 0xffffff, 0x1a1a1a, 0x2b2b2b, 0xd91a6b];
   return { setCoins, flyTo, scene, cam, towers, burst, solids, bodies, world, canvas, traffic, carColor: (i) => CAR_COLORS[i % 6], turfAt, get turf() { return turf; },
+    setLow, get low() { return low; },
     setControl(f) { ctl = f; drag = null; pts.clear(); goal = null; idle = 0; },
     setHeliTarget(v) { heliAt = v; },
     get orbit() { return orbit; } };

@@ -13,6 +13,7 @@ import { streetJobs } from "/street-jobs.js";
 import { streetTurf } from "/street-turf.js";
 import { streetPerks } from "/street-perks.js";
 import { makeMusic } from "/music.js";
+import { makePerf } from "/perf.js";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } };
 let coins = [], slot = null, tab = "wanted", sel = new URLSearchParams(location.search).get("coin");
@@ -20,6 +21,10 @@ const city = makeCity($("city"), { onPick: (m) => openCard(m) });
 // on foot (roam.js): a street name and a crew member on the first visit, then the streets; MAP is the old view
 const roam = makeRoam(city, { onOpen: (m) => openCard(m, true), toast: (t) => note(t), sound: tone });
 streetCar(roam.api); const net = streetNet(roam.api); const jobs = streetJobs(roam.api, { pid: () => net.pid }); streetTurf(roam.api); const perks = streetPerks(roam);
+// the top bar's real height (it wraps on narrow phones): the street's HUD rows sit under it (roam.css --th)
+const topH = () => { const b = [...document.querySelectorAll(".top > *")].filter((e) => getComputedStyle(e).display !== "none").map((e) => e.getBoundingClientRect().bottom); document.documentElement.style.setProperty("--th", Math.ceil(Math.max(44, ...b)) + "px"); };
+addEventListener("resize", topH); new MutationObserver(topH).observe(document.body, { attributes: true, attributeFilter: ["class"] }); document.fonts && document.fonts.ready.then(topH); topH();
+const perf = makePerf(city, { mode: () => (roam.active ? "street" : "map"), toast: (t) => note(t, 5000) });
 const music = makeMusic({ button: $("m-music"), notify: (t) => note(t, 2600) });
 const go = (m) => { if (roam.active) roam.goTo(m); else city.flyTo(m); };
 async function setMode(m) {
@@ -37,11 +42,13 @@ function openMe() {
     <div class="row"><input id="me-in" maxlength="20" value="${esc(roam.me.name)}" autocomplete="off" spellcheck="false"><button type="button" class="dice" title="Random name">🎲</button></div>
     <div class="looks">${Object.entries(LOOKS).map(([k, v]) => `<button type="button" data-l="${k}" class="${k === look ? "on" : ""}">${v.name}</button>`).join("")}</div>
     <div class="ft"><button type="button" class="btn ghost" data-c>Cancel</button><button type="button" class="btn hot" data-s>Save</button></div>
+    <div class="gfx"><b>GRAPHICS</b><div class="seg">${["auto", "high", "low"].map((g) => `<button type="button" data-g="${g}" class="${perf.pref === g ? "on" : ""}">${g === "low" ? "LIGHT" : g.toUpperCase()}</button>`).join("")}</div><small>Light: no glow, fewer cars — smoother on older phones.</small></div>
     <div class="perks"><b>HOLDER PERKS</b><span>Hold $${esc(CFG.ticker || "")} in the connected wallet: <i class="${perks.perk === "crew" ? "on" : ""}">CREW</i> any amount · <i class="${perks.perk === "made" ? "on" : ""}">MADE</i> 1M · <i class="${perks.perk === "boss" ? "on" : ""}">BOSS</i> 10M — a gold name tag, outfit and car. Looks only.</span></div>
     <small class="fine">Street cash and wanted stars are just for fun — nothing here touches a wallet or the chain.</small></div>`;
   document.body.appendChild(w);
   const close = () => w.remove();
   w.onclick = (e) => { if (e.target === w || e.target.closest(".x,[data-c]")) close(); };
+  w.querySelectorAll("[data-g]").forEach((b) => (b.onclick = () => { perf.set(b.dataset.g); w.querySelectorAll("[data-g]").forEach((x) => x.classList.toggle("on", x === b)); }));
   w.querySelector(".dice").onclick = () => { w.querySelector("#me-in").value = randomHandle(); };
   w.querySelectorAll("[data-l]").forEach((b) => (b.onclick = () => { look = b.dataset.l; w.querySelectorAll("[data-l]").forEach((x) => x.classList.toggle("on", x === b)); }));
   w.querySelector("[data-s]").onclick = async () => { roam.setName(w.querySelector("#me-in").value); if (look !== roam.me.look) await roam.setLook(look); close(); };
@@ -138,4 +145,4 @@ walletButton($("wallet"), () => { }).then((f) => (paintWallet = f));
 
 $("drop").onclick = () => openDrop();
 load();
-window.__dc = { city, roam, net, jobs, music, setMode, openDrop, grind, coins: () => coins };
+window.__dc = { city, roam, net, jobs, music, perf, setMode, openDrop, grind, coins: () => coins };

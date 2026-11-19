@@ -117,7 +117,7 @@ body:not(.street) .turf { display: none; }
 .turf small { display: block; font: 800 10px var(--mono); letter-spacing: 0.2em; color: var(--dim); } .turf b { font: 400 22px var(--head); font-style: italic; color: var(--tc, #fff); text-shadow: 0 0 14px var(--tc, #ff2e88); }
 .turf.in { animation: turfin 0.5s cubic-bezier(0.3, 1.4, 0.5, 1); } @keyframes turfin { from { transform: translateX(40px); opacity: 0; } }
 body.card-open .turf { display: none; }
-@media (max-width: 760px) { .turf { top: 136px; right: 8px; padding: 4px 8px; } .turf b { font-size: 16px; } .turf small { font-size: 9px; } }
+@media (max-width: 760px) { .turf { top: 178px; right: 8px; padding: 4px 8px; } .turf b { font-size: 16px; } .turf small { font-size: 9px; } }
 
 .mesheet .perks { margin: 12px 0 0; padding: 10px 12px; border-radius: 12px; background: rgba(255, 211, 107, 0.08); border: 1px solid rgba(255, 211, 107, 0.35); font-size: 12px; color: var(--dim); }
 .mesheet .perks b { display: block; font: 800 11px var(--mono); letter-spacing: 0.14em; color: #ffd36b; margin-bottom: 2px; } .mesheet .perks i { font-style: normal; font-weight: 800; color: var(--ink); } .mesheet .perks i.on { color: #070708; background: #ffd36b; border-radius: 4px; padding: 0 4px; }
@@ -129,3 +129,14 @@ body.card-open .turf { display: none; }
 /* the toast clear of the controls and the mode bar */
 body.street .toast, .toast { bottom: 72px; }
 @media (max-width: 760px) { body.street .toast { top: 232px; bottom: auto; max-width: calc(100vw - 24px); text-align: center; } }
+
+.mesheet .gfx { margin: 12px 0 0; display: grid; gap: 6px; } .mesheet .gfx b { font: 800 11px var(--mono); letter-spacing: 0.14em; color: var(--dim); } .mesheet .gfx small { color: var(--dim); font-size: 11px; }
+.mesheet .seg { display: inline-flex; gap: 4px; padding: 4px; border-radius: 12px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); width: max-content; }
+.mesheet .seg button { border: 0; background: none; border-radius: 9px; padding: 7px 14px; font: 800 11px var(--mono); letter-spacing: 0.08em; color: var(--dim); } .mesheet .seg button.on { background: var(--hot); color: #fff; }
+/* phones on foot: the hour row goes (the HUD takes its place), everything below moves up */
+@media (max-width: 760px) {
+  body.street .top .clock { display: none; }
+  body.street .hud { top: calc(var(--th, 52px) + 4px); } body.street .modes { top: calc(var(--th, 52px) + 48px); }
+  body.street .jobs { top: calc(var(--th, 52px) + 90px); max-height: calc(100dvh - var(--th, 52px) - 310px); } body.street .turf { top: calc(var(--th, 52px) + 90px); } .jobs.open ~ .turf { display: none !important; }
+  body.street .toast { top: calc(var(--th, 52px) + 144px); }
+}
