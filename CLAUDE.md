@@ -13,8 +13,10 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   TTWofwAge91oFhZs7kpQdyrVRkmevgM88xijGvQFbKo, on pump.fun's QuoteControl list) as its pair — pad-config.js `quotes`. A TTWO
   coin's first buy and creator fees are in TTWO; the 60 / 30 / 10 split is the same. Agent drops stay SOL.
 - The agent's logos come from images/agent (the owner's mascot art); a drop's name is picked from those subjects.
-- **STREET mode (the owner, 2026-11-19):** the city opens on foot (roam.js) with a random crime-flavoured handle and a
-  KayKit crew body (CC0). Handles stay generic (no game titles, studios, cities or characters from other games). Street
+- **STREET mode (the owner, 2026-11-19):** the city always opens on foot (roam.js) with a random crime-flavoured handle and a
+  realistic body (models/real: CC0 people on one Mixamo-named rig + Quaternius' animations; cars, palms, props, Poly Haven
+  textures and the dusk sky — every source and licence in models/real/CREDITS.md and manifest.json; the coupe is CC-BY 4.0,
+  keep its credit). Only free, properly licensed assets: never models ripped from a game, never real car brands or logos. Handles stay generic (no game titles, studios, cities or characters from other games). Street
   cash / wanted stars are a toy score on the device — never describe them as rewards, tokens or anything on chain.
 - **The website (the owner, 2026-11-19):** one short page — a compact hero over the coast at dusk, EXPLORE (two rows of
   cards, then Show all), the city band, and THE DESK: eight tabs (This hour · Ranks · Launch · Fees · Wallets · Check a CA ·

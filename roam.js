@@ -9,7 +9,8 @@ import { GLTFLoader } from "/vendor/three/addons/GLTFLoader.js";
 import { MeshoptDecoder } from "/vendor/three/addons/meshopt_decoder.module.js";
 import * as SkeletonUtils from "/vendor/three/addons/SkeletonUtils.js";
 
-export const LOOKS = { hood: { file: "rogue-hooded", name: "HOOD" }, thief: { file: "rogue", name: "THIEF" }, muscle: { file: "barbarian", name: "MUSCLE" }, runner: { file: "ranger", name: "RUNNER" } };
+// realistic adults (models/real/chars, CC0 — CREDITS.md there), all on one Mixamo-named rig; the keys stay as saved before
+export const LOOKS = { hood: { file: "man-tee", name: "STREET" }, thief: { file: "woman-casual", name: "CASUAL" }, muscle: { file: "man-bald", name: "BOSS" }, runner: { file: "woman-casual", name: "RUNNER" } };
 const ADJ = ["Neon", "Slick", "Midnight", "Chrome", "Shady", "Lucky", "Velvet", "Dirty", "Golden", "Smooth", "Rusty", "Silent", "Crooked", "Turbo", "Hustle", "Backstreet", "Nightshift", "Lowrider", "Burnout", "Redline", "Cashflow", "Wildcard", "Downtown", "Sunset", "Dockside", "Jackpot", "Rogue", "Stickup", "Getaway", "Overdrive"];
 const NOUN = ["Wheelman", "Hustler", "Bandit", "Racketeer", "Kingpin", "Smuggler", "Fixer", "Lookout", "Grifter", "Outlaw", "Heister", "Boss", "Runner", "Shark", "Ace", "Mobster", "Muscle", "Safecracker", "Driver", "Dealer", "Capo", "Enforcer", "Wiseguy", "Hotshot", "Drifter", "Crook", "Snitch", "Bruiser", "Joyrider", "Bagman"];
 const pick = (a) => a[Math.floor(Math.random() * a.length)];
@@ -26,25 +27,27 @@ export function saveMe(me) { try { localStorage.setItem("dc.me", JSON.stringify(
 const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
 const gl = (u) => new Promise((res, rej) => loader.load(u, res, undefined, rej));
 let movesP = null; const srcP = {};
-const moves = () => movesP || (movesP = gl("/models/crew/moves.glb").then((g) => new Map(g.animations.map((c) => [c.name, c]))).catch((e) => { movesP = null; throw e; }));
-const src = (f) => srcP[f] || (srcP[f] = gl(`/models/crew/${f}.glb`).catch((e) => { delete srcP[f]; throw e; }));
-// the game's names → the KayKit clips (there is no "run": moving is walk or sprint)
-const AS = { idle: "Idle_A", walk: "Walking_A", sprint: "Running_A", jump: "Jump_Full_Short", hit: "Hit_A", die: "Death_A", punch: "Melee_Unarmed_Attack_Punch_A", wave: "Waving", cheer: "Cheering", spawn: "Spawn_Ground", dodge: "Dodge_Forward", drive: "Sit_Chair_Idle" };
-const HOLD = new Set(["Death_A"]);
+const moves = () => movesP || (movesP = gl("/models/real/anims.glb").then((g) => new Map(g.animations.map((c) => [c.name, c]))).catch((e) => { movesP = null; throw e; }));
+const src = (f) => srcP[f] || (srcP[f] = gl(`/models/real/chars/${f}.glb`).catch((e) => { delete srcP[f]; throw e; }));
+// the game's names → models/real/anims.glb's clips (Quaternius' Universal Animation Library on the shared rig)
+const AS = { idle: "idle", walk: "walk", sprint: "sprint", jump: "jump_start", hit: "hit", die: "die", punch: "punch", wave: "wave", cheer: "cheer", spawn: "jump_land", dodge: "dodge", drive: "drive" };
+const HOLD = new Set(["die"]);
+const TALL = 1.85; // metres: a person beside a 4.4 m car
 const NAME_OF = Object.fromEntries(Object.entries(AS).map(([k, v]) => [v, k]));
 export const clipName = (c) => NAME_OF[c] || "idle";
 async function makeBody(look, { tint = null, glow = 0.1 } = {}) {
   const [g, clips] = await Promise.all([src(LOOKS[look].file), moves()]);
   const inner = SkeletonUtils.clone(g.scene);
-  const box = new THREE.Box3().setFromObject(inner), h = box.max.y - box.min.y || 1, k = 2.1 / h;
+  const box = new THREE.Box3().setFromObject(inner), h = box.max.y - box.min.y || 1, k = TALL / h;
   inner.scale.setScalar(k); inner.position.y = -box.min.y * k;
   inner.traverse((o) => { if (!o.isMesh) return; o.frustumCulled = false;
-    const m = o.material.clone(); if (m.map) { m.emissiveMap = m.map; m.emissive = new THREE.Color(0xffffff); m.emissiveIntensity = glow; } if (tint) m.color.multiply(new THREE.Color(tint)); o.material = m; });
+    // a touch of self-light so a person reads at dusk; a tint (rivals, holders) only shades the clothes a little
+    const m = o.material.clone(); if (m.map) { m.emissiveMap = m.map; m.emissive = new THREE.Color(0xffffff); m.emissiveIntensity = Math.min(0.12, glow * 0.5); } if (tint) m.color.lerp(new THREE.Color(tint), 0.22); o.material = m; });
   const obj = new THREE.Group(); obj.add(inner);
   const mixer = new THREE.AnimationMixer(inner), acts = {};
   const act = (n) => { const cn = AS[n] || n; if (!acts[cn]) { const c = clips.get(cn); if (!c) return null; acts[cn] = mixer.clipAction(c); } return acts[cn]; };
   let cur = null, one = null;
-  const SOFT = new Set(["Waving", "Cheering", "Spawn_Ground"]); // a wave or a spawn gives way to walking; a punch, a hit or a jump plays out
+  const SOFT = new Set(["wave", "cheer", "jump_land"]); // a wave or a spawn gives way to walking; a punch, a hit or a jump plays out
   const play = (n, { once = false, speed = 1, fade = 0.16 } = {}) => {
     const a = act(n); if (!a) return null;
     if (!once && one && SOFT.has(one.getClip().name)) one = null;

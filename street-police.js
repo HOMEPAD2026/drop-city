@@ -9,9 +9,10 @@ export function streetPolice(A) {
   const lightM = [new THREE.MeshBasicMaterial({ color: 0xff2340, toneMapped: false }), new THREE.MeshBasicMaterial({ color: 0x2f6bff, toneMapped: false })];
   const white = new THREE.MeshStandardMaterial({ color: 0xf4f4f4, roughness: 0.4, metalness: 0.2 });
   function cruiser() {
-    const c = A.carOf ? A.carOf(0, 0x111114, true) : new THREE.Group();
-    const door = new THREE.Mesh(new THREE.BoxGeometry(2.14, 0.4, 1.8), white); door.position.y = 0.72; c.add(door);
-    const bar = new THREE.Group(); bar.position.y = 1.55;
+    // the real police sedan (models/real/cars/police.glb) when it's in, else the drawn car with a white door; a flashing bar on the roof either way
+    const realCar = A.policeOf && A.policeOf(), c = realCar || (A.carOf ? A.carOf(0, 0x111114, true) : new THREE.Group());
+    if (!realCar) { const door = new THREE.Mesh(new THREE.BoxGeometry(2.14, 0.4, 1.8), white); door.position.y = 0.72; c.add(door); }
+    const bar = new THREE.Group(); bar.position.y = realCar ? 1.5 : 1.55;
     const l = [new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.18, 0.3), lightM[0]), new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.18, 0.3), lightM[1])]; l[0].position.x = -0.35; l[1].position.x = 0.35; bar.add(...l); c.add(bar);
     c.userData.lights = l; return c;
   }
