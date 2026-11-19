@@ -6,13 +6,15 @@
 //   GET  ?check=<mint>  what the chain says about a coin; lists it if it passes (a launch whose page closed early)
 //   GET  ?agent         the agent: its wallet, this hour, today's drops and transfers to THE VAULT
 //   POST ?solrpc        the browser's Solana RPC relay (only the calls a launch makes)
-//   POST {action}       register · meta · logo
+//   GET  ?street        the streets: players here now + the week's street board
+//   POST {action}       register · meta · logo · here (a player's beat in the streets) · score (the street board)
 import { makePad, publicCfg, cfg, quotesOf } from "../lib/_pad.mjs";
 import { proxy } from "../lib/_chain.mjs";
 import { blobStore, blobEnabled } from "../lib/_blob.mjs";
 import { makeAgent } from "../lib/_agent.mjs";
 import { makeExtra } from "../lib/_extra.mjs";
 import { makeTg } from "../lib/_tg.mjs";
+import { makeStreet } from "../lib/_street.mjs";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
 
@@ -23,6 +25,8 @@ let AG = null;
 let EX = null;
 const extra = () => (EX = EX || makeExtra({ pad: pad() }));
 const agent = () => (AG = AG || makeAgent({ pad: pad(), extra: extra(), tg: makeTg({ pad: pad(), extra: extra() }) }));
+let ST = null;
+const street = () => (ST = ST || makeStreet({ store: blobEnabled() ? blobStore() : null }));
 let HTML = null;
 const html = (status, body) => new Response(body, { status, headers: { "content-type": "text/html; charset=utf-8", "cache-control": "public, max-age=60, s-maxage=300" } });
 const hits = new Map();
@@ -79,6 +83,7 @@ export async function GET(req) {
   if (q.has("cfg")) { let lut = null; if (blobEnabled()) try { const d = await pad().store.get("agent/lut.json"); lut = d && d.address; } catch {} return json(200, { ...publicCfg(), lut }, "public, max-age=30"); }
   if (q.has("simquote")) { if (limited("sq:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" }); try { return json(200, await simQuote(q.get("simquote"), q.get("dev")), "no-store"); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 300) }); } }
   if (q.has("quotes")) { try { return json(200, await quotes(), "public, max-age=300, s-maxage=600"); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 200) }); } }
+  if (q.has("street")) { try { return json(200, { here: street().count(), ...(blobEnabled() ? await street().board() : { rows: [] }) }, "public, max-age=15, s-maxage=20"); } catch (e) { return json(502, { error: "street board unavailable" }); } }
   if (!blobEnabled()) return json(503, { error: "the store isn't connected yet" });
   try {
     if (q.has("list")) return json(200, await pad().list(), "public, max-age=10, s-maxage=20");
@@ -116,8 +121,11 @@ export async function POST(req) {
     let q; try { q = await req.json(); } catch { return json(400, { jsonrpc: "2.0", id: null, error: { code: -32700, message: "bad JSON" } }); }
     return json(200, await proxy(q));
   }
-  if (!blobEnabled()) return json(503, { error: "the store isn't connected yet" });
   let b; try { b = (await req.json()) || {}; } catch { return json(400, { error: "bad JSON" }); }
+  // the streets: a player's beat (positions, punches) and the week's street board — toys, nothing on chain
+  if (b.action === "here") { if (limited("here:" + ip, 150, 60e3)) return json(429, { error: "slow down" }); const r = await street().beat(b); return json(r.status, r.body); }
+  if (!blobEnabled()) return json(503, { error: "the store isn't connected yet" });
+  if (b.action === "score") { if (limited("score:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); const r = await street().score(b); return json(r.status, r.body); }
   const lim = { register: 30, meta: 20, logo: 20, vote: 10 }[b.action];
   if (!lim) return json(400, { error: "unknown action" });
   if (limited(b.action + ":" + ip, lim, 60e3)) return json(429, { error: "slow down" });

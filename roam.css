@@ -75,3 +75,12 @@ body.warp #city { animation: warp 0.4s; } @keyframes warp { 0% { filter: brightn
   body:not(.street) .modes { left: 8px; top: 136px; }
   body.street .phone { transform: translateY(calc(100% + 30px)); } body.street.ph-open .phone { transform: none; z-index: 7; }
 }
+
+/* players here now; the emote button */
+.here { display: flex; align-items: center; gap: 5px; font: 800 12px var(--mono); color: #5ce1ff; }
+.here i { width: 8px; height: 8px; border-radius: 50%; background: #5ce1ff; box-shadow: 0 0 8px #5ce1ff; animation: wlb 1.6s steps(2) infinite; }
+#b-emote { display: none; }
+@media (pointer: coarse), (max-width: 760px) {
+  #b-emote { display: block; position: fixed; right: 132px; bottom: calc(100px + env(safe-area-inset-bottom)); width: 46px; height: 46px; border-radius: 50%; border: 2px solid rgba(255, 255, 255, 0.2); background: rgba(20, 20, 24, 0.75); font-size: 20px; touch-action: none; }
+}
+@media (max-width: 760px) { .here { font-size: 11px; } }

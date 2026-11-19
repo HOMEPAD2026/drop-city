@@ -31,6 +31,8 @@ const src = (f) => srcP[f] || (srcP[f] = gl(`/models/crew/${f}.glb`).catch((e) =
 // the game's names → the KayKit clips (there is no "run": moving is walk or sprint)
 const AS = { idle: "Idle_A", walk: "Walking_A", sprint: "Running_A", jump: "Jump_Full_Short", hit: "Hit_A", die: "Death_A", punch: "Melee_Unarmed_Attack_Punch_A", wave: "Waving", cheer: "Cheering", spawn: "Spawn_Ground", dodge: "Dodge_Forward" };
 const HOLD = new Set(["Death_A"]);
+const NAME_OF = Object.fromEntries(Object.entries(AS).map(([k, v]) => [v, k]));
+export const clipName = (c) => NAME_OF[c] || "idle";
 async function makeBody(look, { tint = null, glow = 0.1 } = {}) {
   const [g, clips] = await Promise.all([src(LOOKS[look].file), moves()]);
   const inner = SkeletonUtils.clone(g.scene);
@@ -70,6 +72,7 @@ const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 const angDiff = (a, b) => { let d = b - a; while (d > Math.PI) d -= Math.PI * 2; while (d < -Math.PI) d += Math.PI * 2; return d; };
 const WALK = 4.2, SPRINT = 8.6, JUMP_V = 9, GRAV = 24, R = 0.45;
 
+export { makeBody, tagOf, tagTex };
 export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = () => {} } = {}) {
   const { scene, cam, canvas, world } = city;
   const me = loadMe();
@@ -77,6 +80,9 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
   const S = { active: false, ready: false, hero: null, tag: null, pos: new THREE.Vector3(0, 0, 18), vy: 0, ground: true, yaw: 0, hp: 100, down: 0, hurtT: 0,
     camYaw: 0, camPitch: 0.34, camDist: PHONE ? 9.5 : 8.5, blend: 1, from: new THREE.Vector3(), wanted: 0, wantT: 0, atkLock: 0, near: null };
   const root = new THREE.Group(); root.visible = false; scene.add(root);
+  // the street's add-ons (street-*.js) hang off these: punch(fx, fz) -> hit?, step(dt), act() -> { label, key, run } | null
+  // (the first one wins the action button), key(k, down) -> used?, drive(dt, input) -> true while it moves you (a car)
+  const hooks = { punch: [], step: [], act: [], key: [], drive: null };
 
   // ---------------- what's solid: the city's blocks, the coins' towers, the plaza's hub, the edges
   function collide(p, r = R) {
@@ -164,7 +170,7 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
   }
   function crime(n = 1) { S.wanted = Math.min(5, S.wanted + n); S.wantT = 22; sound("siren"); paintHud(); }
   function punch() {
-    if (!S.active || !S.hero || S.down > 0 || S.atkLock > 0) return;
+    if (!S.active || !S.hero || S.down > 0 || S.atkLock > 0 || S.inCar) return;
     S.atkLock = 0.5; S.hero.play("punch", { once: true, speed: 1.7, fade: 0.06 });
     setTimeout(() => {
       const fx = Math.sin(S.yaw), fz = Math.cos(S.yaw); let hit = false;
@@ -175,11 +181,12 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
       for (const a of atms) { if (a.cd > 0) continue; const dx = a.x - S.pos.x, dz = a.z - S.pos.z, d = Math.hypot(dx, dz);
         if (d < 2.6 && (dx * fx + dz * fz) / (d || 1) > 0.1) { hit = true; a.hp--; pop(a.hp > 0 ? "CRACK!" : "JACKPOT!", { x: a.x, z: a.z }, "#3dffb5");
           if (a.hp <= 0) { a.cd = 45; a.hp = 3; a.s.material.color.setHex(0x3a0d1c); a.sign.material.opacity = 0.25; const loot = 300 + Math.floor(Math.random() * 400); me.cash += loot; saveMe(me); pop(`+$${loot}`, { x: a.x, z: a.z }, "#ffd36b", 2.8); city.burst(a.x, 2.4, a.z, 0.45); crime(1); sound("win"); } } }
+      for (const f of hooks.punch) if (f(fx, fz)) hit = true;
       if (hit) { sound("tick"); shake = 0.18; if (navigator.vibrate) try { navigator.vibrate(12); } catch { /* */ } }
       paintHud();
     }, 230);
   }
-  function jump() { if (!S.active || !S.ground || S.down > 0) return; S.vy = JUMP_V; S.ground = false; S.hero.play("jump", { once: true, speed: 1.55, fade: 0.08 }); }
+  function jump() { if (!S.active || !S.ground || S.down > 0 || S.inCar) return; S.vy = JUMP_V; S.ground = false; S.hero.play("jump", { once: true, speed: 1.55, fade: 0.08 }); }
 
   // ---------------- input: keys; a thumb stick + buttons on phones; drag anywhere else to look round
   const keys = new Set(), stick = { x: 0, y: 0, on: false };
@@ -188,7 +195,8 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
     const k = e.key.toLowerCase();
     if (down && (k === " " || k === "spacebar")) { e.preventDefault(); jump(); return; }
     if (down && (k === "f" || k === "j")) { punch(); return; }
-    if (down && k === "e" && S.near) { onOpen(S.near); return; }
+    for (const f of hooks.key) if (f(k, down, e)) return;
+    if (down && k === "e" && S.act) { S.act.run(); return; }
     if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright", "shift"].includes(k)) { e.preventDefault(); down ? keys.add(k) : keys.delete(k); }
   };
   addEventListener("keydown", (e) => onKey(e, true)); addEventListener("keyup", (e) => onKey(e, false)); addEventListener("blur", () => keys.clear());
@@ -220,7 +228,7 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
   }
   const holdBtn = (el, f) => el && el.addEventListener("pointerdown", (e) => { e.preventDefault(); e.stopPropagation(); f(); el.classList.add("on"); setTimeout(() => el.classList.remove("on"), 140); });
   holdBtn($("b-jump"), jump); holdBtn($("b-hit"), punch);
-  const actEl = $("act"); if (actEl) actEl.onclick = () => S.near && onOpen(S.near);
+  const actEl = $("act"); if (actEl) actEl.onclick = () => S.act && S.act.run();
 
   // ---------------- screen bits: the HUD, hit words, big words, flashes
   const fxL = $("fx");
@@ -254,19 +262,20 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
     const fx = -Math.sin(S.camYaw), fz = -Math.cos(S.camYaw);
     let mx = fx * fwd + -fz * side, mz = fz * fwd + fx * side; const ml = Math.hypot(mx, mz);
     if (S.down > 0) { S.down -= dt; if (S.down <= 0) { S.hp = 100; S.pos.set(0, 0, 18); S.vy = 0; S.wanted = 0; hero.play("spawn", { once: true }); paintHud(); } mx = mz = 0; }
-    const moving = ml > 0.08 && S.down <= 0 && !(hero.clip() === "Melee_Unarmed_Attack_Punch_A" && S.ground);
+    const driving = !!(hooks.drive && S.inCar && hooks.drive(dt, { fwd, side, run, amt, stick: stick.on }));
+    const moving = !driving && ml > 0.08 && S.down <= 0 && !(hero.clip() === "Melee_Unarmed_Attack_Punch_A" && S.ground);
     if (moving) {
       mx /= ml; mz /= ml; const sp = (run ? SPRINT : WALK) * (stick.on ? Math.max(0.45, amt) : 1);
       S.pos.x += mx * sp * dt; S.pos.z += mz * sp * dt;
       S.yaw += angDiff(S.yaw, Math.atan2(mx, mz)) * Math.min(1, dt * 12);
       if (S.ground && !hero.busy()) hero.play(run ? "sprint" : "walk", { speed: run ? 1.15 : Math.max(0.8, sp / 4.6) });
       if (!S.lookT) S.camYaw += angDiff(S.camYaw, S.yaw + Math.PI) * Math.min(1, dt * 0.9) * (fwd > 0.3 ? 1 : 0.25);
-    } else if (S.ground && !hero.busy() && S.down <= 0) hero.play("idle");
+    } else if (!driving && S.ground && !hero.busy() && S.down <= 0) hero.play("idle");
     if (S.knock) { S.pos.addScaledVector(S.knock, dt * 6); S.knock.multiplyScalar(Math.max(0, 1 - dt * 6)); if (S.knock.lengthSq() < 0.01) S.knock = null; }
     // jumping
     if (!S.ground) { S.vy -= GRAV * dt; S.pos.y += S.vy * dt; if (S.pos.y <= 0) { S.pos.y = 0; S.vy = 0; S.ground = true; city.burst(S.pos.x, 0.2, S.pos.z, 0.06); } }
-    collide(S.pos);
-    hero.obj.position.copy(S.pos); hero.obj.rotation.y = S.yaw; hero.update(dt);
+    if (!driving) { collide(S.pos); hero.obj.position.copy(S.pos); hero.obj.rotation.y = S.yaw; }
+    hero.update(dt);
     S.atkLock = Math.max(0, S.atkLock - dt); S.hurtT = Math.max(0, S.hurtT - dt); if (S.lookT) S.lookT = Math.max(0, S.lookT - dt);
     // the others
     for (const n of rivals) stepRival(n, dt);
@@ -274,11 +283,19 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
     // wanted: cools off; three stars bring the helicopter
     if (S.wanted > 0 && (S.wantT -= dt) <= 0) { S.wanted--; S.wantT = 14; paintHud(); }
     city.setHeliTarget(S.wanted >= 3 ? S.pos : null);
-    // the nearest tower within reach: its card is a key / a tap away
-    let near = null, nd = 1e9;
-    for (const t of city.towers.values()) { const hw = t.body.scale.x / 2, dx = Math.max(0, Math.abs(S.pos.x - t.group.position.x) - hw), dz = Math.max(0, Math.abs(S.pos.z - t.group.position.z) - hw), d = Math.hypot(dx, dz); if (d < 3.2 && d < nd) { nd = d; near = t; } }
-    S.near = near ? near.coin.mint : null;
-    if (S.near !== lastNear) { lastNear = S.near; if (actEl) { actEl.hidden = !near; if (near) actEl.innerHTML = `<b>OPEN $${String(near.coin.symbol || "").replace(/[<>&"]/g, "")}</b><small>${PHONE ? "TAP" : "E"}</small>`; } }
+    for (const f of hooks.step) f(dt);
+    // the action button: the first add-on with something to do here, else the nearest tower's card
+    let act = null; for (const f of hooks.act) { act = f(); if (act) break; }
+    S.near = null;
+    if (!act && !S.inCar) {
+      let near = null, nd = 1e9;
+      for (const t of city.towers.values()) { const hw = t.body.scale.x / 2, dx = Math.max(0, Math.abs(S.pos.x - t.group.position.x) - hw), dz = Math.max(0, Math.abs(S.pos.z - t.group.position.z) - hw), d = Math.hypot(dx, dz); if (d < 3.2 && d < nd) { nd = d; near = t; } }
+      if (near) { const m = near.coin.mint; S.near = m; act = { label: `OPEN $${near.coin.symbol || ""}`, id: "t:" + m, run: () => onOpen(m) }; }
+    }
+    S.act = act;
+    const aid = act ? act.id || act.label : null;
+    if (aid !== lastNear) { lastNear = aid; if (actEl) { actEl.hidden = !act; if (act) actEl.innerHTML = `<b>${String(act.label).replace(/[<>&"]/g, "")}</b><small>${PHONE ? "TAP" : act.key || "E"}</small>`; } }
+    if (driving && !S.lookT) S.camYaw += angDiff(S.camYaw, S.yaw + Math.PI) * Math.min(1, dt * 3);
     // the camera: behind you, above, pulled in when a building is in the way
     head.set(S.pos.x, S.pos.y + 1.7, S.pos.z);
     const c = Math.cos(S.camPitch);
@@ -286,6 +303,7 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
     if ((tbT -= dt) <= 0) { tbT = 1; towerBodies = [city.bodies, ...[...city.towers.values()].map((t) => t.body)]; }
     dir.subVectors(camWant, head); const full = dir.length(); dir.normalize(); ray.set(head, dir); ray.far = full;
     const hit = ray.intersectObjects(towerBodies, false)[0]; if (hit) camWant.copy(head).addScaledVector(dir, Math.max(1.5, hit.distance - 0.6));
+    if (S.inCar) { camWant.y += 1.4; }
     if (S.blend < 1) { S.blend = Math.min(1, S.blend + dt / 1.3); const k = 1 - Math.pow(1 - S.blend, 3); camAt.lerpVectors(S.from, camWant, k); }
     else camAt.lerp(camWant, Math.min(1, dt * 10));
     cam.position.copy(camAt); if (shake > 0) { shake -= dt; cam.position.x += (Math.random() - 0.5) * shake; cam.position.y += (Math.random() - 0.5) * shake; }
@@ -312,5 +330,8 @@ export function makeRoam(city, { onOpen = () => {}, toast = () => {}, sound = ()
     const p = t.group.position, d = Math.hypot(p.x, p.z) || 1, hw = t.body.scale.x / 2 + 2.2;
     S.pos.set(p.x - (p.x / d) * hw, 0, p.z - (p.z / d) * hw); collide(S.pos); S.yaw = Math.atan2(p.x - S.pos.x, p.z - S.pos.z); S.camYaw = S.yaw + Math.PI; S.from.copy(cam.position); S.blend = 0.35; flash("warp");
   }
-  return { enter, leave, goTo, me, setName, setLook, get active() { return S.active; }, get ready() { return S.ready; }, randomHandle, state: S, rivals };
+  // what the add-ons get to work with
+  const api = { THREE, S, me, root, city, cam, hooks, makeBody, tagOf, tagTex, pop, bigText, flash, hurtMe, crime, collide, paintHud, sound, toast, saveMe, onOpen, PHONE, rivals, atms, keys, stick, clipName,
+    shake: (k) => { shake = Math.max(shake, k); } };
+  return { enter, leave, goTo, me, setName, setLook, get active() { return S.active; }, get ready() { return S.ready; }, randomHandle, state: S, rivals, api, hooks };
 }

@@ -7,12 +7,14 @@ import { openDrop as drop, grind } from "/launch.js";
 import { feeBox, wireFees } from "/fees.js";
 import { showDrop, takeoverTick, initSound, tone } from "/site-x.js";
 import { makeRoam, LOOKS, randomHandle } from "/roam.js?v=1";
+import { streetNet } from "/street-net.js";
 
 let CFG = { split: { creator: 6000, vault: 3000, buyer: 1000 } };
 let coins = [], slot = null, tab = "wanted", sel = new URLSearchParams(location.search).get("coin");
 const city = makeCity($("city"), { onPick: (m) => openCard(m) });
 // on foot (roam.js): a street name and a crew member on the first visit, then the streets; MAP is the old view
 const roam = makeRoam(city, { onOpen: (m) => openCard(m, true), toast: (t) => note(t), sound: tone });
+streetNet(roam.api);
 const go = (m) => { if (roam.active) roam.goTo(m); else city.flyTo(m); };
 async function setMode(m) {
   if (m === "street" && !roam.active) { if (!(await roam.enter())) return; }
