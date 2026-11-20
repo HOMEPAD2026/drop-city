@@ -147,7 +147,7 @@ export function openDrop(o = {}) {
         // a token pair: create + the locked split as one v0 transaction (nothing can trade before the split), the first buy right after
         if (!lut) throw new Error("The city's lookup table didn't load — try again in a moment.");
         b = await K.launchV0({ lut, ...L0, devBuyLamports: 0 }); b.txs[0].sign([mint]);
-        if (devUnits > 0) { const bt = await K.buyTx({ ...L0, amount: devUnits }); b.txs.push(bt.tx); b.single = false; }
+        if (devUnits > 0) { const bt = await K.buyTx({ ...L0, amount: devUnits, slipBps: 2000 }); b.txs.push(bt.tx); b.single = false; } // its own transaction: others can trade first, so it asks for what 1 / 1.2 of the amount buys and pays at most the amount
       } else {
         if (lut) b = await K.launchV0({ lut, ...L0, devBuyLamports: devUnits }).catch(() => null);
         if (b) b.txs[0].sign([mint]);
@@ -159,8 +159,15 @@ export function openDrop(o = {}) {
       cur = "launch"; step("launch", "doing");
       const sig1 = await send(c, signed[0], bh.lastValidBlockHeight); step("launch", "ok", scan(sig1));
       cur = "split"; step("split", "doing");
-      let sig2 = sig1; for (let i = 1; i < signed.length; i++) sig2 = await send(c, signed[i], bh.lastValidBlockHeight);
+      // the first buy, when it's a transaction of its own, goes last; if it fails (the price moved past its room) the coin
+      // is still out with its split locked — say so and go on to list it, never stop here
+      const buyOwn = devUnits > 0 && signed.length > 1; let sig2 = sig1, buyErr = null;
+      for (let i = 1; i < signed.length; i++) {
+        if (buyOwn && i === signed.length - 1) { try { await send(c, signed[i], bh.lastValidBlockHeight); } catch (e) { buyErr = e; } }
+        else sig2 = await send(c, signed[i], bh.lastValidBlockHeight);
+      }
       step("split", "ok", scan(sig2));
+      if (buyErr) note(`Your coin is live and its split is locked — only the first buy didn't go through (${why(buyErr)}). Buy it on pump.fun if you still want to.`, 9000);
       cur = "list"; step("list", "doing");
       let listed = false; for (let i = 0; i < 6 && !listed; i++) { if (i) await sleep(2500 + i * 1000); const r = await post({ action: "register", mint: g.pub, sig: sig1 }); listed = r.ok; if (!r.ok && (r.status === 400 || i === 5)) { step("list", "bad", esc(r.j.error || "")); break; } } // a 404 / 409 right after the launch is the RPC still catching up: try again
       if (listed) step("list", "ok");
@@ -208,7 +215,7 @@ export function logsBox(el, x) {
   el.insertAdjacentHTML("beforeend", `<details style="margin-top:6px;font:500 11px var(--mono);color:var(--dim)"><summary>Details (copy this if you ask for help)</summary><pre style="white-space:pre-wrap;max-height:180px;overflow:auto;user-select:all">${esc(logs)}</pre></details>`);
 }
 // pump.fun's errors in words (the full logs go to the console)
-const PUMP_ERR = { TooMuchSolRequired: "The first buy's price moved — try again, or a little less SOL.", NotEnoughTokensToBuy: "The first buy is too big for a new coin.", NameTooLong: "The name is too long (32 letters at most).", SymbolTooLong: "The ticker is too long (13 letters at most).", CreateV2Disabled: "pump.fun has paused new coins for a moment — try again later.", 6077: "pump.fun isn't taking custom creator fees right now.", 6082: "pump.fun no longer creates cashback coins." };
+const PUMP_ERR = { TooMuchSolRequired: "the price moved past the first buy's room — try a little less", NotEnoughTokensToBuy: "The first buy is too big for a new coin.", NameTooLong: "The name is too long (32 letters at most).", SymbolTooLong: "The ticker is too long (13 letters at most).", CreateV2Disabled: "pump.fun has paused new coins for a moment — try again later.", 6077: "pump.fun isn't taking custom creator fees right now.", 6082: "pump.fun no longer creates cashback coins." };
 export function why(e) {
   if (!e) return "";
   const m = String((e && e.message) || e), logs = ((e && (e.logs || e.transactionLogs)) || []).join("\n");
