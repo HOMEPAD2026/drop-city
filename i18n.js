@@ -127,7 +127,7 @@ const MORE = {
     q5: "Ana coin de ücretlerini bölüşür mü?", a5: "Hayır. Ana coin, platformdan önce çıkarılmış geliştiricinin kendi coinidir: yaratıcı ücretlerinin %100'ü geliştiriciye gider. 60 / 30 / 10 paylaşımı platformda çıkan coinler içindir — ajanın saatlik düşüşleri ve herkesin başlattıkları.",
     q6: "Saatlik düşüş nedir?", a6: "Şehri yöneten bir ajan her UTC saat başı kendi cüzdanından bir coin çıkarır; ücret paylaşımı aynı şekilde kilitlenir. %60 yaratıcı payı KASA'ya gider (ajan sonraki başlatmalar için küçük bir yedek tutar). Adları ve görselleri özgündür.",
     q7: "Benim için limit var mı?", a7: "Hayır. İstediğin kadar, istediğin zaman başlat.", q8: "Bu yatırım tavsiyesi mi?", a8: "Hayır. Meme coinler son derece risklidir ve çoğu sıfıra gider. Yalnızca kaybedebileceğin parayı kullan.",
-    fBuilt: "pump.fun · Solana üzerinde. pump.fun ile bağlantılı değildir.", fCity: "Şehir", fSource: "Kaynak", bMore: "Daha",
+    fBuilt: "pump.fun · Solana üzerinde. pump.fun ile bağlantılı değildir.", fCity: "Şehir", fSource: "Kaynak", bMore: "Diğer",
     aLang: "Dil", aSound: "Ses", aMenu: "Menü", qPh: "Ad, ticker veya adres ara", aSort: "Sırala", aTabs: "Bölümler", aBoard: "Liderlik", caPh: "Coin adresi", title: "oynanabilen launchpad",
     mcTag: "ANA COIN", buy: "Al", mcLess: "Daha az", mcMore: "Ana coin hakkında", lMcap: "Piyasa değeri", lPrice: "Fiyat", lMade: "MEZUN", lGrad: "Mezun", lCurve: "Bağlanma eğrisi", copyCa: "Adresi kopyala", copy: "KOPYALA", copied: "Adres kopyalandı.",
     mcP1: "Platformda çıkan her coinin yaratıcı ücretlerinin %{p}'u ${sym} alır.", mcP2: "Ana coin geliştiricinin kendi coinidir: yaratıcı ücretlerinin %100'ü geliştiriciye gider.", cChart: "Grafik", cCity: "Şehir",

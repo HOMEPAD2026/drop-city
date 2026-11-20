@@ -314,7 +314,7 @@ function highlight() {
   const tab = html.dataset.tab;
   const pg = html.dataset.page || "home";
   const nav = pg === "explore" ? "#explore" : pg === "desk" ? NAV_FOR[tab] : null;
-  const bar = pg === "explore" ? "#explore" : pg === "desk" ? "#vote" : "#home";
+  const bar = pg === "explore" ? "#explore" : pg === "desk" ? "#desk" : "#home";
   links.querySelectorAll("a").forEach((a) => { const on = a.getAttribute("href") === nav; a.classList.toggle("on", on); on ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"); });
   document.querySelectorAll(".bbar a").forEach((a) => { const on = a.getAttribute("href") === bar; a.classList.toggle("on", on); on ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"); });
 }
