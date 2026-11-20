@@ -129,7 +129,9 @@ function paintGrid() {
   if (S.filt === "curve") list = list.filter((c) => !c.graduated);
   if (S.filt === "made") list = list.filter((c) => c.graduated);
   // quiet coins (a day old, under $5K) wait behind a switch so the streets stay lively
-  if (!S.quiet && !S.q) list = list.filter((c) => c.mint === CFG.main || !(c.launchedAt && Date.now() / 1000 - c.launchedAt > 86400 && (c.mcapUsd || 0) < 5000 && !c.graduated));
+  // (only once the city is busy: with fewer than 12 lively coins every coin shows — a young city never looks empty)
+  const quietOf = (c) => c.mint !== CFG.main && c.launchedAt && Date.now() / 1000 - c.launchedAt > 86400 && (c.mcapUsd || 0) < 5000 && !c.graduated;
+  if (!S.quiet && !S.q) { const loud = list.filter((c) => !quietOf(c)); if (loud.length >= 12) list = loud; }
   list.sort(S.sort === "new" ? (a, b) => (b.launchedAt || 0) - (a.launchedAt || 0) || String(b.hour).localeCompare(String(a.hour)) : S.sort === "curve" ? (a, b) => (b.graduated ? 100 : b.progress || 0) - (a.graduated ? 100 : a.progress || 0) : (a, b) => (b.mcapUsd || 0) - (a.mcapUsd || 0));
   UI.cap = capNow();
   // a search, a filter or Quiet means the visitor is looking for something: show every match

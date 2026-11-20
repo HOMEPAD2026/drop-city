@@ -162,7 +162,7 @@ export function openDrop(o = {}) {
       let sig2 = sig1; for (let i = 1; i < signed.length; i++) sig2 = await send(c, signed[i], bh.lastValidBlockHeight);
       step("split", "ok", scan(sig2));
       cur = "list"; step("list", "doing");
-      let listed = false; for (let i = 0; i < 6 && !listed; i++) { if (i) await sleep(2500 + i * 1000); const r = await post({ action: "register", mint: g.pub, sig: sig1 }); listed = r.ok; if (!r.ok && r.status !== 404) { step("list", "bad", esc(r.j.error || "")); break; } }
+      let listed = false; for (let i = 0; i < 6 && !listed; i++) { if (i) await sleep(2500 + i * 1000); const r = await post({ action: "register", mint: g.pub, sig: sig1 }); listed = r.ok; if (!r.ok && (r.status === 400 || i === 5)) { step("list", "bad", esc(r.j.error || "")); break; } } // a 404 / 409 right after the launch is the RPC still catching up: try again
       if (listed) step("list", "ok");
       const tw = encodeURIComponent(`$${F.symbol} just launched in the city.\n`), link = encodeURIComponent(`${location.origin}/city?coin=${g.pub}`);
       q("go").outerHTML = `<a class="btn ghost" href="https://x.com/intent/tweet?text=${tw}&url=${link}" target="_blank" rel="noopener">Share on X</a><a class="btn cy" href="/city?coin=${esc(g.pub)}">See its tower</a><a class="btn hot" href="https://pump.fun/coin/${esc(g.pub)}" target="_blank" rel="noopener">pump.fun ↗</a>`;
@@ -198,7 +198,7 @@ export async function finishSplit({ mint, S, CFG, crew = [] }) {
     const [signed] = typeof S.p.signAllTransactions === "function" ? await S.p.signAllTransactions([tx]) : [await S.p.signTransaction(tx)];
     sig = await send(c, signed, bh.lastValidBlockHeight);
   }
-  let r = null; for (let i = 0; i < 6; i++) { if (i) await sleep(2000 + i * 800); r = await post({ action: "register", mint, sig: sig || "" }); if (r.ok || r.status !== 404) break; }
+  let r = null; for (let i = 0; i < 6; i++) { if (i) await sleep(2000 + i * 800); r = await post({ action: "register", mint, sig: sig || "" }); if (r.ok || r.status === 400) break; }
   return { sig, listed: !!(r && r.ok), why: r && r.j && r.j.error };
 }
 /// the transaction's logs under the error, to copy
