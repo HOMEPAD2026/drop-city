@@ -22,6 +22,12 @@ The owner's standing facts — keep every page, bot message, post and tweet true
 - **Pairs (the owner, 2026-11-18):** a launch can pick SOL or TTWO (Backpack's tokenized Take-Two share,
   TTWofwAge91oFhZs7kpQdyrVRkmevgM88xijGvQFbKo, on pump.fun's QuoteControl list) as its pair — pad-config.js `quotes`. A TTWO
   coin's first buy and creator fees are in TTWO; the 60 / 30 / 10 split is the same. Agent drops stay SOL.
+- **Supported coins (the owner, 2026-11-20):** pad-config.js `supported` — coins the city supports without launching them
+  ($DCTY 9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump first). The list carries them as kind "partner" (no creator, no
+  fees, never in creator ranks), EXPLORE pins them after the main coin with a gold SUPPORTED tag, and they'll be on the
+  slot mini-game's reels. The slot game itself is "coming soon" (the 🎰 GAME button in the top bar) — not built yet.
+- **Pages (the owner, 2026-11-20):** the bottom bar (Home · Explore · Launch · Vote · City) and the nav switch pages
+  (html[data-page] home / explore / desk) instead of scrolling; every old #link still lands on its page.
 - The agent's logos come from images/agent (the owner's mascot art); a drop's name is picked from those subjects.
 - **STREET mode (the owner, 2026-11-19):** the city always opens on foot (roam.js) with a random crime-flavoured handle and a
   realistic body (models/real: CC0 people on one Mixamo-named rig + Quaternius' animations; cars, palms, props, Poly Haven

@@ -67,7 +67,9 @@ const ns = await P.register({ mint: NOSPLIT });
 ok(ns.status === 200 && docs.get(`coins/${NOSPLIT}.json`).noSplit && docs.get(`coins/${NOSPLIT}.json`).creator === SPONSOR.pub, "a coin on the owner's list is listed without a split, its creator from the curve");
 process.env.PAD_SUFFIX = "Xy"; docs.delete(`coins/${NOSPLIT}.json`);
 const L = await P.list();
-ok(L.items.length === 2 && L.items[0].progress === 0 && L.items[0].mcapUsd > 0, "the list reads the coin's curve live");
+{ const own = L.items.filter((x) => x.kind !== "partner"), sup = L.items.filter((x) => x.kind === "partner");
+  ok(own.length === 2 && own[0].progress === 0 && own[0].mcapUsd > 0, "the list reads the coin's curve live");
+  ok(sup.length === 1 && sup[0].mint === "9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump" && sup[0].feesWaitingSol === 0 && sup[0].creator === null, "a supported coin ($DCTY) is listed as a partner, no fees, no creator"); }
 ok(splitCheck(C.decodeSharing(scOf(MINT2, [[OTHER.pub, 6000], [VAULT, 3000], [BUYER, 1000]])), MINT2).ok, "splitCheck reads the three holders");
 // ---------------- a crew: the creator's 60 % in equal parts between 2–4 wallets
 { const { crewBps } = await import("../lib/_pad.mjs"); const k3 = [kp().pub, kp().pub, kp().pub];

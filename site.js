@@ -142,7 +142,9 @@ function paintGrid() {
   // (only once the city is busy: with fewer than 12 lively coins every coin shows — a young city never looks empty)
   const quietOf = (c) => c.mint !== CFG.main && c.launchedAt && Date.now() / 1000 - c.launchedAt > 86400 && (c.mcapUsd || 0) < 5000 && !c.graduated;
   if (!S.quiet && !S.q) { const loud = list.filter((c) => !quietOf(c)); if (loud.length >= 12) list = loud; }
-  list.sort(S.sort === "new" ? (a, b) => (b.launchedAt || 0) - (a.launchedAt || 0) || String(b.hour).localeCompare(String(a.hour)) : S.sort === "curve" ? (a, b) => (b.graduated ? 100 : b.progress || 0) - (a.graduated ? 100 : a.progress || 0) : (a, b) => (b.mcapUsd || 0) - (a.mcapUsd || 0));
+  const pin = (c) => (c.mint === CFG.main ? 2 : c.kind === "partner" ? 1 : 0);
+  const by = S.sort === "new" ? (a, b) => (b.launchedAt || 0) - (a.launchedAt || 0) || String(b.hour).localeCompare(String(a.hour)) : S.sort === "curve" ? (a, b) => (b.graduated ? 100 : b.progress || 0) - (a.graduated ? 100 : a.progress || 0) : (a, b) => (b.mcapUsd || 0) - (a.mcapUsd || 0);
+  list.sort((a, b) => (S.sort === "wanted" ? pin(b) - pin(a) : 0) || by(a, b));
   UI.cap = capNow();
   // a search, a filter or Quiet means the visitor is looking for something: show every match
   const looking = !!S.q || S.filt !== "all" || S.quiet, cut = !looking && list.length > UI.cap;
@@ -156,11 +158,11 @@ function card(c, i) {
   const fresh = c.launchedAt && Date.now() / 1000 - c.launchedAt < 3600;
   const st = stars(c), was = tiers.get(c.mint), up = was != null && was !== st && st.indexOf("☆") > was.indexOf("☆"); tiers.set(c.mint, st);
   const when = c.hour ? t("cDropped", "dropped") + " " + esc(c.hour.slice(5, 10).replace("-", "/")) + " " + esc(c.hour.slice(11, 13)) + ":00" : c.launchedAt ? t("cLaunched", "launched") + " " + esc(new Date(c.launchedAt * 1000).toISOString().slice(5, 16).replace("-", "/").replace("T", " ")) : "";
-  return `<article class="cc${c.graduated ? " made" : ""}${c.mint === CFG.main ? " main" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">${esc(c.mint === CFG.main ? t("mcTag", "THE MAIN COIN") : c.kind === "drop" ? t("tagDrop", "HOURLY DROP") : t("tagUser", "WANTED"))}</span>${c.graduated ? `<span class="badge">${esc(t("lMade", "MADE"))}</span>` : fresh ? `<span class="badge new">${esc(t("bNew", "NEW"))}</span>` : ""}${pic(c)}<span class="bounty">${esc(t("bounty", "BOUNTY"))} ${usd(c.mcapUsd)}</span></div>
+  return `<article class="cc${c.graduated ? " made" : ""}${c.mint === CFG.main ? " main" : ""}${c.kind === "partner" ? " sup" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">${esc(c.mint === CFG.main ? t("mcTag", "THE MAIN COIN") : c.kind === "partner" ? t("tagSup", "SUPPORTED") : c.kind === "drop" ? t("tagDrop", "HOURLY DROP") : t("tagUser", "WANTED"))}</span>${c.graduated ? `<span class="badge">${esc(t("lMade", "MADE"))}</span>` : fresh ? `<span class="badge new">${esc(t("bNew", "NEW"))}</span>` : ""}${pic(c)}<span class="bounty">${esc(t("bounty", "BOUNTY"))} ${usd(c.mcapUsd)}</span></div>
     <div class="body"><h3>${esc(c.name)}</h3><span class="sym">$${esc(c.symbol)}</span>${c.quote ? `<span class="qtag">${esc(c.quote.id)} ${esc(t("pair", "PAIR"))}</span>` : ""}${gradeChip(c.grade)} <span class="stars${up ? " up" : ""}">${st}</span>
       <div class="row"><b>${usd(c.mcapUsd)}</b><small>${when}</small></div>
       <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small class="cv">${c.graduated ? esc(t("cGradTo", "graduated to PumpSwap")) : `${esc(t("cCurve", "curve"))} ${(c.progress || 0).toFixed(0)}%`}</small>
-      <div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cCity", "City"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a></div></div></article>`;
+      ${c.kind === "partner" ? `<p class="supn">🎰 ${esc(t("supNote", "Supported coin · coming to the slot game"))}</p>` : ""}<div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cCity", "City"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a></div></div></article>`;
 }
 
 // ---------------- TODAY'S 24 (a swipe row on phones: brought to the current hour on first paint and when the tab opens)
@@ -263,10 +265,17 @@ function jump(el, smooth) {
   html.style.scrollBehavior = "auto"; scrollTo(0, y); html.style.scrollBehavior = "";
 }
 /// what a hash opens and where it scrolls (the table in the build spec)
+/// the page a hash belongs to: the site is a set of pages now (the owner, 2026-11-20 — the bottom bar switches pages
+/// instead of scrolling): home (the hero + the city band), explore, desk (the tabs)
+const pageOf = (k) => (k === "explore" ? "explore" : HASH_TAB[k] || k === "desk" ? "desk" : "home");
+const PAGE_TOP = new Set(["home", "explore", "desk", "vote", "ranks", "launch", "fees", "wallets", "check", "creators", "about"]);
+function setPage(pg) { if (html.dataset.page === pg) return false; html.dataset.page = pg; html.style.scrollBehavior = "auto"; scrollTo(0, 0); html.style.scrollBehavior = ""; pin = null; return true; }
 function route(hash, smooth) {
   const k = String(hash || "").replace(/^#/, ""); if (!k) return;
   const tab = HASH_TAB[k];
   if (tab) setTab(tab);
+  const moved = setPage(pageOf(k));
+  if (PAGE_TOP.has(k)) { if (!moved) scrollTo({ top: 0, behavior: smooth && !calm ? "smooth" : "auto" }); highlight(); return; }
   let target = $(k);
   if (tab || k === "desk") target = k === "today" || k === "live" ? $(k) : $("dk-tabs");
   if (k === "main-coin") { target = $("mainc").hidden ? $("hour") : $("mainc"); if (stripQ.matches && !UI.mcOpen) { UI.mcOpen = true; paintMain(); } }
@@ -289,10 +298,10 @@ document.addEventListener("click", (e) => {
 });
 // Back / Forward: the browser restores the old scroll position itself; we only put the right tab back
 let popped = false;
-addEventListener("popstate", () => { popped = true; const k = HASH_TAB[location.hash.slice(1)]; if (k) setTab(k); setTimeout(() => (popped = false), 0); });
+addEventListener("popstate", () => { popped = true; const h = location.hash.slice(1), k = HASH_TAB[h]; if (k) setTab(k); setPage(pageOf(h)); highlight(); setTimeout(() => (popped = false), 0); });
 addEventListener("hashchange", () => { if (popped) return; route(location.hash, false); });
 // did the visitor scroll by hand? then a late re-run of the router must not yank them back
-let touched = false, pin = null;
+var touched = false, pin = null; // var: route() can run before this line
 if ("ResizeObserver" in window) new ResizeObserver(() => { if (pin && !touched && performance.now() < pin.until) jump(pin.el, false); else pin = null; }).observe(document.body);
 for (const ev of ["wheel", "touchstart", "keydown"]) addEventListener(ev, () => (touched = true), { passive: true, once: true });
 const introGone = () => window.__introDone || !$("intro");
@@ -303,8 +312,9 @@ var inView = null; // var: setTab() runs (and reads it) before this line
 const NAV_FOR = { now: "#vote", launch: "#launch", fees: "#fees", check: "#check", ranks: "#ranks", wallets: "#wallets", mine: "#creators", about: "#about" };
 function highlight() {
   const tab = html.dataset.tab;
-  const nav = inView === "explore" ? "#explore" : inView === "desk" ? NAV_FOR[tab] : null;
-  const bar = inView === "explore" ? "#explore" : inView === "desk" ? (tab === "now" ? "#vote" : "#desk") : null;
+  const pg = html.dataset.page || "home";
+  const nav = pg === "explore" ? "#explore" : pg === "desk" ? NAV_FOR[tab] : null;
+  const bar = pg === "explore" ? "#explore" : pg === "desk" ? "#vote" : "#home";
   links.querySelectorAll("a").forEach((a) => { const on = a.getAttribute("href") === nav; a.classList.toggle("on", on); on ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"); });
   document.querySelectorAll(".bbar a").forEach((a) => { const on = a.getAttribute("href") === bar; a.classList.toggle("on", on); on ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"); });
 }
@@ -356,6 +366,14 @@ async function mountCoast() {
 // the H1 slams in once the page is in view (after the intro, or at once), with or without the scene
 afterIntro(() => document.querySelector(".hero").classList.add("go"));
 mountCoast();
+// the slot game in the top bar: coming soon (the owner, 2026-11-20 — built later)
+$("slotbtn").onclick = () => {
+  let m = document.querySelector(".soon-card"); if (m) return m.remove();
+  m = document.createElement("div"); m.className = "soon-card"; m.setAttribute("role", "dialog"); m.setAttribute("aria-label", t("slotT", "GAME"));
+  m.innerHTML = `<div class="sc-in"><div class="sc-ic">${$("slotbtn").querySelector("svg").outerHTML}</div><b>${esc(t("slotH", "SLOTS — COMING SOON"))}</b><p>${esc(t("slotP", "A slot mini-game is on the way — with the city's coins on the reels, starting with $DCTY."))}</p><button type="button" class="btn hot">${esc(t("ok", "OK"))}</button></div>`;
+  m.onclick = (e) => { if (e.target === m || e.target.closest("button")) m.remove(); };
+  document.body.appendChild(m); tone("tick");
+};
 { const dim = () => document.documentElement.style.setProperty("--gm-dim", Math.min(1, scrollY / 520).toFixed(3)); addEventListener("scroll", dim, { passive: true }); dim(); }
 
 start();

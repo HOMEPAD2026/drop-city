@@ -108,3 +108,42 @@ html[data-tab="wallets"] #t-wallets, html[data-tab="check"] #t-check, html[data-
 }
 .sitefoot { background: rgba(8, 5, 18, 0.85); border-top: 0; box-shadow: inset 0 2px 0 rgba(255, 61, 150, 0.8); }
 @media (prefers-reduced-motion: reduce) { .gm-stars i.on { animation: none; } }
+
+/* ---- pages (the owner, 2026-11-20): the bottom bar and the nav switch pages instead of scrolling —
+   home = the hero + the city band, explore, desk (the tabs). Without JS everything shows, as before. */
+html.js[data-page="home"] #explore, html.js[data-page="home"] #desk,
+html.js[data-page="explore"] .hero, html.js[data-page="explore"] #play, html.js[data-page="explore"] #desk,
+html.js[data-page="desk"] .hero, html.js[data-page="desk"] #play, html.js[data-page="desk"] #explore { display: none !important; }
+html.js[data-page="explore"] #explore, html.js[data-page="desk"] #desk { min-height: calc(100vh - 220px); margin-top: 18px; animation: pgin 0.32s ease both; }
+html.js[data-page="home"] .hero { animation: pgin 0.32s ease both; }
+@keyframes pgin { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+html.js:not([data-page="home"]) body::before { background: radial-gradient(130% 100% at 50% 40%, transparent 40%, rgba(10, 6, 22, 0.7) 100%), rgba(16, 10, 32, 0.62); }
+html.js [data-rv] { opacity: 1; transform: none; }
+@media (prefers-reduced-motion: reduce) { html.js[data-page] .hero, html.js[data-page] #explore, html.js[data-page] #desk { animation: none; } }
+
+/* the bottom bar: Home · Explore · LAUNCH (the big one in the middle) · Vote · City */
+.bbar .bb-go { background: var(--vc-grad) !important; color: #1b0a1e !important; font-weight: 800 !important; }
+.bbar a.on { background: #fff !important; color: #111 !important; }
+
+/* ---- the slot game in the top bar: a gold slot machine, GAME, a pulsing SOON */
+.gm-slot { position: relative; display: inline-flex; align-items: center; gap: 7px; height: 40px; padding: 0 12px 0 6px; border: 1px solid rgba(255, 211, 110, 0.55); border-radius: 3px;
+  background: linear-gradient(180deg, rgba(255, 211, 110, 0.16), rgba(255, 61, 150, 0.1)); color: #ffe7a6; cursor: pointer; font: 800 15px var(--ui); letter-spacing: 0.08em; }
+.gm-slot svg { width: 32px; height: 32px; filter: drop-shadow(0 0 6px rgba(255, 194, 74, 0.55)); transition: transform 0.25s; }
+.gm-slot:hover svg { transform: rotate(-8deg) scale(1.08); }
+.gm-slot:hover { border-color: #ffd36e; background: linear-gradient(180deg, rgba(255, 211, 110, 0.28), rgba(255, 61, 150, 0.18)); }
+.gm-slot .gs-soon { position: absolute; top: -7px; right: -8px; font: 800 9px var(--ui); font-style: normal; letter-spacing: 0.1em; padding: 2px 5px; border-radius: 2px; background: var(--vc-pink); color: #fff; animation: soonp 1.6s ease-in-out infinite; }
+@keyframes soonp { 50% { box-shadow: 0 0 10px rgba(255, 61, 150, 0.9); } }
+@media (max-width: 760px) { .gm-slot { padding: 0 4px; height: 38px; } .gm-slot .gs-t { display: none; } .gm-slot svg { width: 30px; height: 30px; } }
+.soon-card { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; padding: 20px; background: rgba(8, 5, 18, 0.72); backdrop-filter: blur(6px); animation: pgin 0.2s ease both; }
+.soon-card .sc-in { width: min(380px, 100%); text-align: center; padding: 26px 22px 22px; background: rgba(12, 8, 26, 0.96); border: 1px solid rgba(255, 211, 110, 0.4); border-radius: 4px; box-shadow: inset 0 3px 0 #ffc24a, 0 30px 80px rgba(0, 0, 0, 0.6); }
+.soon-card .sc-ic svg { width: 96px; height: 96px; filter: drop-shadow(0 0 18px rgba(255, 194, 74, 0.6)); animation: scw 2.4s ease-in-out infinite; }
+@keyframes scw { 50% { transform: translateY(-4px) rotate(-3deg); } }
+.soon-card b { display: block; margin: 12px 0 8px; font: 400 30px/1.05 Anton, Impact, sans-serif; font-style: italic; letter-spacing: 0.02em; color: #fff; text-shadow: 3px 3px 0 var(--vc-pink); }
+.soon-card p { margin: 0 0 18px; color: #ddd6e6; font-size: 14.5px; }
+
+/* ---- a supported coin's card: a gold frame and the slot-game line */
+.cc.sup { border-color: rgba(255, 211, 110, 0.75) !important; box-shadow: 0 0 0 1px rgba(255, 211, 110, 0.35), 0 14px 40px rgba(255, 194, 74, 0.15) !important; }
+.cc.sup .tag { background: linear-gradient(90deg, #ffd36e, #ffb02e) !important; color: #1b0a1e !important; }
+.cc .supn { margin: 6px 0 0; font: 700 12px/1.3 var(--ui); letter-spacing: 0.04em; color: #ffd36e; }
+/* phones: the name never cut — the sound button leaves the top bar to make room for the slot button */
+@media (max-width: 520px) { .nav-r .snd { display: none; } .nav-r { gap: 6px; } .logo b { white-space: nowrap; } #wallet { padding-left: 12px; padding-right: 12px; } }

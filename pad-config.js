@@ -18,6 +18,11 @@ export const PAD = {
   // their creator; the city shows them as "no split"
   listAnyway: ["8MU9UNSTvFxfxttvmaQoVR2DDs9F9kKNbdXMd6hQRGTA"],
   dropsPerDay: 24,
+  // coins the city SUPPORTS (the owner, 2026-11-20): not launched here, shown in EXPLORE with a SUPPORTED tag and kept
+  // for the slot mini-game to come. note = the line under the card
+  supported: [
+    { mint: "9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump", note: "We support $DCTY — it will also be in the slot mini-game." },
+  ],
   // what a coin can trade against besides SOL (the launch form's "pair"): tokens pump.fun admits as a quote. TTWO =
   // Take-Two Interactive's tokenized share by Backpack Securities (Token-2022, 6 decimals) — on pump.fun's QuoteControl
   // list (checked with /api/pad?quotes). dev = the first-buy choices, in the token; live = shown in the launch form (off until a launch simulates clean)
