@@ -207,3 +207,11 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .crew { display: grid; gap: 6px; } .crow { display: flex; gap: 6px; } .crow input { flex: 1; min-width: 0; padding: 10px 12px; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.16); background: rgba(255, 255, 255, 0.05); color: var(--ink); font: 13px var(--mono); }
 .crow button { width: 40px; flex: none; border-radius: 10px; border: 1px solid rgba(255, 255, 255, 0.16); background: none; font-size: 20px; }
 .addcrew { justify-self: start; padding: 8px 14px; font-size: 11px; } .crewline { color: var(--dim); font-size: 12px; }
+
+/* the GTAFUN capsule logo (the owner, 2026-11-20) in the top bar, the footer and the city's corner */
+.sr-only { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.logo-img { display: block; height: 46px; width: auto; filter: drop-shadow(0 2px 10px rgba(255, 61, 150, 0.35)); transition: transform 0.2s; }
+.logo:hover .logo-img, .brand:hover .logo-img { transform: rotate(-4deg) scale(1.05); }
+.brand .logo-img { height: 42px; }
+.foot-logo .logo-img { height: 40px; }
+@media (max-width: 520px) { .logo-img { height: 38px; } .brand .logo-img { height: 34px; } }

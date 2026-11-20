@@ -28,3 +28,8 @@
 @media (prefers-reduced-motion: reduce) { #intro.end .zi-badge, #intro.end .zi-name, #intro.end .zi-tag { animation: none; opacity: 1; transform: none; } }
 #intro .zi-fan { position: absolute; right: max(14px, env(safe-area-inset-right)); bottom: max(12px, env(safe-area-inset-bottom)); margin: 0; max-width: min(360px, 70vw); text-align: right;
   font: 600 11px/1.35 Inter, system-ui, sans-serif; color: rgba(255, 255, 255, 0.72); text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8); pointer-events: none; z-index: 2; }
+/* the end card shows the GTAFUN capsule logo (it carries the name, so the drawn name stays hidden) */
+#intro .zi-badge { width: clamp(220px, 36vw, 400px); aspect-ratio: auto; border-radius: 0; box-shadow: none; filter: drop-shadow(0 0 26px rgba(255, 61, 150, 0.55)) drop-shadow(0 0 40px rgba(47, 217, 232, 0.3)); }
+#intro.end .zi-badge { animation: zilogo 1.5s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+@keyframes zilogo { 0% { opacity: 0; transform: scale(0.15) rotate(-14deg); } 30% { opacity: 1; transform: scale(1.08) rotate(2deg); } 45% { transform: scale(1) rotate(0); } 100% { opacity: 1; transform: scale(1); } }
+#intro .zi-name { display: none; }

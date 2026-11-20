@@ -10,10 +10,10 @@
 <meta property="og:title" content="DROP CITY — the launchpad you can play"><meta property="og:image" content="/images/hero-1600.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
-<link rel="icon" href="/images/icon.svg" type="image/svg+xml">
+<link rel="icon" href="/images/favicon-64.png" type="image/png"><link rel="apple-touch-icon" href="/images/icon-256.png">
 <link rel="stylesheet" href="/site.css?v=m5">
-<link rel="stylesheet" href="/game.css?v=3">
-<link rel="stylesheet" href="/intro.css?v=4">
+<link rel="stylesheet" href="/game.css?v=4">
+<link rel="stylesheet" href="/intro.css?v=5">
 <script>(function(){var d=document.documentElement,T={vote:"now",live:"now",today:"now",ranks:"ranks",launch:"launch",fees:"fees",wallets:"wallets",check:"check",creators:"mine",about:"about"},s="";
 d.classList.add("js");
 try{if(sessionStorage.getItem("dc.intro")&&!/[?&]intro=1\b/.test(location.search))d.classList.add("nointro");s=sessionStorage.getItem("dc.tab")||""}catch(e){}
@@ -25,7 +25,7 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
 <body>
 <div id="intro"></div>
 <nav class="nav" id="nav">
-  <a class="logo" href="/"><b data-name>DROP CITY</b></a>
+  <a class="logo" href="/"><img class="logo-img" src="/images/logo-96.webp" srcset="/images/logo-96.webp 1x, /images/logo-192.webp 2x" alt="GTAFUN" width="70" height="48" decoding="async"><b data-name class="sr-only">DROP CITY</b></a>
   <div class="navlinks" id="links">
     <a href="#explore" data-i18n="nExplore">Explore</a><a href="#vote" data-i18n="nVote">Vote</a><a href="#launch" data-i18n="nLaunch">Launch</a><a href="#fees" data-i18n="nFees">Fees</a><a href="#check" data-i18n="nCheck">Check a CA</a><a href="/city" data-i18n="nCity">Play the city</a>
     <a class="nx" href="#main-coin" data-i18n="nMain">Main coin</a><a class="nx" href="#live" data-i18n="nLive">Live</a><a class="nx" href="#ranks" data-i18n="nRanks">Ranks</a><a class="nx" href="#wallets" data-i18n="nWallets">Wallets</a><a class="nx" href="#creators" data-i18n="nCreators">Creators</a><a class="nx" href="#about" data-i18n="nAbout">About</a>
@@ -179,7 +179,7 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
     </div>
   </section>
 </main>
-<footer class="sitefoot"><b data-name>DROP CITY</b><span data-i18n="fBuilt">Built on pump.fun · Solana. Not affiliated with pump.fun.</span><span class="fl"><a href="/city" data-i18n="fCity">The city</a><a href="#fees" data-i18n="nFees">Fees</a><a href="https://github.com/HOMEPAD2026/drop-city" rel="noopener" data-i18n="fSource">Source</a></span><select id="lang2" aria-label="Language" data-i18n-al="aLang"><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文</option><option value="tr">Türkçe</option></select></footer>
+<footer class="sitefoot"><span class="foot-logo"><img class="logo-img" src="/images/logo-96.webp" srcset="/images/logo-96.webp 1x, /images/logo-192.webp 2x" alt="GTAFUN" width="70" height="48" decoding="async"><b data-name class="sr-only">DROP CITY</b></span><span data-i18n="fBuilt">Built on pump.fun · Solana. Not affiliated with pump.fun.</span><span class="fl"><a href="/city" data-i18n="fCity">The city</a><a href="#fees" data-i18n="nFees">Fees</a><a href="https://github.com/HOMEPAD2026/drop-city" rel="noopener" data-i18n="fSource">Source</a></span><select id="lang2" aria-label="Language" data-i18n-al="aLang"><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文</option><option value="tr">Türkçe</option></select></footer>
 <div class="sheet" id="sheet" hidden></div>
 <div class="cmodal" id="cmodal" hidden></div>
 <div class="toast" id="toast" hidden></div>
