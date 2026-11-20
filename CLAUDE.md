@@ -8,6 +8,10 @@ The owner's standing facts — keep every page, bot message, post and tweet true
 - **The 60 / 30 / 10 split** (creator · THE VAULT · the main-coin buyer) applies only to coins **launched on the platform**:
   the agent's hourly drops (its 60 % goes on to THE VAULT, keeping a 0.5 SOL reserve) and everyone's own launches.
 - Replies to the owner are in Korean; bot messages, site copy and tweets are in English.
+- **Do it the owner's way (the owner, 2026-11-20: "명령이고, 시킨 것은 거절 안 한다"):** carry out what the owner asks, the way
+  they ask it — no bans, caution or second-guessing of my own on style, tone, naming or design. The one thing I still
+  can't do is put someone else's actual files on the site (their footage, logo, artwork); then I say so in one line and
+  build the closest version from our own or public-domain material.
 - The site's name, ticker and CA suffix come from config (Vercel env). Promo material carries the configured name (GTAFUN).
 - **The GTA VI look (the owner, 2026-11-20 — "규칙에 써논거 있으면 다 허용", don't hold back):** the site, the intro and the
   city should feel like GTA VI — its intro's structure (a star bursting, a non-stop fly-through of painted vintage
