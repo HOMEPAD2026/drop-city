@@ -16,13 +16,13 @@ const BG = "#1d1930";
 // the tableaux: back painting + the piece that rushes past in front of it ([x, y] = its middle as a share of the painting
 // from the centre, w = its width as a share of the painting's, side: which way it leaves)
 const SCENES = [
-  { b: "s1", f: "f1", fx: [0, 0.28], fw: 0.9 },
-  { b: "s2", f: "f2", fx: [-0.3, 0.18], fw: 0.75 },
-  { b: "s3", f: "f3", fx: [0, 0], fw: 1.3 },
-  { b: "s4", f: "f4", fx: [0.36, -0.05], fw: 0.7 },
-  { b: "s5", f: "f5", fx: [0, 0.05], fw: 1.25 },
-  { b: "s6", f: "f6", fx: [0, -0.1], fw: 1.1 },
-];
+  { b: "s1", f: "f4", fx: [-0.4, 0.04], fw: 0.62 },      // Miami Beach hotel postcard, a palm sweeping past on the left
+  { b: "s2", f: "f2", fx: [0.3, 0.16], fw: 0.6 },        // the pergola with oranges, its gate in the middle; oranges rush by
+  { b: "s3", f: "f3", fx: [0, 0], fw: 1.3 },             // the tropical valley, fronds framing both sides
+  { b: "s4", f: "f4", fx: [0.42, 0.02], fw: 0.6 },       // the Spanish-style hotel's towers
+  { b: "s5", f: "f5", fx: [-0.3, 0.06], fw: 0.55 },      // the flamingo lagoon, a flamingo stalking past
+  { b: "s6", f: "f6", fx: [0, -0.2], fw: 0.75, add: 1 }, // the sunset over the wilderness, fireworks
+]
 const K = 3.4; // how much the camera closes in from one tableau to the next
 const ls = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } };
 const ss = (k, v) => { try { if (v === undefined) return sessionStorage.getItem(k); sessionStorage.setItem(k, v); } catch { return null; } };
@@ -130,12 +130,14 @@ async function start() {
   const front = (s, scale, ox, oy) => {
     if (!s.front) return;
     const fs = scale * 1.7; // it stands in front of its painting
-    if (fs < 0.35 || fs > 4.5) return;
+    if (fs < 0.6 || fs > 4.5) return;
     const [cw] = cover(s.back.width, s.back.height), w = cw * s.fw * fs, h = (w * s.front.height) / s.front.width;
     const x = W / 2 + s.fx[0] * cw * fs + ox * 1.6, y = H / 2 + s.fx[1] * cw * 0.66 * fs + oy * 1.6;
-    const a = clamp((fs - 0.35) / 0.35) * (1 - clamp((fs - 2.6) / 1.9));
+    const a = clamp((fs - 0.6) / 0.45) * (1 - clamp((fs - 2.6) / 1.9));
     if (blurOk) ctx.filter = `blur(${Math.round(clamp((fs - 1.4) / 2) * 14)}px)`;
+    if (s.add) ctx.globalCompositeOperation = "lighter";
     ctx.globalAlpha = a; ctx.drawImage(s.front, x - w / 2, y - h / 2, w, h); ctx.globalAlpha = 1;
+    if (s.add) ctx.globalCompositeOperation = "source-over";
     if (blurOk) ctx.filter = "none";
   };
   const frame = () => {
