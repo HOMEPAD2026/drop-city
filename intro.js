@@ -44,9 +44,10 @@ async function start() {
   ss("dc.intro", "1"); ls("dc.intro.seen", "1");
   html.style.overflow = "hidden";
   root.className = "zi" + (short ? " short" : "");
-  root.innerHTML = `<canvas class="zi-cv"></canvas><div class="zi-end"><img class="zi-badge" alt="" src="/images/intro/badge.webp"><div class="zi-name"></div><div class="zi-tag"></div></div><button class="zi-skip" type="button"></button>`;
+  root.innerHTML = `<canvas class="zi-cv"></canvas><div class="zi-end"><img class="zi-badge" alt="" src="/images/intro/badge.webp"><div class="zi-name"></div><div class="zi-tag"></div></div><button class="zi-skip" type="button"></button><p class="zi-fan"></p>`;
   const $ = (s) => root.querySelector(s);
   $(".zi-skip").textContent = t("ixSkip", "SKIP ›");
+  $(".zi-fan").textContent = t("ixFan", "Fan-made · not affiliated with or endorsed by Rockstar Games or Take-Two Interactive.");
   $(".zi-badge").onerror = function () { this.src = "/images/icon.svg"; };
   const cv = $(".zi-cv"), ctx = cv.getContext("2d", { alpha: false });
   let W = 0, H = 0, dpr = 1;
