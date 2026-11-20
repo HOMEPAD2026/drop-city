@@ -147,3 +147,10 @@ html.js [data-rv] { opacity: 1; transform: none; }
 .cc .supn { margin: 6px 0 0; font: 700 12px/1.3 var(--ui); letter-spacing: 0.04em; color: #ffd36e; }
 /* phones: the name never cut — the sound button leaves the top bar to make room for the slot button */
 @media (max-width: 520px) { .nav-r .snd { display: none; } .nav-r { gap: 6px; } .logo b { white-space: nowrap; } #wallet { padding-left: 12px; padding-right: 12px; } }
+/* the logo never shrinks or clips: it keeps its full width in the top bar (the owner, 2026-11-20); no music button up there */
+.nav .logo { flex: 0 0 auto; min-width: auto; overflow: visible; }
+.nav .logo-img { max-width: none; flex-shrink: 0; }
+.nav-r .snd { display: none !important; }
+/* bigger, so GTAFUN reads at a glance */
+.nav .logo-img { height: 58px; margin: -6px 0; }
+@media (max-width: 520px) { .nav .logo-img { height: 48px; margin: -4px 0; } }
