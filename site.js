@@ -105,6 +105,16 @@ function paintStats() {
   const el = $("stats"), sig = rows.map((r) => r[0] + r[3]).join("|");
   if (el.dataset.sig !== sig) { el.dataset.sig = sig; el.innerHTML = rows.map(([k, , , l]) => `<div><b data-k="${k}">–</b><small>${esc(l)}</small></div>`).join(""); }
   for (const [k, v, f] of rows) roll(el.querySelector(`[data-k="${k}"]`), v, f);
+  try { paintHud(mc); } catch {}
+}
+// the HUD over the hero (game-screen look): the city's money (every coin's market cap together, counted like a game's cash)
+// and its wanted level — stars for how busy the curves were in the last 10 minutes
+function paintHud(mc) {
+  let h = document.querySelector(".gm-hud");
+  if (!h) { h = document.createElement("div"); h.className = "gm-hud"; h.setAttribute("aria-hidden", "true"); h.innerHTML = `<b class="gm-cash">$0</b><span class="gm-stars">${"<i>★</i>".repeat(5)}</span>`; document.querySelector(".hero").appendChild(h); }
+  roll(h.querySelector(".gm-cash"), mc, (v) => "$" + Math.round(v).toLocaleString("en-US"));
+  const n = lastTrades(50).filter((x) => Date.now() - (x.at || 0) < 600e3).length, lv = n >= 16 ? 5 : n >= 10 ? 4 : n >= 6 ? 3 : n >= 3 ? 2 : n >= 1 ? 1 : 0;
+  h.querySelectorAll(".gm-stars i").forEach((i, k) => i.classList.toggle("on", k < lv));
 }
 
 // ---------------- EXPLORE
@@ -346,6 +356,7 @@ async function mountCoast() {
 // the H1 slams in once the page is in view (after the intro, or at once), with or without the scene
 afterIntro(() => document.querySelector(".hero").classList.add("go"));
 mountCoast();
+{ const dim = () => document.documentElement.style.setProperty("--gm-dim", Math.min(1, scrollY / 520).toFixed(3)); addEventListener("scroll", dim, { passive: true }); dim(); }
 
 start();
 

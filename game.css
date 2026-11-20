@@ -1,0 +1,110 @@
+/* game.css — the site as a game screen (the owner, 2026-11-20: "make the whole design like a game screen", after GTA VI).
+   The coast at dusk is the paused game, fixed behind everything and dimming as you scroll; the page sits on it as a pause
+   menu — square translucent panels, a tab row where the chosen tab turns white, condensed caps, a cash + wanted HUD,
+   Vice-City sunset colours (pink → orange → gold, teal and violet). Loaded after site.css; only overrides. */
+:root {
+  --vc-pink: #ff3d96; --vc-orange: #ff8a3d; --vc-gold: #ffd36e; --vc-teal: #2fd9e8; --vc-violet: #7b5cff;
+  --vc-grad: linear-gradient(90deg, #ff3d96, #ff8a3d 55%, #ffd36e);
+  --menu: rgba(9, 7, 20, 0.8); --menu2: rgba(255, 255, 255, 0.06); --ui: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --hot: #ff3d96; --gold: #ffd36e; --cyan: #2fd9e8;
+}
+html { background: #1d1930; }
+body { background: transparent; }
+
+/* ---- the paused game: the coast fixed behind the page, a dim layer that deepens on scroll, scanlines + vignette */
+.hero .coast { position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100lvh; z-index: -2; }
+.hero-bg { display: none; }
+body::before { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(130% 100% at 50% 40%, transparent 40%, rgba(10, 6, 22, 0.65) 100%), rgba(16, 10, 32, calc(0.15 + 0.6 * var(--gm-dim, 0))); }
+body::after { content: ""; position: fixed; inset: 0; z-index: -1; pointer-events: none; opacity: 0.18;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.5) 0 1px, transparent 1px 3px); }
+.hero { background: none; }
+.hero-scrim { background: linear-gradient(90deg, rgba(10, 6, 22, 0.78) 0%, rgba(10, 6, 22, 0.35) 52%, rgba(10, 6, 22, 0) 80%), linear-gradient(0deg, rgba(10, 6, 22, 0.55), transparent 35%) !important; }
+
+/* ---- type */
+.btn, .navlinks a, .dk-tabs a, .seg button, .rseg button, .bbar a, .bbar button, .kicker, .lane .ln-k, .stats small, .count .lbl, .count .lbl2, .tk-in, .sortsel { font-family: var(--ui) !important; }
+.hero h1, .sec-h h2, .cband-t h2 { color: #fff; font-style: italic; text-shadow: 3px 3px 0 var(--vc-pink), 6px 6px 0 rgba(123, 92, 255, 0.55); }
+.hero h1 span, .hero h1 .flick { background: var(--vc-grad); -webkit-background-clip: text; background-clip: text; color: transparent; text-shadow: none; filter: drop-shadow(3px 3px 0 rgba(123, 92, 255, 0.6)); }
+.sec-h h2::after { background: var(--vc-grad); height: 4px; width: 120px; transform: none; }
+.kicker { color: var(--vc-gold); font-weight: 700; font-size: 14px; letter-spacing: 0.32em; }
+.sec-h p, .lead { color: #ddd6e6; }
+
+/* ---- the header: a pause menu's top bar */
+.nav { background: linear-gradient(180deg, rgba(8, 5, 18, 0.92), rgba(8, 5, 18, 0.7)); border-bottom: 0; box-shadow: 0 1px 0 rgba(255, 255, 255, 0.07); }
+.nav::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 2px; background: var(--vc-grad); opacity: 0.9; }
+.logo b { background: var(--vc-grad); -webkit-background-clip: text; background-clip: text; filter: drop-shadow(2px 2px 0 rgba(123, 92, 255, 0.6)); }
+.navlinks { gap: 3px; }
+.navlinks a { padding: 7px 12px; color: #e9e3f2; font-size: 15px; font-weight: 700; letter-spacing: 0.06em; background: rgba(255, 255, 255, 0.05); border-top: 2px solid transparent; }
+.navlinks a:hover, .navlinks a.on { background: #fff; color: #111; border-top-color: var(--vc-pink); }
+.navlinks a.on::after { display: none; }
+.ticker { background: rgba(8, 5, 18, 0.88) !important; border: 0 !important; box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06) !important; }
+.tk-in { font-size: 14px; letter-spacing: 0.05em; }
+
+/* ---- buttons: square, caps; the main one in the sunset, the rest dark glass that turns white when picked */
+.btn { border-radius: 3px; letter-spacing: 0.08em; font-weight: 800; font-size: 15px; }
+.btn.big { font-size: 17px; padding: 13px 22px; }
+.btn.hot { background: var(--vc-grad) !important; color: #1b0a1e !important; box-shadow: 0 6px 24px rgba(255, 61, 150, 0.35), inset 0 -3px 0 rgba(0, 0, 0, 0.18); }
+.btn.hot:hover { filter: brightness(1.08); }
+.btn.ghost { background: rgba(8, 5, 18, 0.6) !important; border: 1px solid rgba(255, 255, 255, 0.35) !important; color: #fff !important; }
+.btn.ghost:hover, .btn.cy:hover { background: #fff !important; color: #111 !important; border-color: #fff !important; }
+.btn.cy { background: rgba(8, 5, 18, 0.72) !important; color: var(--vc-teal) !important; border: 1px solid rgba(47, 217, 232, 0.6) !important; }
+
+/* ---- panels: square, dark glass, a thin sunset line on top */
+.lane, .count, .mainc, .stats div, .votebox > *, .checkbox, .fee-cards > *, .how li { border-radius: 4px !important; }
+.lane, .count, .mainc { background: var(--menu) !important; border: 1px solid rgba(255, 255, 255, 0.09) !important; box-shadow: inset 0 2px 0 rgba(255, 61, 150, 0.85), 0 14px 40px rgba(0, 0, 0, 0.35) !important; backdrop-filter: blur(8px); }
+.mainc::before { display: none; }
+.lane .ln-k { color: var(--vc-gold); font-size: 13px; letter-spacing: 0.2em; }
+.lane b { font-style: italic; }
+#explore, #desk { position: relative; background: var(--menu); border: 1px solid rgba(255, 255, 255, 0.07); border-radius: 4px; padding-top: 40px; padding-bottom: 36px; margin-top: 28px; box-shadow: inset 0 3px 0 rgba(255, 61, 150, 0.9), 0 30px 80px rgba(0, 0, 0, 0.45); }
+@supports (backdrop-filter: blur(1px)) { #explore, #desk { backdrop-filter: blur(14px) saturate(1.1); } }
+.cband-in { border-radius: 4px !important; box-shadow: inset 0 3px 0 rgba(47, 217, 232, 0.9), 0 30px 80px rgba(0, 0, 0, 0.45); }
+
+/* ---- the tab rows: a pause menu's tabs — dark boxes, the chosen one white with a sunset bar on top */
+.dk-tabs { gap: 3px; padding: 0; border-radius: 0; background: none; border: 0; }
+.dk-tabs a { border-radius: 0; min-height: 46px; background: rgba(255, 255, 255, 0.06); color: #e2dbea; font-size: 16px; font-weight: 700; letter-spacing: 0.06em; border-top: 3px solid transparent; }
+.dk-tabs a:hover { background: rgba(255, 255, 255, 0.16); color: #fff; }
+html[data-tab="now"] #t-now, html[data-tab="ranks"] #t-ranks, html[data-tab="launch"] #t-launch, html[data-tab="fees"] #t-fees,
+html[data-tab="wallets"] #t-wallets, html[data-tab="check"] #t-check, html[data-tab="mine"] #t-mine, html[data-tab="about"] #t-about { background: #fff !important; color: #111 !important; box-shadow: none !important; border-top-color: var(--vc-pink); }
+.seg, .rseg { border-radius: 0 !important; gap: 3px; background: none !important; border: 0 !important; padding: 0 !important; }
+.seg button, .rseg button { border-radius: 0 !important; background: rgba(255, 255, 255, 0.06) !important; color: #e2dbea !important; font-size: 14px !important; font-weight: 700 !important; letter-spacing: 0.06em; }
+.seg button.on, .rseg button[aria-pressed="true"], .seg button:hover, .rseg button:hover { background: #fff !important; color: #111 !important; box-shadow: none !important; }
+.tools input, .sortsel, #ck-m { border-radius: 2px !important; background: rgba(0, 0, 0, 0.45) !important; border: 1px solid rgba(255, 255, 255, 0.22) !important; }
+
+/* ---- the coin cards: a game's mission cards — square, the art full width, a name bar; picked = a white frame */
+.cc { border-radius: 3px !important; background: rgba(8, 5, 18, 0.88) !important; border: 1px solid rgba(255, 255, 255, 0.1) !important; }
+.cc:hover { border-color: #fff !important; box-shadow: 0 0 0 2px #fff, 0 18px 40px rgba(0, 0, 0, 0.5) !important; }
+.cc .poster { background: radial-gradient(90% 80% at 50% 100%, rgba(255, 138, 61, 0.35), transparent 60%), linear-gradient(180deg, #2a1550, #4a1d5e 45%, #8a2a62) !important; }
+.cc .poster img, .cc .poster .ini { border-radius: 4px !important; border-width: 2px !important; }
+.cc .tag { border-radius: 0 !important; background: rgba(0, 0, 0, 0.7) !important; color: var(--vc-gold) !important; }
+.cc .poster .bounty { border-radius: 0 !important; background: #fff !important; color: #111 !important; border: 0 !important; }
+.cc .acts a { border-radius: 2px !important; font-family: var(--ui); font-size: 14px; letter-spacing: 0.06em; text-transform: uppercase; }
+.cc .acts a.pri { background: var(--vc-grad) !important; color: #1b0a1e !important; }
+.cc .acts a:not(.pri):hover { background: #fff !important; color: #111 !important; }
+.cc .sym { color: var(--vc-pink); }
+
+/* ---- lists (trades, ranks, wallets): rows that light up white like a menu's selection */
+.livebox > *, .ranks > * > *, .wallets > *, .hours > * { border-radius: 2px !important; }
+.livebox > *:hover, .wallets > *:hover { background: #fff !important; color: #111 !important; }
+.livebox > *:hover *, .wallets > *:hover * { color: #111 !important; }
+
+/* ---- the HUD: cash in green like a game's money, the wanted stars beside it */
+.gm-hud { position: absolute; top: 16px; right: clamp(16px, 4vw, 48px); z-index: 4; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; pointer-events: none; }
+.gm-cash { font: 400 clamp(26px, 3vw, 38px)/1 Anton, Impact, sans-serif; color: #7dde7a; letter-spacing: 0.02em;
+  -webkit-text-stroke: 1.5px #0b2a0e; paint-order: stroke fill; text-shadow: 2px 2px 0 rgba(0, 0, 0, 0.55); }
+.gm-stars { display: flex; gap: 2px; font-size: clamp(18px, 2vw, 24px); line-height: 1; }
+.gm-stars i { font-style: normal; color: rgba(255, 255, 255, 0.22); -webkit-text-stroke: 1px rgba(0, 0, 0, 0.6); }
+.gm-stars i.on { color: #fff; text-shadow: 0 0 8px rgba(255, 255, 255, 0.7); animation: gmstar 1.2s ease-in-out infinite; }
+@keyframes gmstar { 50% { opacity: 0.55; } }
+@media (min-width: 761px) { .hero-side { padding-top: 66px; } }
+@media (max-width: 760px) {
+  .hero-in { padding-top: 64px !important; }
+  .gm-hud { top: 12px; right: 16px; }
+  .gm-cash { font-size: 26px; }
+  .hero .coast { height: 100lvh; }
+  #explore, #desk { margin-left: 8px; margin-right: 8px; padding-left: 14px; padding-right: 14px; }
+  .bbar { border-radius: 0 !important; background: rgba(8, 5, 18, 0.94) !important; border: 0 !important; box-shadow: inset 0 2px 0 rgba(255, 61, 150, 0.9) !important; }
+  .bbar a, .bbar button { border-radius: 0 !important; font-size: 15px !important; }
+  .bbar a.on, .bbar button.on, .bbar [data-drop] { background: #fff !important; color: #111 !important; }
+}
+.sitefoot { background: rgba(8, 5, 18, 0.85); border-top: 0; box-shadow: inset 0 2px 0 rgba(255, 61, 150, 0.8); }
+@media (prefers-reduced-motion: reduce) { .gm-stars i.on { animation: none; } }

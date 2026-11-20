@@ -77,7 +77,7 @@ const MORE = {
     meNone: "이 지갑에서 런칭한 코인이 아직 없어요. 언제든 런칭하세요.", dropCoin: "코인 드롭", fixH: "런칭했는데 도시에 없나요?", fixP: "페이지가 닫혔거나 수수료 분배가 잠기지 않았다면 코인 주소를 붙여넣으세요 — 런칭한 지갑이 분배를 마치고 등록합니다.", fixGo: "확인하고 마무리", checking: "확인 중…",
     meFine: "받기를 누르면 모든 몫이 한 번에 나갑니다 — 당신 {c}%, 볼트 {v}%, 매수 지갑 {b}% — pump.fun 수수료 프로그램에서 바로. 누구나 누를 수 있고, 분배는 바뀌지 않습니다.",
     tkHour: "HOUR", tkLead: "투표 1위", tkBuy: "매수", tkSell: "매도", tkWaiting: "도시가 첫 드롭을 기다리는 중", tkFees: "수수료 온체인 잠금",
-    ixEntering: "NOW ENTERING", ixStart: "PRESS START", ixSkip: "건너뛰기 ›", ixTip: "TIP", ixLoading: "도시 불러오는 중", ixHour: "HOUR", ixEnds: "모든 CA의 끝자리", ixFallback: "코인을 런칭하는 도시", ixNext: "다음 드롭까지", ixReady: "준비 완료",
+    ixTag: "플레이하는 런치패드", ixTag: "可以玩的发射台", ixTag: "OYNANAN LAUNCHPAD", ixEntering: "NOW ENTERING", ixStart: "PRESS START", ixSkip: "건너뛰기 ›", ixTip: "TIP", ixLoading: "도시 불러오는 중", ixHour: "HOUR", ixEnds: "모든 CA의 끝자리", ixFallback: "코인을 런칭하는 도시", ixNext: "다음 드롭까지", ixReady: "준비 완료",
     tip1a: "모든 코인 주소는 “{s}”로 끝나요 — 마지막 글자를 확인하세요.", tip1b: "여기 모든 코인은 pump.fun에서 런칭됩니다.", tip2: "매 정각 새 코인이 드롭돼요 — 떨어질 때 그 자리에 있으세요.", tip3: "도시에서 내 코인을 런칭하면 내 자리가 생깁니다.",
     tip4: "여기서 런칭된 코인은 크리에이터 수수료를 {a} / {b} / {c}로 나눕니다: 크리에이터 · THE VAULT · 메인 코인 매수.", tip5a: "런칭할 때 페어를 고르세요: SOL 또는 {q}.", tip5b: "건물을 누르면 그 코인이 열려요." },
   zh: { nFees: "手续费", nRanks: "排行", nWallets: "钱包", nAbout: "关于", lblHour: "本小时", lblNext: "距下一枚",

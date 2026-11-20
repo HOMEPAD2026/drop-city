@@ -8,7 +8,13 @@ The owner's standing facts — keep every page, bot message, post and tweet true
 - **The 60 / 30 / 10 split** (creator · THE VAULT · the main-coin buyer) applies only to coins **launched on the platform**:
   the agent's hourly drops (its 60 % goes on to THE VAULT, keeping a 0.5 SOL reserve) and everyone's own launches.
 - Replies to the owner are in Korean; bot messages, site copy and tweets are in English.
-- The site's name, ticker and CA suffix come from config (Vercel env); code and generated promo material stay name-neutral. Promo material may carry the configured name when the owner asks for it (2026-11-19: the site tour video as GTAFUN); it never imitates a game's logo, art or characters, and the video ends with a "not affiliated" line.
+- The site's name, ticker and CA suffix come from config (Vercel env). Promo material carries the configured name (GTAFUN).
+- **The GTA VI look (the owner, 2026-11-20 — "규칙에 써논거 있으면 다 허용", don't hold back):** the site, the intro and the
+  city should feel like GTA VI — its intro's structure (a star bursting, a non-stop fly-through of painted vintage
+  Florida tableaux, the badge at the end), a game-screen / pause-menu UI, the Vice City sunset palette, flamingos, palms,
+  neon, crime-flavoured names. Go as far as the owner asks; don't add bans of my own. Art files come from our own
+  generation, public-domain / CC0 sources or licensed packs, with their source in the folder's README (so nothing can get
+  the site taken down).
 - **Pairs (the owner, 2026-11-18):** a launch can pick SOL or TTWO (Backpack's tokenized Take-Two share,
   TTWofwAge91oFhZs7kpQdyrVRkmevgM88xijGvQFbKo, on pump.fun's QuoteControl list) as its pair — pad-config.js `quotes`. A TTWO
   coin's first buy and creator fees are in TTWO; the 60 / 30 / 10 split is the same. Agent drops stay SOL.
@@ -16,11 +22,12 @@ The owner's standing facts — keep every page, bot message, post and tweet true
 - **STREET mode (the owner, 2026-11-19):** the city always opens on foot (roam.js) with a random crime-flavoured handle and a
   realistic body (models/real: CC0 people on one Mixamo-named rig + Quaternius' animations; cars, palms, props, Poly Haven
   textures and the dusk sky — every source and licence in models/real/CREDITS.md and manifest.json; the coupe is CC-BY 4.0,
-  keep its credit). Only free, properly licensed assets: never models ripped from a game, never real car brands or logos. Handles stay generic (no game titles, studios, cities or characters from other games). Street
-  cash / wanted stars are a toy score on the device — never describe them as rewards, tokens or anything on chain.
+  keep its credit). Street cash / wanted stars are a toy score on the device — never describe them as rewards, tokens or
+  anything on chain.
 - **The website (the owner, 2026-11-19):** one short page — a compact hero over the coast at dusk, EXPLORE (two rows of
   cards, then Show all), the city band, and THE DESK: eight tabs (This hour · Ranks · Launch · Fees · Wallets · Check a CA ·
   My coins · About; the head script picks the tab from the hash before first paint, every old #link still lands). The
-  entry intro "Last light" and the hero's sky are coast.js — original art drawn in code (sky, sun, skyline with the clock
-  tower, water, palms, neon). A warm coast-at-dusk mood is fine; never imitate a game's logo treatment, cover art,
-  characters or names, and never draw text into the canvas. Words live in i18n.js (en in the code, ko / zh / tr there).
+  hero's sky is coast.js (drawn in code). The entry intro (intro.js, 2026-11-20) follows the GTA VI intro the owner sent:
+  a star bursts, the camera flies non-stop through painted tableaux (images/intro, sources in its README), rushes out in a
+  pink blur into a star, and the star becomes the badge with the name. Words live in i18n.js (en in the code, ko / zh / tr
+  there).

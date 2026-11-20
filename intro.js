@@ -1,177 +1,178 @@
-// intro.js — "Last light": the way into the city. The coast at dusk (coast.js): the camera cranes down past the palms, the
-// sun sinks behind the clock tower, the horizon flares as it goes under, the windows and the neon come on in a wave, and the
-// site's name lights up letter by letter over the city. A loading line that follows the real loads, PRESS START, the city.
-// The name and the CA suffix come from config (never in code). Once a browser tab (sessionStorage dc.intro); a returning
-// visitor, or anyone arriving on a deep link (#vote, ?coin=, /coin/…), gets a short version that a tap ends. ?intro=1 always
-// plays the full one. prefers-reduced-motion: one still frame and a fade. Every way out sets window.__introDone and fires
-// "intro:done" with detail.played (true when an intro was shown).
+// intro.js — the way in (the owner, 2026-11-20: the GTA VI intro as the model). A star on a dark field bursts into light,
+// the camera flies forward without stopping through a run of hand-painted mural tableaux — each one seen through the
+// doorway in the middle of the last, foreground pieces rushing past and blurring —, then rushes out into a pink zoom-blur
+// that collapses into a star, and the star becomes the badge with the name. Original art: images/intro (README there).
+// One canvas, 2D; every tableau is pre-masked once (a soft-edged copy for when it sits inside the one before). The name
+// comes from config. Once a browser tab (sessionStorage dc.intro); a returning visitor or a deep link gets the short end
+// (star → badge); ?intro=1 always plays the whole thing; a tap / any key skips; prefers-reduced-motion: the badge only.
+// Every way out sets window.__introDone and fires "intro:done" with detail.played.
 import { loadCfg } from "/common.js";
-import { t, tf } from "/i18n.js";
+import { t } from "/i18n.js";
 
 const root = document.getElementById("intro");
 const html = document.documentElement;
 const FORCE = /[?&]intro=1\b/.test(location.search);
-// rooftop signs: the city's own mascots, faces only (never scenes, never coin logos)
-const SIGNS = ["bandit-1", "boss-1", "cat-1", "croc-1", "croc-2", "driver-1", "flamingo-1", "fox-1", "gull-1", "owl-1", "pigeon-1", "raccoon-1", "racer-1", "rat-1", "shark-1"];
+const BG = "#1d1930";
+// the tableaux: back painting + the piece that rushes past in front of it ([x, y] = its middle as a share of the painting
+// from the centre, w = its width as a share of the painting's, side: which way it leaves)
+const SCENES = [
+  { b: "s1", f: "f1", fx: [0, 0.28], fw: 0.9 },
+  { b: "s2", f: "f2", fx: [-0.3, 0.18], fw: 0.75 },
+  { b: "s3", f: "f3", fx: [0, 0], fw: 1.3 },
+  { b: "s4", f: "f4", fx: [0.36, -0.05], fw: 0.7 },
+  { b: "s5", f: "f5", fx: [0, 0.05], fw: 1.25 },
+  { b: "s6", f: "f6", fx: [0, -0.1], fw: 1.1 },
+];
+const K = 3.4; // how much the camera closes in from one tableau to the next
 const ls = (k, v) => { try { if (v === undefined) return localStorage.getItem(k); localStorage.setItem(k, v); } catch { return null; } };
 const ss = (k, v) => { try { if (v === undefined) return sessionStorage.getItem(k); sessionStorage.setItem(k, v); } catch { return null; } };
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 const done = (played) => { window.__introDone = true; dispatchEvent(new CustomEvent("intro:done", { detail: { played } })); };
+const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
+const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+const img = (src) => new Promise((res) => { const i = new Image(); i.decoding = "async"; i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
 
 if (root && !html.classList.contains("nointro")) start().catch((e) => { console.warn("intro", e); try { root.remove(); } catch {} html.style.overflow = ""; if (!window.__introDone) done(false); });
 else { if (root) root.remove(); done(false); }
 
 async function start() {
   root.dataset.on = "1";
-  const phone = matchMedia("(max-width: 600px)").matches;
+  const phone = matchMedia("(max-width: 700px)").matches;
   const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
   const deep = location.hash.length > 1 || /[?&]coin=/.test(location.search) || location.pathname.startsWith("/coin/");
   const short = !FORCE && (ls("dc.intro.seen") === "1" || deep);
   ss("dc.intro", "1"); ls("dc.intro.seen", "1");
   html.style.overflow = "hidden";
-
-  root.innerHTML = `<canvas class="ix-cv"></canvas><div class="ix-vig"></div><div class="ix-lb t"></div><div class="ix-lb b"></div><div class="ix-hz"></div><div class="ix-smear"></div>
-    <div class="ix-cap"></div>
-    <div class="ix-logo"><div class="ix-k"></div><div class="ix-name"></div><div class="ix-tl"></div><div class="ix-sfx"></div></div>
-    <button class="ix-start" type="button"></button>
-    <button class="ix-skip" type="button"></button>
-    <div class="ix-bot"><div class="ix-tip"><i></i><span></span></div><div class="ix-bar"><i></i></div><div class="ix-pct"><span></span><span class="ix-n">0%</span></div></div>
-    <div class="ix-flash"></div>`;
+  root.className = "zi" + (short ? " short" : "");
+  root.innerHTML = `<canvas class="zi-cv"></canvas><div class="zi-end"><img class="zi-badge" alt="" src="/images/intro/badge.webp"><div class="zi-name"></div><div class="zi-tag"></div></div><button class="zi-skip" type="button"></button>`;
   const $ = (s) => root.querySelector(s);
-  $(".ix-k").textContent = t("ixEntering", "NOW ENTERING");
-  $(".ix-start").textContent = t("ixStart", "PRESS START");
-  $(".ix-skip").textContent = t("ixSkip", "SKIP ›");
-  $(".ix-tip i").textContent = t("ixTip", "TIP");
-  $(".ix-pct span").textContent = t("ixLoading", "LOADING CITY");
-  $(".ix-cap").textContent = `${t("ixHour", "HOUR")} ${String(new Date().getUTCHours()).padStart(2, "0")}:00 UTC`;
-  if (short) root.classList.add("short");
-  const T0 = performance.now();
-  let leaving = false, autoT = 0;
+  $(".zi-skip").textContent = t("ixSkip", "SKIP ›");
+  $(".zi-badge").onerror = function () { this.src = "/images/icon.svg"; };
+  const cv = $(".zi-cv"), ctx = cv.getContext("2d", { alpha: false });
+  let W = 0, H = 0, dpr = 1;
+  const size = () => { dpr = Math.min(devicePixelRatio || 1, phone ? 1.5 : 1.75); W = innerWidth; H = innerHeight; cv.width = Math.round(W * dpr); cv.height = Math.round(H * dpr); cv.style.width = W + "px"; cv.style.height = H + "px"; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  size(); addEventListener("resize", size);
+  let leaving = false, raf = 0;
 
-  // ---- the scene starts on the first frame; the config fills the words in when it comes
-  const coastMod = import("/coast.js").catch(() => null);
-  const cfgP = Promise.race([loadCfg(), sleep(short ? 600 : 1200).then(() => null)]).catch(() => null);
-  const boards = [];
-  if (!short && !still) { const pool = SIGNS.slice(); for (let i = 0; i < (phone ? 2 : 3); i++) { const m = pool.splice(Math.floor(Math.random() * pool.length), 1)[0], im = new Image(); im.decoding = "async"; im.src = `/images/agent/${m}.webp`; boards.push(im); } }
-  const opts = phone ? { layout: "intro", horizon: 0.64, sunX: 0.56, palms: 2 } : { layout: "intro", horizon: 0.6, sunX: 0.6, palms: 4 };
-  const mod = await coastMod;
-  let coast = null;
-  try { if (mod) coast = mod.makeCoast($(".ix-cv"), { ...opts, boards, sun: short ? 0.55 : 0.05, night: short ? 0.4 : 0, lift: short ? 0 : 0.07 }); } catch (e) { console.warn("coast", e); }
-  const C = { set: (s) => { try { coast && coast.set(s); } catch {} }, to: (s, ms, e) => { try { return coast ? coast.to(s, ms, e) : sleep(ms); } catch { return sleep(ms); } }, start: () => { try { coast && coast.start(); } catch {} }, speed: (k) => { try { coast && coast.setSpeed(k); } catch {} } };
-  let rt = 0; const onResize = () => { clearTimeout(rt); rt = setTimeout(() => { try { coast && coast.resize(); } catch {} }, 150); };
-  addEventListener("resize", onResize);
+  // the name
+  loadCfg().then((cfg) => { const n = String((cfg && cfg.name) || "DROP CITY").toUpperCase(); $(".zi-name").textContent = n; }).catch(() => { $(".zi-name").textContent = "DROP CITY"; });
+  $(".zi-tag").textContent = t("ixTag", "THE LAUNCHPAD YOU CAN PLAY");
 
-  // ---- the words (they wait for the config, never for long)
-  const cfgReady = cfgP.then((cfg) => {
-    cfg = cfg || {};
-    const name = String(cfg.name || "DROP CITY").toUpperCase(), suf = String(cfg.suffix || "");
-    const nm = $(".ix-name"); nm.setAttribute("aria-label", name); nm.style.setProperty("--n", String(Math.max(4, [...name].length)));
-    const step = Math.min(35, 450 / Math.max(1, name.length));
-    nm.innerHTML = ""; [...name].forEach((ch, i) => { const s = document.createElement("span"); s.setAttribute("aria-hidden", "true"); s.textContent = ch === " " ? " " : ch; s.style.setProperty("--d", `${Math.round(i * (short ? 20 : step))}ms`); nm.appendChild(s); });
-    const tl = $(".ix-tl"); if (suf) { tl.textContent = t("ixEnds", "EVERY CA ENDS IN") + " "; const b = document.createElement("span"); b.textContent = suf; tl.appendChild(b); } else tl.textContent = t("ixFallback", "THE CITY THAT LAUNCHES COINS");
-    const sp = cfg.split || { creator: 6000, vault: 3000, buyer: 1000 }, live = (cfg.quotes || []).find((q) => q.live);
-    tips = [suf ? tf("tip1a", "Every coin's address ends in “{s}” — look at the last letters.", { s: suf }) : t("tip1b", "Every coin here is launched on pump.fun."),
-      t("tip2", "A new coin drops on the hour — be there when it lands."), t("tip3", "Launch your own coin from the city — it gets a lot of its own."),
-      tf("tip4", "Coins launched here split creator fees {a} / {b} / {c}: creator · THE VAULT · the main-coin buyer.", { a: sp.creator / 100, b: sp.vault / 100, c: sp.buyer / 100 }),
-      live ? tf("tip5a", "Pick the pair at launch: SOL or {q}.", { q: live.id }) : t("tip5b", "Tap a building to open its coin.")];
-  });
-  let tips = [t("tip2", "A new coin drops on the hour — be there when it lands.")], tipI = 0;
-  const showTip = () => { const s = $(".ix-tip span"); s.style.opacity = 0; setTimeout(() => { s.textContent = tips[tipI++ % tips.length]; s.style.opacity = 1; }, 160); };
-  showTip(); const tipT = setInterval(showTip, 2400);
-  const sfx = $(".ix-sfx");
-  const tick = () => { const d = new Date(), m = 59 - d.getMinutes(), s = 59 - d.getSeconds(); sfx.textContent = `${t("ixNext", "NEXT DROP IN")} `; const b = document.createElement("b"); b.textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`; sfx.appendChild(b); };
-  tick(); const sfxT = setInterval(tick, 1000);
-
-  // ---- the loading line: time and the real steps (config, fonts, the sign pictures) together
-  let stepsDone = 0; const steps = [cfgReady, document.fonts ? document.fonts.ready : Promise.resolve(), ...boards.map((im) => new Promise((r) => { if (im.complete) r(); else { im.onload = im.onerror = r; } }))];
-  steps.forEach((p) => Promise.resolve(p).catch(() => {}).then(() => stepsDone++));
-  const need = short ? 1200 : 3700;
-  const loaded = new Promise((res) => {
-    const bar = $(".ix-bar i"), num = $(".ix-n");
-    const step = () => {
-      if (leaving) return res();
-      const el = performance.now() - T0, tk = Math.min(1, el / need), sk = stepsDone / steps.length;
-      const fin = tk >= 1 && (short || sk >= 1 || el > need + 2500);
-      const show = fin ? 1 : short ? tk : Math.min(tk, 0.25 + 0.75 * sk);
-      bar.style.transform = `scaleX(${show.toFixed(3)})`; num.textContent = Math.round(show * 100) + "%";
-      if (fin) return res();
-      requestAnimationFrame(step);
-    };
-    step();
-  });
-
-  // ---- sound: one synth "drop" on START, unless the city's sound is off
-  const boom = () => {
-    if (ls("dc.snd") === "0") return;
-    try {
-      const A = new (window.AudioContext || window.webkitAudioContext)(), n = A.currentTime;
-      const g = A.createGain(); g.connect(A.destination); g.gain.setValueAtTime(0.0001, n); g.gain.exponentialRampToValueAtTime(0.45, n + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, n + 1.1);
-      const o = A.createOscillator(); o.type = "sawtooth"; o.frequency.setValueAtTime(880, n); o.frequency.exponentialRampToValueAtTime(42, n + 0.9);
-      const f = A.createBiquadFilter(); f.type = "lowpass"; f.frequency.setValueAtTime(2400, n); f.frequency.exponentialRampToValueAtTime(200, n + 0.9);
-      o.connect(f); f.connect(g); o.start(n); o.stop(n + 1.1);
-      const k = A.createOscillator(), kg = A.createGain(); k.frequency.setValueAtTime(120, n); k.frequency.exponentialRampToValueAtTime(38, n + 0.4);
-      kg.gain.setValueAtTime(0.9, n); kg.gain.exponentialRampToValueAtTime(0.0001, n + 0.5); k.connect(kg); kg.connect(A.destination); k.start(n); k.stop(n + 0.5);
-      setTimeout(() => A.close(), 1500);
-    } catch { /* no audio */ }
-  };
-
-  // ---- the way out: START (the push-in), SKIP / Escape / a tap in the short version (a crossfade)
+  // ---- the way out
   const finish = () => {
-    clearInterval(tipT); clearInterval(sfxT); clearTimeout(autoT); removeEventListener("resize", onResize); removeEventListener("keydown", onKey);
-    try { coast && coast.destroy(); } catch {}
+    cancelAnimationFrame(raf); removeEventListener("resize", size); removeEventListener("keydown", onKey);
     root.remove(); html.style.overflow = "";
     html.classList.add("ix-arrive"); setTimeout(() => html.classList.remove("ix-arrive"), 600);
     done(true);
   };
-  const leave = (start) => {
-    if (leaving) return; leaving = true;
-    if (start && !still) {
-      boom(); C.speed(3); root.classList.add("go");
-      setTimeout(() => root.classList.add("flash"), 380);
-      setTimeout(() => root.classList.add("out"), 420);
-      setTimeout(finish, 800);
-    } else { root.classList.add("out"); setTimeout(finish, 360); }
-  };
-  const onKey = (e) => { if (leaving) return; if (e.key === "Escape") leave(false); else if (short) leave(false); else if ((e.key === "Enter" || e.key === " ") && root.classList.contains("ready")) { e.preventDefault(); leave(true); } };
+  const leave = () => { if (leaving) return; leaving = true; root.classList.add("out"); setTimeout(finish, 450); };
+  const onKey = (e) => { if (e.key === "Tab") return; leave(); };
   addEventListener("keydown", onKey);
-  $(".ix-skip").onclick = (e) => { e.stopPropagation(); leave(false); };
-  $(".ix-start").onclick = (e) => { e.stopPropagation(); leave(true); };
-  if (short) root.addEventListener("pointerdown", () => leave(false));
+  root.addEventListener("pointerdown", leave);
 
-  // ---- reduced motion: one still frame, the words shown, a fade
-  if (still) {
-    C.set({ sun: 1, night: 1, lift: 0 }); await cfgReady; root.classList.add("lit", "named", "tagged");
-    $(".ix-bar i").style.transform = "scaleX(1)"; $(".ix-n").textContent = "100%";
-    await sleep(1200); return leave(false);
-  }
+  // ---- the star and the badge (also the whole of the short and the still versions)
+  // the star: a soft pink-orange bloom, four light streaks, a glowing five-pointed core (white at the heart)
+  const star = (x, y, r, a, glow) => {
+    if (a <= 0) return;
+    ctx.save(); ctx.translate(x, y); ctx.globalAlpha = a; ctx.globalCompositeOperation = "lighter";
+    if (glow > 0) { const R = r * glow, g = ctx.createRadialGradient(0, 0, 0, 0, 0, R); g.addColorStop(0, "rgba(255,200,235,0.85)"); g.addColorStop(0.18, "rgba(255,90,180,0.55)"); g.addColorStop(0.45, "rgba(255,130,60,0.22)"); g.addColorStop(1, "rgba(120,60,255,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill(); }
+    for (const [an, L, wd] of [[0, 7, 0.07], [Math.PI / 2, 5, 0.06], [Math.PI / 4, 3.2, 0.035], [-Math.PI / 4, 3.2, 0.035]]) {
+      ctx.save(); ctx.rotate(an); const len = r * L, g = ctx.createLinearGradient(-len, 0, len, 0);
+      g.addColorStop(0, "rgba(255,80,170,0)"); g.addColorStop(0.5, "rgba(255,235,245,0.9)"); g.addColorStop(1, "rgba(255,140,60,0)");
+      ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, len, Math.max(1, r * wd), 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+    }
+    ctx.globalCompositeOperation = "source-over";
+    const path = () => { ctx.beginPath(); for (let i = 0; i < 10; i++) { const rr = i % 2 ? r * 0.45 : r, an = -Math.PI / 2 + (i * Math.PI) / 5; ctx.lineTo(Math.cos(an) * rr, Math.sin(an) * rr); } ctx.closePath(); };
+    const f = ctx.createRadialGradient(0, 0, 0, 0, 0, r); f.addColorStop(0, "#fff"); f.addColorStop(0.35, "#ffe0f0"); f.addColorStop(0.8, "#ff5fb4"); f.addColorStop(1, "#ff8a3d");
+    path(); ctx.shadowColor = "#ff4fae"; ctx.shadowBlur = Math.min(60, r * 0.9); ctx.fillStyle = f; ctx.fill(); ctx.restore();
+  };
+  const endCard = async () => { root.classList.add("end"); await sleep(still ? 1600 : 2300); leave(); };
+  if (still) { ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H); return endCard(); }
 
-  // ---- the short version (1.6 s)
   if (short) {
-    C.start(); root.classList.add("in");
-    C.to({ sun: 1 }, 800, "inout"); C.to({ night: 1 }, 1000, "linear");
-    setTimeout(() => root.classList.add("flare"), 700);
-    await sleep(800); await cfgReady; root.classList.add("named", "tagged");
-    await loaded; if (leaving) return; $(".ix-pct span").textContent = t("ixReady", "CITY READY");
-    await sleep(Math.max(0, 1250 - (performance.now() - T0))); return leave(false);
+    const T0 = performance.now();
+    const f = () => { if (leaving) return; const k = (performance.now() - T0) / 700; ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H); star(W / 2, H / 2, 10 + 30 * Math.sin(Math.PI * clamp(k)), 1 - clamp(k - 0.7, 0, 0.3) / 0.3, 4); if (k < 1) raf = requestAnimationFrame(f); };
+    f(); await sleep(650); return endCard();
   }
 
-  // ---- the full timeline
-  C.start(); root.classList.add("in"); // bars in, the horizon line draws out, the caption types
-  await sleep(250);
-  root.classList.add("scene"); // the canvas fades up
-  C.to({ lift: 0 }, 850, "out");
-  await sleep(850);
-  C.to({ sun: 1 }, 1200, "inout"); C.to({ night: 0.45 }, 1200, "linear"); // the sun drops
-  await sleep(1200);
-  root.classList.add("flare"); C.to({ night: 1 }, 500, "linear"); // the last sliver goes under: the horizon flares, the city switches on
-  if (navigator.vibrate && phone && navigator.userActivation && navigator.userActivation.hasBeenActive) try { navigator.vibrate(12); } catch {}
-  await sleep(300);
-  await cfgReady; root.classList.add("named"); // NOW ENTERING, then the name letter by letter
-  await sleep(600);
-  root.classList.add("tagged");
-  await loaded; if (leaving) return;
-  $(".ix-pct span").textContent = t("ixReady", "CITY READY");
-  await sleep(Math.max(0, 3900 - (performance.now() - T0)));
-  root.classList.add("ready");
-  autoT = setTimeout(() => leave(true), 9000);
+  // ---- the paintings: load while the little star twinkles (the video opens like that too)
+  const sz = phone ? 960 : 1600;
+  const loads = Promise.all(SCENES.map(async (s) => ({ ...s, back: await img(`/images/intro/${s.b}-${sz}.webp`), front: await img(`/images/intro/${s.f}.webp`) })));
+  let T0 = performance.now(), ready = null;
+  loads.then((r) => { ready = r; });
+  await new Promise((res) => {
+    const f = () => { if (leaving) return res(); const el = performance.now() - T0; ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H); star(W / 2, H / 2, 5 + Math.sin(el / 160) * 1.2, clamp(el / 300), 3); if ((ready && el > 600) || el > 6000) return res(); raf = requestAnimationFrame(f); };
+    f();
+  });
+  if (leaving) return;
+  const scenes = (ready || []).filter((s) => s.back);
+  if (scenes.length < 2) return endCard(); // no paintings: the badge alone
+  // a soft-edged copy of each painting for when it sits inside the one before it
+  for (const s of scenes) {
+    const c = document.createElement("canvas"), w = 640, h = Math.round((640 * s.back.height) / s.back.width); c.width = w; c.height = h;
+    const x = c.getContext("2d"); x.drawImage(s.back, 0, 0, w, h); x.globalCompositeOperation = "destination-in";
+    const g = x.createRadialGradient(w / 2, w / 2, 0, w / 2, w / 2, w / 2); g.addColorStop(0, "#000"); g.addColorStop(0.5, "#000"); g.addColorStop(0.92, "rgba(0,0,0,0)");
+    x.setTransform(1, 0, 0, h / w, 0, 0); x.fillStyle = g; x.fillRect(0, 0, w, w); s.soft = c; // an ellipse the painting's shape
+  }
+  const blurOk = "filter" in ctx;
+
+  // ---- the flight. p runs 0 → n-1: at p = i the i-th painting fills the screen. It never stops: each painting's own
+  // stretch eases in and out around a steady crawl.
+  const n = scenes.length, BURST = 900, PER = phone ? 1350 : 1450, OUT = 1300, TAIL = 0.4;
+  T0 = performance.now();
+  const cover = (iw, ih) => { const k = Math.max(W / iw, H / ih); return [iw * k, ih * k]; };
+  const drawAt = (s, scale, soft, a, ox, oy) => {
+    const [cw, ch] = cover(s.back.width, s.back.height), w = cw * scale, h = ch * scale;
+    if (w < 6) return;
+    ctx.globalAlpha = a; ctx.drawImage(soft ? s.soft : s.back, W / 2 - w / 2 + ox, H / 2 - h / 2 + oy, w, h); ctx.globalAlpha = 1;
+  };
+  const front = (s, scale, ox, oy) => {
+    if (!s.front) return;
+    const fs = scale * 1.7; // it stands in front of its painting
+    if (fs < 0.35 || fs > 4.5) return;
+    const [cw] = cover(s.back.width, s.back.height), w = cw * s.fw * fs, h = (w * s.front.height) / s.front.width;
+    const x = W / 2 + s.fx[0] * cw * fs + ox * 1.6, y = H / 2 + s.fx[1] * cw * 0.66 * fs + oy * 1.6;
+    const a = clamp((fs - 0.35) / 0.35) * (1 - clamp((fs - 2.6) / 1.9));
+    if (blurOk) ctx.filter = `blur(${Math.round(clamp((fs - 1.4) / 2) * 14)}px)`;
+    ctx.globalAlpha = a; ctx.drawImage(s.front, x - w / 2, y - h / 2, w, h); ctx.globalAlpha = 1;
+    if (blurOk) ctx.filter = "none";
+  };
+  const frame = () => {
+    if (leaving) return;
+    const el = performance.now() - T0;
+    ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H);
+    if (el < BURST) { // the star swells and floods the screen in pink and orange, the first painting behind it
+      const k = el / BURST, r = 6 + Math.pow(k, 3) * Math.hypot(W, H) * 0.9;
+      if (k > 0.55) drawAt(scenes[0], 0.6 + 0.4 * ease((k - 0.55) / 0.45), false, clamp((k - 0.55) / 0.3), 0, 0);
+      star(W / 2, H / 2, r, 1 - clamp((k - 0.75) / 0.25), 2.6);
+      raf = requestAnimationFrame(frame); return;
+    }
+    const tf = el - BURST, flyEnd = PER * (n - 1 + TAIL);
+    if (tf < flyEnd) {
+      const raw = tf / PER, i = Math.floor(raw), fr = raw - i;
+      const p = i + fr - (0.55 * Math.sin(2 * Math.PI * fr)) / (2 * Math.PI); // slow while a painting fills the screen, a rush through each doorway
+      const ox = Math.sin(el / 900) * W * 0.008, oy = Math.cos(el / 1100) * H * 0.008; // a hand on the camera
+      const cur = Math.floor(p);
+      for (let j = Math.max(0, cur - 1); j < Math.min(n, cur + 3); j++) {
+        const sc = Math.pow(K, p - j);
+        if (sc > K * 1.4) continue;
+        const soft = j > cur, a = j < cur ? 1 - clamp((sc - K) / (K * 0.4)) : 1;
+        drawAt(scenes[j], sc, soft, a, ox * sc, oy * sc);
+      }
+      for (let j = Math.min(n - 1, cur + 1); j >= Math.max(0, cur - 1); j--) front(scenes[j], Math.pow(K, p - j), ox, oy);
+      raf = requestAnimationFrame(frame); return;
+    }
+    const to = tf - flyEnd;
+    if (to < OUT) { // the rush out: zoom-blur copies of the last painting going pink, collapsing to a star
+      const k = to / OUT, last = scenes[n - 1], sc = Math.pow(K, TAIL) * (1 + 2.5 * ease(k));
+      for (let c = 0; c < 6; c++) drawAt(last, sc * (1 + c * 0.06 * (1 - k)), false, (1 - k) * (c ? 0.25 : 0.9), 0, 0);
+      ctx.globalCompositeOperation = "source-atop"; ctx.fillStyle = `rgba(255,70,170,${0.25 + 0.6 * k})`; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = `rgba(29,25,48,${clamp((k - 0.45) / 0.4)})`; ctx.fillRect(0, 0, W, H);
+      star(W / 2, H / 2, Math.max(6, (1 - ease(k)) * Math.hypot(W, H) * 0.5), clamp(k * 3), 2.4);
+      raf = requestAnimationFrame(frame); return;
+    }
+    ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H);
+    endCard();
+  };
+  frame();
 }
