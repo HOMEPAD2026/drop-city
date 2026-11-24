@@ -22,8 +22,15 @@ The owner's standing facts — keep every page, bot message, post and tweet true
 - **Pairs (the owner, 2026-11-18):** a launch can pick SOL or TTWO (Backpack's tokenized Take-Two share,
   TTWofwAge91oFhZs7kpQdyrVRkmevgM88xijGvQFbKo, on pump.fun's QuoteControl list) as its pair — pad-config.js `quotes`. A TTWO
   coin's first buy and creator fees are in TTWO; the 60 / 30 / 10 split is the same. Agent drops stay SOL.
+- **No more hourly drops (the owner, 2026-11-24):** the AI agent no longer launches a coin every hour — pad-config.js
+  `drops: false` (PAD_DROPS=1 turns it back on). The tick only does housekeeping (the old drops' fees still go on to THE
+  VAULT); the slot answers "off"; the site hides the countdown, the vote, today's 24 and the drop lines (html.nodrops),
+  the first lane / the city band / the FAQ speak of the supported coins, the desk's first tab is Live; the city has no
+  clock or TODAY tab; the Telegram bot says the drops are off. The old drops stay listed.
+- **LP rewards (the owner, 2026-11-24 — planned, not built):** the city's liquidity will be paired with the supported coins
+  and LPs rewarded; design and decisions pending.
 - **Supported coins (the owner, 2026-11-20):** pad-config.js `supported` — coins the city supports without launching them
-  ($DCTY 9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump first). The list carries them as kind "partner" (no creator, no
+  ($DCTY 9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump first; 2026-11-24: + DKYcjob…pump, 2xCd5q…cJjX, 6MKD1N…pump, 9jhs5q…pump; a token without Metaplex metadata gets its card from Dexscreener, a partner off the pump.fun curve is priced there). The list carries them as kind "partner" (no creator, no
   fees, never in creator ranks), EXPLORE pins them after the main coin with a gold SUPPORTED tag, and they'll be on the
   slot mini-game's reels. The slot game itself is "coming soon" (the 🎰 GAME button in the top bar) — not built yet.
 - **Pages (the owner, 2026-11-20):** the bottom bar (Home · Explore · Launch · City · More — More opens the desk: vote, ranks, fees, wallets, check a CA, my coins, about) and the nav switch pages

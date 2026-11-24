@@ -30,6 +30,8 @@ const fetchImpl = async (url, o) => {
 const T = makeTg({ pad, now: () => clock, fetchImpl });
 
 // ---------------- commands
+{ const off = await T.reply("help"), od = await T.reply("drop"); ok(/supported coins/.test(off.text) && !/Every hour/.test(off.text) && /drops are off/.test(od.text), "drops off: /help speaks of the supported coins, /drop says the drops are off"); }
+process.env.PAD_DROPS = "1"; // the rest: the hourly drops on
 const h = await T.reply("help"); ok(/Every hour/.test(h.text) && h.buttons.flat().some((b) => b && b[1] === "https://site.test/#launch"), "/help explains and links");
 const d = await T.reply("drop"); ok(/THIS HOUR'S DROP/.test(d.text) && d.photo === items[0].image && /Next drop in <b>30 min/.test(d.text), "/drop shows the hour's coin and the next one's time");
 const top = await T.reply("top"); ok(top.text.indexOf("$FOX") < top.text.indexOf("$OWL"), "/top sorts by market cap");

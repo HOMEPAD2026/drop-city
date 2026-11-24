@@ -171,7 +171,7 @@ export function openCreator(w, coins, openCoin) {
 // ---------------- the top-of-the-hour takeover: the last ten seconds, then the drop
 let toState = { hour: null, shown: false };
 export function takeoverTick(slot, coins) {
-  const el = $("takeover"); if (!el || !slot) return;
+  const el = $("takeover"); if (!el || !slot || slot.off) return;
   const left = slot.next - Date.now(), cnt = document.getElementById("hour");
   if (cnt) cnt.classList.toggle("hot", left > 0 && left < 60e3);
   let off = false; try { off = localStorage.getItem("dc.to") === "0"; } catch {}

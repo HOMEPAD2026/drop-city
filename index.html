@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>DROP CITY — the launchpad you can play</title>
-<meta name="description" content="A game and a launchpad in one: launch a pump.fun coin and it rises as a tower in a city you walk, drive and play in. The city's agent drops a coin every hour; fees split on chain, the city vault buys back the hottest.">
+<meta name="description" content="A game and a launchpad in one: launch a pump.fun coin and it rises as a tower in a city you walk, drive and play in. Fees split on chain, the city vault buys back the hottest, and the city backs its supported coins.">
 <meta name="theme-color" content="#070708">
 <meta name="color-scheme" content="dark">
 <meta property="og:title" content="DROP CITY — the launchpad you can play"><meta property="og:image" content="/images/hero-1600.webp">
@@ -12,10 +12,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="icon" href="/images/favicon-64.png" type="image/png"><link rel="apple-touch-icon" href="/images/icon-256.png">
 <link rel="stylesheet" href="/site.css?v=m5">
-<link rel="stylesheet" href="/game.css?v=6">
+<link rel="stylesheet" href="/game.css?v=7">
 <link rel="stylesheet" href="/intro.css?v=5">
 <script>(function(){var d=document.documentElement,T={vote:"now",live:"now",today:"now",ranks:"ranks",launch:"launch",fees:"fees",wallets:"wallets",check:"check",creators:"mine",about:"about"},s="";
-d.classList.add("js");
+d.classList.add("js","nodrops");
 try{if(sessionStorage.getItem("dc.intro")&&!/[?&]intro=1\b/.test(location.search))d.classList.add("nointro");s=sessionStorage.getItem("dc.tab")||""}catch(e){}
 var P=location.hash.slice(1);d.dataset.page=P==="explore"?"explore":T[P]||P==="desk"?"desk":"home";
 d.dataset.tab=T[location.hash.slice(1)]||(/^(now|ranks|launch|fees|wallets|check|mine|about)$/.test(s)?s:"now");
@@ -170,7 +170,7 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
           </div>
           <div class="faq-col">
             <details><summary data-i18n="q5">Does the main coin split its fees too?</summary><p data-i18n="a5">No. The main coin is the dev's own coin, launched before the platform: its creator fees go 100% to the dev. The 60 / 30 / 10 split is for the coins launched on the platform — the agent's hourly drops and everyone's launches.</p></details>
-            <details><summary data-i18n="q6">What is the hourly drop?</summary><p data-i18n="a6">An agent that runs the city launches one coin at the top of every UTC hour from its own wallet, with the same locked fee split. Its 60 % creator share goes on to THE VAULT (the agent keeps a small reserve to pay for its next launches). Its names and art are original.</p></details>
+            <details class="q-drops"><summary data-i18n="q6">What is the hourly drop?</summary><p data-i18n="a6">An agent that runs the city launches one coin at the top of every UTC hour from its own wallet, with the same locked fee split. Its 60 % creator share goes on to THE VAULT (the agent keeps a small reserve to pay for its next launches). Its names and art are original.</p></details>
             <details><summary data-i18n="q7">Is there a limit for me?</summary><p data-i18n="a7">No. Launch as many coins as you like, whenever you like.</p></details>
             <details><summary data-i18n="q8">Is this financial advice?</summary><p data-i18n="a8">No. Meme coins are extremely risky and most go to zero. Only use money you can lose.</p></details>
           </div>

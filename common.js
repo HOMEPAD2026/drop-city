@@ -27,7 +27,7 @@ let poked = "";
 /// (a failed try is retried too, at most every 4 minutes from one page — the server allows 3 tries an hour)
 let pokedAt = 0;
 export function poke(slot) {
-  if (DEMO || !slot || new Date().getUTCMinutes() < 1 || new Date().getUTCMinutes() >= 55) return;
+  if (DEMO || !slot || slot.off || new Date().getUTCMinutes() < 1 || new Date().getUTCMinutes() >= 55) return;
   const want = slot.state === "waiting" || (slot.state === "failed" && (slot.tries || 0) < 3);
   if (!want || (poked === slot.hour && Date.now() - pokedAt < 4 * 60e3)) return;
   poked = slot.hour; pokedAt = Date.now(); fetch(API + "?tick=1", { cache: "no-store" }).catch(() => {});

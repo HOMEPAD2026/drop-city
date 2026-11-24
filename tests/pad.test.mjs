@@ -69,7 +69,7 @@ process.env.PAD_SUFFIX = "Xy"; docs.delete(`coins/${NOSPLIT}.json`);
 const L = await P.list();
 { const own = L.items.filter((x) => x.kind !== "partner"), sup = L.items.filter((x) => x.kind === "partner");
   ok(own.length === 2 && own[0].progress === 0 && own[0].mcapUsd > 0, "the list reads the coin's curve live");
-  ok(sup.length === 1 && sup[0].mint === "9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump" && sup[0].feesWaitingSol === 0 && sup[0].creator === null, "a supported coin ($DCTY) is listed as a partner, no fees, no creator"); }
+  ok(sup.length >= 1 && sup.some((x) => x.mint === "9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump") && sup.every((x) => x.feesWaitingSol === 0 && x.creator === null) && sup[0].mint === "9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump" && sup[0].feesWaitingSol === 0 && sup[0].creator === null, "a supported coin ($DCTY) is listed as a partner, no fees, no creator"); }
 ok(splitCheck(C.decodeSharing(scOf(MINT2, [[OTHER.pub, 6000], [VAULT, 3000], [BUYER, 1000]])), MINT2).ok, "splitCheck reads the three holders");
 // ---------------- a crew: the creator's 60 % in equal parts between 2–4 wallets
 { const { crewBps } = await import("../lib/_pad.mjs"); const k3 = [kp().pub, kp().pub, kp().pub];
@@ -96,6 +96,9 @@ const AK = ed25519.utils.randomSecretKey(), APUB = C.b58enc(ed25519.getPublicKey
 ok(agentPub(ASEC) === APUB && agentPub(JSON.stringify([...AK, ...C.b58dec(APUB)])) === APUB, "the agent's address from its key, base58 or a byte array");
 ok(agentPub(ASEC.slice(0, -2) + "11") === "" && agentPub("nope") === "", "a broken key gives no agent");
 process.env.PAD_AGENT_KEY = ASEC; ok(publicCfg().agent === APUB, "the config shows the agent's address");
+// hourly drops are off by default (the owner, 2026-11-24): the hour says so, the tick launches nothing
+ok(publicCfg().drops === false && (await P.slot()).state === "off", "drops off: the hour is 'off', no countdown to a drop");
+process.env.PAD_DROPS = "1"; ok(publicCfg().drops === true, "PAD_DROPS=1 turns the hourly drops back on (the rest of these tests)");
 s = await P.slot(); ok(s.state === "waiting" && !s.drop, "a new hour waits for the agent's drop");
 const ci = AG.cityIdea("2026-11-18T05"); ok(ci.name && ci.symbol && ci.description && AG.cityIdea("2026-11-18T05").symbol === ci.symbol, "the city's own idea is the same for the same hour");
 ok(AG.cityIdea("2026-11-18T05", new Set([ci.symbol])).symbol !== ci.symbol, "a taken ticker gets another idea");

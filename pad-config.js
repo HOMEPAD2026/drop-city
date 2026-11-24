@@ -18,10 +18,18 @@ export const PAD = {
   // their creator; the city shows them as "no split"
   listAnyway: ["8MU9UNSTvFxfxttvmaQoVR2DDs9F9kKNbdXMd6hQRGTA"],
   dropsPerDay: 24,
+  // the agent's hourly drops — OFF since 2026-11-24 (the owner: the AI no longer launches a coin every hour; the city
+  // supports the coins below instead). Its old drops stay listed and their fees still go on to THE VAULT. PAD_DROPS=1 turns it back on
+  drops: false,
   // coins the city SUPPORTS (the owner, 2026-11-20): not launched here, shown in EXPLORE with a SUPPORTED tag and kept
   // for the slot mini-game to come. note = the line under the card
   supported: [
     { mint: "9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump", note: "We support $DCTY — it will also be in the slot mini-game." },
+    // added 2026-11-24 (the owner) — also the coins the city's liquidity will be paired with (the LP rewards to come)
+    { mint: "DKYcjobF7HPtL9RyQBRdeRQ2iWvizpfbgWwPWNXdpump", note: "" },
+    { mint: "2xCd5qHX5tW6pGUo7zfgHSSAnRjJwPA7Sz1Fu4fWcJjX", note: "" },
+    { mint: "6MKD1NkLvWRqdbFtqmgACBwUV5o6GJpZry8HkNgzpump", note: "" },
+    { mint: "9jhs5qoJnUFU7AZXbsiD1Q6De6FVsino9Ysw8QU6pump", note: "" },
   ],
   // what a coin can trade against besides SOL (the launch form's "pair"): tokens pump.fun admits as a quote. TTWO =
   // Take-Two Interactive's tokenized share by Backpack Securities (Token-2022, 6 decimals) — on pump.fun's QuoteControl

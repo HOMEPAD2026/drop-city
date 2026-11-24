@@ -56,6 +56,7 @@ function flashTrade(x) {
   const el = document.querySelector(`.cc[data-m="${CSS.escape(x.mint)}"]`); if (!el) return; el.classList.remove("ping"); void el.offsetWidth; el.classList.add("ping");
 }
 function paintAll() {
+  dropsUi();
   paintHour(); paintMain(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker();
   paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin));
   const sl = $("suffixline"); if (CFG.suffix) { sl.hidden = false; sl.innerHTML = `${esc(t("caEnds", "Every coin's CA ends in"))} <b>${esc(CFG.suffix)}</b>`; }
@@ -98,10 +99,20 @@ function digits(str) { ["d-m1", "d-m2", "d-s1", "d-s2"].forEach((id, i) => { con
 let vaultSol = null;
 async function readVault() { if (!CFG.vault) return; try { const K = await kit(), c = await conn(); vaultSol = (await c.getBalance(new K.PublicKey(CFG.vault))) / 1e9; paintStats(); } catch {} }
 /// one quiet line of numbers under the hero's text
+/// the hourly drops are off (the owner, 2026-11-24): the countdown, the vote, today's 24 and the drop lines go; the first
+/// lane speaks of the supported coins instead, and the desk's first tab is the live trades
+function dropsUi() {
+  const off = CFG.drops === false; html.classList.toggle("nodrops", off);
+  if (!off) return;
+  const l1 = document.querySelector(".lane.l1"); if (l1) { l1.setAttribute("href", "#explore"); l1.querySelector(".ln-k").textContent = t("l1kS", "SUPPORTED"); l1.querySelector("b").textContent = t("l1hS", "The city backs these coins"); l1.querySelector("p").textContent = t("l1pS", "Hand-picked coins stand in the city beside everyone's launches — and the city's liquidity will be paired with them."); }
+  const tn = document.querySelector("#t-now > span"); if (tn) tn.textContent = t("tLive", "Live");
+  const pc = document.querySelector('[data-i18n="pCity"]'); if (pc) pc.textContent = t("pCityS", "Every coin is a tower. Walk the streets, drive the coast, open any tower — and see the city's supported coins standing beside everyone's launches.");
+  const a1 = document.querySelector('[data-i18n="a1"]'); if (a1) a1.textContent = t("a1S", "A launchpad that turns pump.fun launches into a city. Anyone can launch their own coins any time, and the city backs a set of supported coins.");
+}
 function paintStats() {
   const today = new Date().toISOString().slice(0, 10), td = coins.filter((c) => c.hour && c.hour.startsWith(today)).length;
   const mc = coins.reduce((a, c) => a + (c.mcapUsd || 0), 0), made = coins.filter((c) => c.graduated).length;
-  const rows = [["n", coins.length, (v) => String(Math.round(v)), t("stCoins", "coins")], ["t", td, (v) => `${Math.round(v)}/24`, t("stToday", "drops today")], ["mc", mc, usd, t("stMcap", "total mcap")], ["made", made, (v) => String(Math.round(v)), t("stMade", "graduated")], ...(vaultSol != null ? [["v", vaultSol, (v) => v.toFixed(2) + " SOL", t("stVault", "the vault")]] : [])];
+  const rows = [["n", coins.length, (v) => String(Math.round(v)), t("stCoins", "coins")], ...(CFG.drops === false ? [] : [["t", td, (v) => `${Math.round(v)}/24`, t("stToday", "drops today")]]), ["mc", mc, usd, t("stMcap", "total mcap")], ["made", made, (v) => String(Math.round(v)), t("stMade", "graduated")], ...(vaultSol != null ? [["v", vaultSol, (v) => v.toFixed(2) + " SOL", t("stVault", "the vault")]] : [])];
   const el = $("stats"), sig = rows.map((r) => r[0] + r[3]).join("|");
   if (el.dataset.sig !== sig) { el.dataset.sig = sig; el.innerHTML = rows.map(([k, , , l]) => `<div><b data-k="${k}">–</b><small>${esc(l)}</small></div>`).join(""); }
   for (const [k, v, f] of rows) roll(el.querySelector(`[data-k="${k}"]`), v, f);
@@ -381,8 +392,8 @@ start();
 // ---------------- motion: the ticker, reveals, card tilt, the coin's window
 function paintTicker() {
   const H = new Date().getUTCHours(), latest = coins.slice().sort((a, b) => (b.launchedAt || 0) - (a.launchedAt || 0)).slice(0, 12);
-  const head = `<span><i class="dot"></i><b>${esc(t("tkHour", "HOUR"))} ${String(H).padStart(2, "0")}:00</b> ${esc(dropState(slot, CFG)[0])}</span>`;
-  const lead = voteLead(), lv = lead ? [`<span class="tk-v">${esc(t("tkLead", "VOTE LEADS"))} <b>$${esc(lead.symbol)}</b> · ${lead.votes} ${esc(t("votes", "votes"))}</span>`] : [];
+  const head = CFG.drops === false ? "" : `<span><i class="dot"></i><b>${esc(t("tkHour", "HOUR"))} ${String(H).padStart(2, "0")}:00</b> ${esc(dropState(slot, CFG)[0])}</span>`;
+  const lead = CFG.drops === false ? null : voteLead(), lv = lead ? [`<span class="tk-v">${esc(t("tkLead", "VOTE LEADS"))} <b>$${esc(lead.symbol)}</b> · ${lead.votes} ${esc(t("votes", "votes"))}</span>`] : [];
   const trs = lastTrades(3).map((x) => `<span class="tk-t ${x.side === "buy" ? "up" : ""}">${esc(x.side === "buy" ? t("tkBuy", "BUY") : t("tkSell", "SELL"))} <b>$${esc(x.symbol)}</b><i>${Number(x.sol).toFixed(2)} SOL</i></span>`);
   const items = latest.map((c) => `<span><b>$${esc(c.symbol)}</b><i>${usd(c.mcapUsd)}</i>${c.graduated ? esc(t("lMade", "MADE")) : `${esc(t("cCurve", "curve"))} ${(c.progress || 0).toFixed(0)}%`}</span>`);
   const one = [head, ...lv, ...trs, ...(items.length ? items : [`<span>${esc(t("tkWaiting", "THE CITY IS WAITING FOR ITS FIRST DROP"))}</span>`]), `<span><b>${CFG.split.creator / 100} / ${CFG.split.vault / 100} / ${CFG.split.buyer / 100}</b> ${esc(t("tkFees", "FEES LOCKED ON CHAIN"))}</span>`].join("");

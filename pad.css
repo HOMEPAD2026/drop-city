@@ -215,3 +215,7 @@ button { font: inherit; color: inherit; cursor: pointer; }
 .brand .logo-img { height: 42px; }
 .foot-logo .logo-img { height: 40px; }
 @media (max-width: 520px) { .logo-img { height: 38px; } .brand .logo-img { height: 34px; } }
+
+/* the hourly drops are off (the owner, 2026-11-24): their countdown, vote, today's 24 and the city's TODAY tab go */
+html.nodrops #hour, html.nodrops #vote, html.nodrops #today, html.nodrops .q-drops, html.nodrops .t-today, html.nodrops #clock { display: none !important; }
+html.nodrops .navlinks a[href="#vote"] { display: none !important; }

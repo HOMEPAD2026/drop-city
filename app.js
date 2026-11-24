@@ -64,7 +64,7 @@ const openDrop = () => drop({ cfg: CFG, onDone: () => { loadList(); loadSlot(); 
 
 async function load() {
   CFG = await loadCfg();
-  document.querySelectorAll("[data-name]").forEach((e) => (e.textContent = CFG.name)); document.title = CFG.name + " — the city";
+  document.documentElement.classList.toggle("nodrops", CFG.drops === false); document.querySelectorAll("[data-name]").forEach((e) => (e.textContent = CFG.name)); document.title = CFG.name + " — the city";
   await Promise.all([loadList(), loadSlot()]);
   // the city always opens on foot (the owner, 2026-11-19: entering the city starts with your character); a coin's link
   // puts you at its tower's door with its card open; MAP only when asked for (?view=map, or the MAP button this visit)
@@ -88,6 +88,7 @@ setInterval(() => { paintClock(); takeoverTick(slot, coins); $("ph-time").textCo
 
 // ---------------- the top bar: this hour's drop
 function paintClock() {
+  if (CFG.drops === false) return; // the hourly drops are off: no clock (html.nodrops hides it)
   const now = Date.now(); $("clk-h").textContent = hh(now).slice(0, 2) + ":00";
   const st = $("clk-s"), btn = $("drop");
   btn.disabled = !CFG.open && !DEMO;
