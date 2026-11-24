@@ -49,7 +49,7 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   glass, white type, one warm gold accent (--pm-acc) used sparingly, hairline borders, underline tabs, the main button
   warm white, no neon glows / offset shadows / scanlines. The phone's bottom bar: frosted glass, line icons over small
   labels, Launch as a raised round key.
-- **Pages (the owner, 2026-11-20):** the bottom bar (Home · Explore · Launch · City · More — More opens the desk: vote, ranks, fees, wallets, check a CA, my coins, about) and the nav switch pages
+- **Pages (the owner, 2026-11-20; order 2026-11-24):** the bottom bar by importance — Launch (a round key, never clipped) · NFT (#cards) · LP (#lp) · Game (/city — "the city" is called the Game everywhere a visitor reads it) · More (the desk: the rest); the top nav Launch · NFT · LP · Game · Explore · More and the nav switch pages
   (html[data-page] home / explore / desk) instead of scrolling; every old #link still lands on its page.
 - The agent's logos come from images/agent (the owner's mascot art); a drop's name is picked from those subjects.
 - **STREET mode (the owner, 2026-11-19):** the city always opens on foot (roam.js) with a random crime-flavoured handle and a

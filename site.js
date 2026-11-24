@@ -79,7 +79,7 @@ function paintMain() {
     <div class="bar mc-bar"><i style="width:${Math.max(2, prog)}%"></i></div>
     <button type="button" class="mc-ca" id="mc-ca" title="${esc(t("copyCa", "Copy the address"))}"><code><span class="ca-h">${esc(m.slice(0, -8))}</span><span class="ca-t">${caHtml(m).slice(esc(m.slice(0, -8)).length)}</span></code><span>${esc(t("copy", "COPY"))}</span></button>
     <p class="mc-p">${esc(tf("mcP1", "{p}% of the creator fees of every coin launched on the platform buys ${sym}.", { p: CFG.split.buyer / 100, sym }))} ${esc(t("mcP2", "The main coin is the dev's own: its creator fees go 100% to the dev."))}</p>
-    <div class="mc-a"><a class="btn hot" href="${buy}" target="_blank" rel="noopener">${esc(t("buy", "Buy"))} $${esc(sym)}</a><a class="btn ghost" href="https://dexscreener.com/solana/${esc(m)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a class="btn ghost" href="${city}">${esc(t("cCity", "City"))}</a></div>`;
+    <div class="mc-a"><a class="btn hot" href="${buy}" target="_blank" rel="noopener">${esc(t("buy", "Buy"))} $${esc(sym)}</a><a class="btn ghost" href="https://dexscreener.com/solana/${esc(m)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a class="btn ghost" href="${city}">${esc(t("cGame", "Game"))}</a></div>`;
   el.classList.toggle("open", UI.mcOpen);
   $("mc-ca").onclick = async () => { try { await navigator.clipboard.writeText(m); note(t("copied", "Address copied.")); } catch { note(m, 6000); } };
   $("mc-more").onclick = () => { UI.mcOpen = !UI.mcOpen; paintMain(); };
@@ -173,7 +173,7 @@ function card(c, i) {
     <div class="body"><h3>${esc(c.name)}</h3><span class="sym">$${esc(c.symbol)}</span>${c.quote ? `<span class="qtag">${esc(c.quote.id)} ${esc(t("pair", "PAIR"))}</span>` : ""}${gradeChip(c.grade)} <span class="stars${up ? " up" : ""}">${st}</span>
       <div class="row"><b>${usd(c.mcapUsd)}</b><small>${when}</small></div>
       <div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small class="cv">${c.graduated ? esc(t("cGradTo", "graduated to PumpSwap")) : `${esc(t("cCurve", "curve"))} ${(c.progress || 0).toFixed(0)}%`}</small>
-      ${c.kind === "partner" ? `<p class="supn">🎰 ${esc(t("supNote", "Supported coin · coming to the slot game"))}</p>` : ""}<div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cCity", "City"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a></div></div></article>`;
+      ${c.kind === "partner" ? `<p class="supn">🎰 ${esc(t("supNote", "Supported coin · coming to the slot game"))}</p>` : ""}<div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cGame", "Game"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a></div></div></article>`;
 }
 
 // ---------------- TODAY'S 24 (a swipe row on phones: brought to the current hour on first paint and when the tab opens)
@@ -326,8 +326,9 @@ var NAV_FOR = { now: "#vote", launch: "#launch", fees: "#fees", lp: "#lp", cards
 function highlight() {
   const tab = html.dataset.tab;
   const pg = html.dataset.page || "home";
-  const nav = pg === "explore" ? "#explore" : pg === "desk" ? (NAV_FOR || {})[tab] : null; // NAV_FOR is set further down; setTab() runs first
-  const bar = pg === "explore" ? "#explore" : pg === "desk" ? "#desk" : "#home";
+  const deskLink = tab === "cards" ? "#cards" : tab === "lp" ? "#lp" : tab === "launch" ? "#launch" : "#desk"; // NAV_FOR (further down) is the old map, unused now
+  const nav = pg === "explore" ? "#explore" : pg === "desk" ? deskLink : null;
+  const bar = pg === "desk" ? deskLink : null;
   links.querySelectorAll("a").forEach((a) => { const on = a.getAttribute("href") === nav; a.classList.toggle("on", on); on ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"); });
   document.querySelectorAll(".bbar a").forEach((a) => { const on = a.getAttribute("href") === bar; a.classList.toggle("on", on); on ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"); });
 }

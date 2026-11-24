@@ -104,3 +104,13 @@ html[data-tab="wallets"] #t-wallets, html[data-tab="check"] #t-check, html[data-
 }
 @media (min-width: 761px) { .bbar { display: none !important; } }
 @media (max-width: 760px) { .bbar .bb-go, .bbar [data-drop] { background: none !important; color: var(--pm-ink) !important; } }
+
+/* the bottom bar's order (the owner, 2026-11-24): Launch · NFT · LP · Game · More. Launch is the first key: a full round
+   button that sits inside the bar (never clipped), the rest line icons over small labels */
+@media (max-width: 760px) {
+  .bbar { overflow: visible !important; }
+  .bbar .bb-go { gap: 3px !important; }
+  .bbar .bb-plus { width: 34px; height: 34px; margin: 0; flex: 0 0 34px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.45); }
+  .bbar .bb-plus svg { width: 18px; height: 18px; }
+  .bbar .bb-go span { color: var(--pm-ink); }
+}

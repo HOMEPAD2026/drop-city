@@ -13,7 +13,7 @@
 <link rel="icon" href="/images/favicon-64.png" type="image/png"><link rel="apple-touch-icon" href="/images/icon-256.png">
 <link rel="stylesheet" href="/site.css?v=m5">
 <link rel="stylesheet" href="/game.css?v=9">
-<link rel="stylesheet" href="/premium.css?v=1">
+<link rel="stylesheet" href="/premium.css?v=2">
 <link rel="stylesheet" href="/cards.css?v=1">
 <link rel="stylesheet" href="/intro.css?v=5">
 <script>(function(){var d=document.documentElement,T={vote:"now",live:"now",today:"now",ranks:"ranks",launch:"launch",fees:"fees",lp:"lp",cards:"cards",wallets:"wallets",check:"check",creators:"mine",about:"about"},s="";
@@ -29,7 +29,7 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
 <nav class="nav" id="nav">
   <a class="logo" href="/"><img class="logo-img" src="/images/logo-96.webp" srcset="/images/logo-96.webp 1x, /images/logo-192.webp 2x" alt="GTAFUN" width="70" height="48" decoding="async"><b data-name class="sr-only">DROP CITY</b></a>
   <div class="navlinks" id="links">
-    <a href="#explore" data-i18n="nExplore">Explore</a><a href="#cards" data-i18n="tCards">Cards</a><a href="#vote" data-i18n="nVote">Vote</a><a href="#launch" data-i18n="nLaunch">Launch</a><a href="#fees" data-i18n="nFees">Fees</a><a href="#lp" data-i18n="tLp">LP Rewards</a><a href="#check" data-i18n="nCheck">Check a CA</a><a href="/city" data-i18n="nCity">Play the city</a>
+    <a href="#launch" data-i18n="nLaunch">Launch</a><a href="#cards" data-i18n="bNft">NFT</a><a href="#lp" data-i18n="bLp">LP</a><a href="/city" data-i18n="bGame">Game</a><a href="#explore" data-i18n="nExplore">Explore</a><a href="#desk" data-i18n="bMore">More</a>
     <a class="nx" href="#main-coin" data-i18n="nMain">Main coin</a><a class="nx" href="#live" data-i18n="nLive">Live</a><a class="nx" href="#ranks" data-i18n="nRanks">Ranks</a><a class="nx" href="#wallets" data-i18n="nWallets">Wallets</a><a class="nx" href="#creators" data-i18n="nCreators">Creators</a><a class="nx" href="#about" data-i18n="nAbout">About</a>
     <select class="nx" id="lang3" aria-label="Language" data-i18n-al="aLang"><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文</option><option value="tr">Türkçe</option></select>
   </div>
@@ -49,7 +49,7 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
       <a class="lane l2" href="#launch"><span class="ln-k" data-i18n="l2k">ANY TIME</span><b data-i18n="l2h">You launch yours</b><p data-i18n="l2p">No limit, no waiting. Your wallet, pump.fun, the fee split locked on chain — and a tower in the city.</p></a>
     </div>
     <p class="suffixline" id="suffixline" hidden></p>
-    <div class="cta"><button type="button" class="btn hot big" data-drop data-i18n="launch">Launch a coin</button><a class="btn ghost big" href="#explore" data-i18n="explore">Explore coins</a><a class="btn cy big" href="/city" data-i18n="enter">Enter the city ▸</a></div>
+    <div class="cta"><button type="button" class="btn hot big" data-drop data-i18n="launch">Launch a coin</button><a class="btn ghost big" href="#explore" data-i18n="explore">Explore coins</a><a class="btn cy big" href="/city" data-i18n="enterG">Play the game ▸</a></div>
   </div>
   <div class="hero-side">
     <div class="count" id="hour"><svg class="ring" viewBox="0 0 44 44" aria-hidden="true"><circle cx="22" cy="22" r="19"/><circle id="ringv" cx="22" cy="22" r="19" pathLength="100"/></svg><div class="c-top"><span class="lbl" data-i18n="lblHour">THIS HOUR</span><b id="h-h">--:00</b><span id="h-s" class="st">…</span></div><div class="c-dig" aria-live="off"><span class="lbl2" data-i18n="lblNext">NEXT DROP IN</span><div class="digs"><i id="d-m1">0</i><i id="d-m2">0</i><u>:</u><i id="d-s1">0</i><i id="d-s2">0</i></div></div></div>
@@ -75,19 +75,19 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
   <section id="play" class="sec cband" data-rv>
     <a class="cband-in" href="/city">
       <img class="cband-bg" src="/images/hero-900.webp" alt="" loading="lazy" decoding="async">
-      <div class="cband-t"><h2 data-i18n="hCity">THE CITY</h2><p data-i18n="pCity">Every coin is a tower. Clock Plaza holds the agent's 24 drops of the day; everyone's coins stand in the districts around it. Fly over the coast, follow the helicopter's searchlight, open any tower.</p></div>
-      <span class="btn cy big" data-i18n="enter">Enter the city ▸</span>
+      <div class="cband-t"><h2 data-i18n="hGame">THE GAME</h2><p data-i18n="pCity">Every coin is a tower. Clock Plaza holds the agent's 24 drops of the day; everyone's coins stand in the districts around it. Fly over the coast, follow the helicopter's searchlight, open any tower.</p></div>
+      <span class="btn cy big" data-i18n="enterG">Play the game ▸</span>
     </a>
   </section>
 
   <section id="desk" class="sec dk" data-rv>
     <div class="dk-tabs" id="dk-tabs" role="tablist" aria-label="Sections" data-i18n-al="aTabs">
       <a role="tab" id="t-now" href="#vote" aria-controls="p-now"><span data-i18n="tNow">This hour</span><i class="dk-dot" hidden></i></a>
-      <a role="tab" id="t-cards" href="#cards" aria-controls="p-cards"><span data-i18n="tCards">Cards</span><i class="cd-new">NEW</i></a>
+      <a role="tab" id="t-cards" href="#cards" aria-controls="p-cards"><span data-i18n="bNft">NFT</span><i class="cd-new">NEW</i></a>
       <a role="tab" id="t-ranks" href="#ranks" aria-controls="p-ranks" data-i18n="tRanks">Ranks</a>
       <a role="tab" id="t-launch" href="#launch" aria-controls="p-launch" data-i18n="nLaunch">Launch</a>
       <a role="tab" id="t-fees" href="#fees" aria-controls="p-fees" data-i18n="nFees">Fees</a>
-      <a role="tab" id="t-lp" href="#lp" aria-controls="p-lp" data-i18n="tLp">LP Rewards</a>
+      <a role="tab" id="t-lp" href="#lp" aria-controls="p-lp" data-i18n="bLp">LP</a>
       <a role="tab" id="t-wallets" href="#wallets" aria-controls="p-wallets" data-i18n="nWallets">Wallets</a>
       <a role="tab" id="t-check" href="#check" aria-controls="p-check" data-i18n="nCheck">Check a CA</a>
       <a role="tab" id="t-mine" href="#creators" aria-controls="p-mine" data-i18n="tMine">My coins</a>
@@ -197,12 +197,12 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
     </div>
   </section>
 </main>
-<footer class="sitefoot"><span class="foot-logo"><img class="logo-img" src="/images/logo-96.webp" srcset="/images/logo-96.webp 1x, /images/logo-192.webp 2x" alt="GTAFUN" width="70" height="48" decoding="async"><b data-name class="sr-only">DROP CITY</b></span><span data-i18n="fBuilt">Built on pump.fun · Solana. Not affiliated with pump.fun.</span><span class="fl"><a href="/city" data-i18n="fCity">The city</a><a href="#fees" data-i18n="nFees">Fees</a><a href="https://github.com/HOMEPAD2026/drop-city" rel="noopener" data-i18n="fSource">Source</a></span><select id="lang2" aria-label="Language" data-i18n-al="aLang"><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文</option><option value="tr">Türkçe</option></select></footer>
+<footer class="sitefoot"><span class="foot-logo"><img class="logo-img" src="/images/logo-96.webp" srcset="/images/logo-96.webp 1x, /images/logo-192.webp 2x" alt="GTAFUN" width="70" height="48" decoding="async"><b data-name class="sr-only">DROP CITY</b></span><span data-i18n="fBuilt">Built on pump.fun · Solana. Not affiliated with pump.fun.</span><span class="fl"><a href="/city" data-i18n="fGame">The game</a><a href="#fees" data-i18n="nFees">Fees</a><a href="https://github.com/HOMEPAD2026/drop-city" rel="noopener" data-i18n="fSource">Source</a></span><select id="lang2" aria-label="Language" data-i18n-al="aLang"><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文</option><option value="tr">Türkçe</option></select></footer>
 <div class="sheet" id="sheet" hidden></div>
 <div class="cmodal" id="cmodal" hidden></div>
 <div class="toast" id="toast" hidden></div>
 <div class="takeover" id="takeover" hidden></div>
-<nav class="bbar" aria-label="Quick"><a href="#home"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 10.5 12 4l8.5 6.5"/><path d="M6 9v10h12V9"/><path d="M10 19v-5h4v5"/></svg><span data-i18n="bHome">Home</span></a><a href="#explore"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/></svg><span data-i18n="bExplore">Explore</span></a><button type="button" class="bb-go" data-drop><i class="bb-plus"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></i><span data-i18n="bLaunch">Launch</span></button><a href="/city"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 20h18"/><path d="M5 20V9l4-2v13"/><path d="M9 20V4l6 3v13"/><path d="M15 20v-8l4 2v6"/></svg><span data-i18n="bCity">City</span></a><a href="#desk"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/></svg><span data-i18n="bMore">More</span></a></nav>
+<nav class="bbar" aria-label="Quick"><button type="button" class="bb-go" data-drop><i class="bb-plus"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg></i><span data-i18n="bLaunch">Launch</span></button><a href="#cards"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3.5" width="12" height="16" rx="2"/><path d="M8 20.5h9.5a2 2 0 0 0 2-2V7"/><path d="m10 9 1.2 2.4 2.6.4-1.9 1.8.5 2.6L10 15l-2.4 1.2.5-2.6-1.9-1.8 2.6-.4Z"/></svg><span data-i18n="bNft">NFT</span></a><a href="#lp"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3.5c3 3.6 5 6.4 5 9a5 5 0 0 1-10 0c0-2.6 2-5.4 5-9Z"/><path d="M9.5 13.5a2.5 2.5 0 0 0 2.5 2.5"/></svg><span data-i18n="bLp">LP</span></a><a href="/city"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="2.5" y="7" width="19" height="11" rx="5.5"/><path d="M7.5 10.5v4M5.5 12.5h4"/><circle cx="15.5" cy="11.5" r="0.9"/><circle cx="17.5" cy="13.5" r="0.9"/></svg><span data-i18n="bGame">Game</span></a><a href="#desk"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="5.5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="18.5" cy="12" r="1.2"/></svg><span data-i18n="bMore">More</span></a></nav>
 <script src="/solwallet.js" defer></script>
 <script type="module" src="/site.js"></script>
 <script type="module" async src="/intro.js?v=3"></script>
