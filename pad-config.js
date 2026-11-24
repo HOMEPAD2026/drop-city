@@ -21,6 +21,10 @@ export const PAD = {
   // the agent's hourly drops — OFF since 2026-11-24 (the owner: the AI no longer launches a coin every hour; the city
   // supports the coins below instead). Its old drops stay listed and their fees still go on to THE VAULT. PAD_DROPS=1 turns it back on
   drops: false,
+  // LP rewards (the owner, 2026-11-24): Raydium CPMM pools of the supported coins with SOL and with the main coin; the main
+  // coin paid out, daily in total (split hour by hour across the pools by liquidity, main-coin pairs × boostMain, inside a
+  // pool by LP held). wallet = the rewards wallet that pays (a GM's own; PAD_LP_WALLET overrides); PAD_LP_DAILY the amount
+  lp: { daily: 1000000, boostMain: 1.5, minUsd: 10, minPay: 100, wallet: "", exclude: [] },
   // coins the city SUPPORTS (the owner, 2026-11-20): not launched here, shown in EXPLORE with a SUPPORTED tag and kept
   // for the slot mini-game to come. note = the line under the card
   supported: [

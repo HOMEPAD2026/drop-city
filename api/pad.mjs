@@ -12,6 +12,7 @@ import { makePad, publicCfg, cfg, quotesOf } from "../lib/_pad.mjs";
 import { proxy } from "../lib/_chain.mjs";
 import { blobStore, blobEnabled } from "../lib/_blob.mjs";
 import { makeAgent } from "../lib/_agent.mjs";
+import { makeLp } from "../lib/_lp.mjs";
 import { makeExtra } from "../lib/_extra.mjs";
 import { makeTg } from "../lib/_tg.mjs";
 import { makeStreet, holderOf, makeVault } from "../lib/_street.mjs";
@@ -26,6 +27,7 @@ const pad = () => (PAD = PAD || makePad({ store: blobStore() }));
 let AG = null;
 let EX = null;
 const extra = () => (EX = EX || makeExtra({ pad: pad() }));
+let LPX = null; const lp = () => (LPX = LPX || makeLp({ store: pad().store, pad: pad() }));
 const agent = () => (AG = AG || makeAgent({ pad: pad(), extra: extra(), tg: makeTg({ pad: pad(), extra: extra() }) }));
 let ST = null;
 const street = () => (ST = ST || makeStreet({ store: blobEnabled() ? blobStore() : null }));
@@ -137,13 +139,19 @@ export async function GET(req) {
       if (ch && ch.curve && !(ch.sharing && ch.sharing.locked)) r.body.splitSim = await simSplit(r.body.mint, ch).catch((e) => ({ error: String((e && e.message) || e).slice(0, 300) }));
       return json(r.status, r.body, "no-store");
     }
+    if (q.has("lp")) { // LP rewards: ?lp=1&w=<wallet> the view · ?lp=tick the hour's snapshot · ?lp=due what is owed
+      const m = q.get("lp");
+      if (m === "tick") { if (limited("lpt:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" }); return json(200, await lp().tick(), "no-store"); }
+      if (m === "due") return json(200, { due: await lp().due() }, "no-store");
+      return json(200, await lp().view(String(q.get("w") || "")), "public, max-age=20");
+    }
     if (q.has("tick")) {
       await pad().store.put("beat/tick.json", { at: Date.now(), ua: String(req.headers.get("user-agent") || "").slice(0, 60) }, {}).catch(() => {});
       if (limited("tick:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" });
       return json(200, await agent().tick(), "no-store");
     }
   } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 160) }); }
-  return json(400, { error: "use ?cfg, ?list, ?slot, ?agent, ?tick, ?check, ?verify, ?coin, ?trades, ?vote or ?page" });
+  return json(400, { error: "use ?cfg, ?list, ?slot, ?agent, ?tick, ?lp, ?check, ?verify, ?coin, ?trades, ?vote or ?page" });
 }
 export async function POST(req) {
   const ip = ipOf(req);
@@ -158,6 +166,7 @@ export async function POST(req) {
   if (!blobEnabled()) return json(503, { error: "the store isn't connected yet" });
   if (b.action === "diag") { if (limited("diag:" + ip, 6, 60e3)) return json(429, { error: "slow down" }); const r = await diag().report(b, req.headers.get("user-agent") || ""); return json(r.status, r.body); }
   if (b.action === "vault") { if (limited("vault:" + ip, 12, 60e3)) return json(429, { error: "slow down" }); const r = await vault().open(b); return json(r.status, r.body); }
+  if (b.action === "lp-paid") { if (limited("lpp:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await lp().paid(b); return json(r.status, r.body); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 160) }); } }
   if (b.action === "score") { if (limited("score:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); const r = await street().score(b); return json(r.status, r.body); }
   const lim = { register: 30, meta: 20, logo: 20, vote: 10 }[b.action];
   if (!lim) return json(400, { error: "unknown action" });

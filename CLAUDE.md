@@ -27,8 +27,12 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   VAULT); the slot answers "off"; the site hides the countdown, the vote, today's 24 and the drop lines (html.nodrops),
   the first lane / the city band / the FAQ speak of the supported coins, the desk's first tab is Live; the city has no
   clock or TODAY tab; the Telegram bot says the drops are off. The old drops stay listed.
-- **LP rewards (the owner, 2026-11-24 — planned, not built):** the city's liquidity will be paired with the supported coins
-  and LPs rewarded; design and decisions pending.
+- **LP rewards (the owner, 2026-11-24):** Raydium CPMM pools of each supported coin with SOL and with the main coin
+  (found through Raydium's API, lib/_lp.mjs); every hour (?lp=tick, from the GitHub workflow) the LP holders are read
+  from the chain and the hour's reward (pad-config.js lp.daily / PAD_LP_DAILY, default 1,000,000 a day) is split across
+  the pools by liquidity (main-coin pairs × boostMain 1.5) and inside a pool by LP held; burned / locked LP, holdings under
+  $10 and the rewards wallet earn nothing. Paid in the MAIN COIN by the rewards wallet (PAD_LP_WALLET — a GM's own
+  wallet, signs in the LP REWARDS tab; the server only reads the transfer and marks it paid, it holds no key).
 - **Supported coins (the owner, 2026-11-20):** pad-config.js `supported` — coins the city supports without launching them
   ($DCTY 9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump first; 2026-11-24: + DKYcjob…pump, 2xCd5q…cJjX, 6MKD1N…pump, 9jhs5q…pump; a token without Metaplex metadata gets its card from Dexscreener, a partner off the pump.fun curve is priced there). The list carries them as kind "partner" (no creator, no
   fees, never in creator ranks), EXPLORE pins them after the main coin with a gold SUPPORTED tag, and they'll be on the

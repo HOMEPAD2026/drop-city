@@ -244,14 +244,15 @@ $("live-more").onclick = () => { const b = $("livebox"), on = !b.classList.conta
 $("rseg").onclick = (e) => { const b = e.target.closest("[data-b]"); if (!b) return; $("ranksbox").dataset.b = b.dataset.b; $("rseg").querySelectorAll("button").forEach((x) => x.setAttribute("aria-pressed", String(x === b))); };
 
 // ---------------- the desk: eight tabs (links, so they work before and without this script)
-const TABS = ["now", "ranks", "launch", "fees", "wallets", "check", "mine", "about"];
-const HASH_TAB = { vote: "now", live: "now", today: "now", ranks: "ranks", launch: "launch", fees: "fees", wallets: "wallets", check: "check", creators: "mine", about: "about" };
+const TABS = ["now", "ranks", "launch", "fees", "lp", "wallets", "check", "mine", "about"];
+const HASH_TAB = { vote: "now", live: "now", today: "now", ranks: "ranks", launch: "launch", fees: "fees", lp: "lp", wallets: "wallets", check: "check", creators: "mine", about: "about" };
 const tabEl = (k) => $("t-" + k);
 function setTab(k) {
   if (!TABS.includes(k)) k = "now";
   html.dataset.tab = k; try { sessionStorage.setItem("dc.tab", k); } catch {}
   for (const x of TABS) { const a = tabEl(x); a.setAttribute("aria-selected", String(x === k)); a.tabIndex = x === k ? 0 : -1; }
   if (k === "now") { const d = document.querySelector("#t-now .dk-dot"); if (d) d.hidden = true; hoursToNow(); }
+  if (k === "lp" && coins.length) import("/lp-ui.js").then((m) => m.paintLp($("lpbox"), { coins, CFG })).catch(() => {});
   highlight();
 }
 setTab(html.dataset.tab);
@@ -279,7 +280,7 @@ function jump(el, smooth) {
 /// the page a hash belongs to: the site is a set of pages now (the owner, 2026-11-20 — the bottom bar switches pages
 /// instead of scrolling): home (the hero + the city band), explore, desk (the tabs)
 const pageOf = (k) => (k === "explore" ? "explore" : HASH_TAB[k] || k === "desk" ? "desk" : "home");
-const PAGE_TOP = new Set(["home", "explore", "desk", "vote", "ranks", "launch", "fees", "wallets", "check", "creators", "about"]);
+const PAGE_TOP = new Set(["home", "explore", "desk", "vote", "ranks", "launch", "fees", "lp", "wallets", "check", "creators", "about"]);
 function setPage(pg) { if (html.dataset.page === pg) return false; html.dataset.page = pg; html.style.scrollBehavior = "auto"; scrollTo(0, 0); html.style.scrollBehavior = ""; pin = null; return true; }
 function route(hash, smooth) {
   const k = String(hash || "").replace(/^#/, ""); if (!k) return;
@@ -320,11 +321,11 @@ const afterIntro = (fn) => (introGone() ? fn({ detail: {} }) : addEventListener(
 
 // ---------------- highlighting: the nav link and bottom-bar entry for what's in the middle of the screen
 var inView = null; // var: setTab() runs (and reads it) before this line
-const NAV_FOR = { now: "#vote", launch: "#launch", fees: "#fees", check: "#check", ranks: "#ranks", wallets: "#wallets", mine: "#creators", about: "#about" };
+var NAV_FOR = { now: "#vote", launch: "#launch", fees: "#fees", lp: "#lp", check: "#check", ranks: "#ranks", wallets: "#wallets", mine: "#creators", about: "#about" };
 function highlight() {
   const tab = html.dataset.tab;
   const pg = html.dataset.page || "home";
-  const nav = pg === "explore" ? "#explore" : pg === "desk" ? NAV_FOR[tab] : null;
+  const nav = pg === "explore" ? "#explore" : pg === "desk" ? (NAV_FOR || {})[tab] : null; // NAV_FOR is set further down; setTab() runs first
   const bar = pg === "explore" ? "#explore" : pg === "desk" ? "#desk" : "#home";
   links.querySelectorAll("a").forEach((a) => { const on = a.getAttribute("href") === nav; a.classList.toggle("on", on); on ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"); });
   document.querySelectorAll(".bbar a").forEach((a) => { const on = a.getAttribute("href") === bar; a.classList.toggle("on", on); on ? a.setAttribute("aria-current", "true") : a.removeAttribute("aria-current"); });

@@ -12,13 +12,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="icon" href="/images/favicon-64.png" type="image/png"><link rel="apple-touch-icon" href="/images/icon-256.png">
 <link rel="stylesheet" href="/site.css?v=m5">
-<link rel="stylesheet" href="/game.css?v=7">
+<link rel="stylesheet" href="/game.css?v=8">
 <link rel="stylesheet" href="/intro.css?v=5">
-<script>(function(){var d=document.documentElement,T={vote:"now",live:"now",today:"now",ranks:"ranks",launch:"launch",fees:"fees",wallets:"wallets",check:"check",creators:"mine",about:"about"},s="";
+<script>(function(){var d=document.documentElement,T={vote:"now",live:"now",today:"now",ranks:"ranks",launch:"launch",fees:"fees",lp:"lp",wallets:"wallets",check:"check",creators:"mine",about:"about"},s="";
 d.classList.add("js","nodrops");
 try{if(sessionStorage.getItem("dc.intro")&&!/[?&]intro=1\b/.test(location.search))d.classList.add("nointro");s=sessionStorage.getItem("dc.tab")||""}catch(e){}
 var P=location.hash.slice(1);d.dataset.page=P==="explore"?"explore":T[P]||P==="desk"?"desk":"home";
-d.dataset.tab=T[location.hash.slice(1)]||(/^(now|ranks|launch|fees|wallets|check|mine|about)$/.test(s)?s:"now");
+d.dataset.tab=T[location.hash.slice(1)]||(/^(now|ranks|launch|fees|lp|wallets|check|mine|about)$/.test(s)?s:"now");
 addEventListener("hashchange",function(){var k=T[location.hash.slice(1)];if(k)d.dataset.tab=k});
 setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on){i.remove();d.style.overflow="";window.__introDone=1;dispatchEvent(new Event("intro:done"))}},7000)})()</script>
 </head>
@@ -27,7 +27,7 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
 <nav class="nav" id="nav">
   <a class="logo" href="/"><img class="logo-img" src="/images/logo-96.webp" srcset="/images/logo-96.webp 1x, /images/logo-192.webp 2x" alt="GTAFUN" width="70" height="48" decoding="async"><b data-name class="sr-only">DROP CITY</b></a>
   <div class="navlinks" id="links">
-    <a href="#explore" data-i18n="nExplore">Explore</a><a href="#vote" data-i18n="nVote">Vote</a><a href="#launch" data-i18n="nLaunch">Launch</a><a href="#fees" data-i18n="nFees">Fees</a><a href="#check" data-i18n="nCheck">Check a CA</a><a href="/city" data-i18n="nCity">Play the city</a>
+    <a href="#explore" data-i18n="nExplore">Explore</a><a href="#vote" data-i18n="nVote">Vote</a><a href="#launch" data-i18n="nLaunch">Launch</a><a href="#fees" data-i18n="nFees">Fees</a><a href="#lp" data-i18n="tLp">LP Rewards</a><a href="#check" data-i18n="nCheck">Check a CA</a><a href="/city" data-i18n="nCity">Play the city</a>
     <a class="nx" href="#main-coin" data-i18n="nMain">Main coin</a><a class="nx" href="#live" data-i18n="nLive">Live</a><a class="nx" href="#ranks" data-i18n="nRanks">Ranks</a><a class="nx" href="#wallets" data-i18n="nWallets">Wallets</a><a class="nx" href="#creators" data-i18n="nCreators">Creators</a><a class="nx" href="#about" data-i18n="nAbout">About</a>
     <select class="nx" id="lang3" aria-label="Language" data-i18n-al="aLang"><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文</option><option value="tr">Türkçe</option></select>
   </div>
@@ -84,6 +84,7 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
       <a role="tab" id="t-ranks" href="#ranks" aria-controls="p-ranks" data-i18n="tRanks">Ranks</a>
       <a role="tab" id="t-launch" href="#launch" aria-controls="p-launch" data-i18n="nLaunch">Launch</a>
       <a role="tab" id="t-fees" href="#fees" aria-controls="p-fees" data-i18n="nFees">Fees</a>
+      <a role="tab" id="t-lp" href="#lp" aria-controls="p-lp" data-i18n="tLp">LP Rewards</a>
       <a role="tab" id="t-wallets" href="#wallets" aria-controls="p-wallets" data-i18n="nWallets">Wallets</a>
       <a role="tab" id="t-check" href="#check" aria-controls="p-check" data-i18n="nCheck">Check a CA</a>
       <a role="tab" id="t-mine" href="#creators" aria-controls="p-mine" data-i18n="tMine">My coins</a>
@@ -134,6 +135,13 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
         <div class="fee-cards" id="feecards"></div>
         <p class="fine" data-i18n="feeFine">No launch fee from us — you pay about 0.03 SOL of Solana network and rent costs, plus any first buy you choose. pump.fun's own trading fees apply as on pump.fun.</p>
         <a class="dk-link" href="#wallets" data-i18n="seeWallets">See the wallets ▸</a>
+      </div>
+    </div>
+
+    <div class="dk-p" id="p-lp" role="tabpanel" aria-labelledby="t-lp" tabindex="0">
+      <div class="dk-b" id="lp">
+        <div class="sec-h"><h2 data-i18n="hLp">LP REWARDS</h2><p data-i18n="pLp">Add liquidity to the supported coins' Raydium pools — paired with SOL or with the main coin — and earn the main coin every hour you stay in.</p></div>
+        <div id="lpbox" class="lpbox"><p class="fine">…</p></div>
       </div>
     </div>
 
