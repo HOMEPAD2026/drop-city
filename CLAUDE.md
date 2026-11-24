@@ -37,6 +37,10 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   ($DCTY 9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump first; 2026-11-24: + DKYcjob…pump, 2xCd5q…cJjX, 6MKD1N…pump, 9jhs5q…pump; a token without Metaplex metadata gets its card from Dexscreener, a partner off the pump.fun curve is priced there). The list carries them as kind "partner" (no creator, no
   fees, never in creator ranks), EXPLORE pins them after the main coin with a gold SUPPORTED tag, and they'll be on the
   slot mini-game's reels. The slot game itself is "coming soon" (the 🎰 GAME button in the top bar) — not built yet.
+- **The premium look (the owner, 2026-11-24: "too intense — premium, GTA style"):** premium.css over game.css — near-black
+  glass, white type, one warm gold accent (--pm-acc) used sparingly, hairline borders, underline tabs, the main button
+  warm white, no neon glows / offset shadows / scanlines. The phone's bottom bar: frosted glass, line icons over small
+  labels, Launch as a raised round key.
 - **Pages (the owner, 2026-11-20):** the bottom bar (Home · Explore · Launch · City · More — More opens the desk: vote, ranks, fees, wallets, check a CA, my coins, about) and the nav switch pages
   (html[data-page] home / explore / desk) instead of scrolling; every old #link still lands on its page.
 - The agent's logos come from images/agent (the owner's mascot art); a drop's name is picked from those subjects.
