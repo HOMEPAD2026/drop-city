@@ -49,6 +49,11 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   glass, white type, one warm gold accent (--pm-acc) used sparingly, hairline borders, underline tabs, the main button
   warm white, no neon glows / offset shadows / scanlines. The phone's bottom bar: frosted glass, line icons over small
   labels, Launch as a raised round key.
+- **The street look (the owner, 2026-11-24: "like gtamemes.xyz"):** street.css loads last over premium.css — pure black
+  bands, Anton titles with a pink pixel kicker ("// MOST WANTED", h2 data-k), Press Start 2P / Silkscreen for buttons, tabs,
+  labels and the HUD, Barlow Condensed for reading; gold #F4C430 action buttons and active tabs, gold-outlined ghosts (↗),
+  money-green numbers, square corners, white hairlines; the HUD has a UTC clock box and zero-padded cash. Their feel only —
+  none of their art or words.
 - **Pages (the owner, 2026-11-20; order 2026-11-24):** the bottom bar by importance — Launch (a round key, never clipped) · NFT (#cards) · LP (#lp) · Game (/city — "the city" is called the Game everywhere a visitor reads it) · More (the desk: the rest); the top nav Launch · NFT · LP · Game · Explore · More and the nav switch pages
   (html[data-page] home / explore / desk) instead of scrolling; every old #link still lands on its page.
 - The agent's logos come from images/agent (the owner's mascot art); a drop's name is picked from those subjects.

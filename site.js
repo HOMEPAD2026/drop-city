@@ -122,8 +122,9 @@ function paintStats() {
 // and its wanted level — stars for how busy the curves were in the last 10 minutes
 function paintHud(mc) {
   let h = document.querySelector(".gm-hud");
-  if (!h) { h = document.createElement("div"); h.className = "gm-hud"; h.setAttribute("aria-hidden", "true"); h.innerHTML = `<b class="gm-cash">$0</b><span class="gm-stars">${"<i>★</i>".repeat(5)}</span>`; document.querySelector(".hero").appendChild(h); }
-  roll(h.querySelector(".gm-cash"), mc, (v) => "$" + Math.round(v).toLocaleString("en-US"));
+  if (!h) { h = document.createElement("div"); h.className = "gm-hud"; h.setAttribute("aria-hidden", "true"); h.innerHTML = `<span class="gm-clock"><b>--</b>:--<small>UTC</small></span><b class="gm-cash">$0</b><span class="gm-stars">${"<i>★</i>".repeat(5)}</span>`; document.querySelector(".hero").appendChild(h);
+    const tick = () => { const d = new Date(), c = h.querySelector(".gm-clock"); if (c) c.innerHTML = `<b>${String(d.getUTCHours()).padStart(2, "0")}</b>:${String(d.getUTCMinutes()).padStart(2, "0")}<small>UTC</small>`; }; tick(); setInterval(tick, 15e3); }
+  roll(h.querySelector(".gm-cash"), mc, (v) => "$" + String(Math.round(v)).padStart(9, "0"));
   const n = lastTrades(50).filter((x) => Date.now() - (x.at || 0) < 600e3).length, lv = n >= 16 ? 5 : n >= 10 ? 4 : n >= 6 ? 3 : n >= 3 ? 2 : n >= 1 ? 1 : 0;
   h.querySelectorAll(".gm-stars i").forEach((i, k) => i.classList.toggle("on", k < lv));
 }

@@ -1,0 +1,112 @@
+/* street.css — the "in-game" look (the owner, 2026-11-24: "like gtamemes.xyz"; our own art and words, their feel only —
+   reference notes in promo/ref/gtamemes on the ref/gtamemes branch). Pure black bands, three type voices — a heavy
+   display face for titles, a pixel face for buttons / labels / HUD, a condensed sans for reading — small saturated
+   accents: gold for action, hot pink for kickers, money green for numbers; square corners, white hairlines, gold-framed
+   plates; a game HUD (UTC clock, zero-padded cash, wanted stars). Loaded last; only overrides. */
+:root {
+  --st-bg: #000; --st-bg2: #07070c; --st-bg3: #0a0512;
+  --st-ink: #fff; --st-dim: rgba(255, 255, 255, 0.7); --st-faint: rgba(255, 255, 255, 0.55); --st-line: rgba(255, 255, 255, 0.15);
+  --st-gold: #f4c430; --st-gold2: #e8b23a; --st-pink: #ff4fa3; --st-green: #7ce577; --st-red: #e0243c;
+  --st-px: "Press Start 2P", "Silkscreen", monospace; --st-px2: "Silkscreen", "Press Start 2P", monospace; --st-read: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --pm-acc: var(--st-gold); --pm-ink: #fff; --pm-dim: rgba(255, 255, 255, 0.7);
+}
+html, body { background: var(--st-bg); }
+body { font-family: var(--st-read); font-size: 17px; font-weight: 500; color: var(--st-ink); }
+body::before { background: linear-gradient(180deg, rgba(0, 0, 0, 0.55), transparent 8vh, transparent 92vh, rgba(0, 0, 0, 0.55)), rgba(0, 0, 0, calc(0.15 + 0.7 * var(--gm-dim, 0))) !important; }
+html.js:not([data-page="home"]) body::before { background: #000 !important; }
+
+/* ---- type: titles shout, labels are pixels, copy is condensed */
+.hero h1, .sec-h h2, .cband-t h2, .cd-buy h3, .soon-card b { font-family: Anton, Impact, sans-serif; font-style: normal !important; letter-spacing: 0.01em; color: #fff; text-shadow: 0 3px 0 rgba(0, 0, 0, 0.6); }
+.hero h1 { font-size: clamp(52px, 8vw, 112px); line-height: 0.92; }
+.hero h1 span, .hero h1 .flick { background: none !important; -webkit-text-fill-color: var(--st-gold); color: var(--st-gold) !important; font-style: normal !important; }
+.sec-h h2 { font-size: clamp(42px, 6vw, 84px); line-height: 0.95; }
+.sec-h h2::before { content: attr(data-k); display: block; margin-bottom: 14px; font: 400 10px/1 var(--st-px); letter-spacing: 0.14em; color: var(--st-pink); }
+.sec-h h2::after { display: none; }
+.sec-h p, .lead, .lane p, .cband-t p { font: 500 17px/1.45 var(--st-read); color: var(--st-dim); letter-spacing: 0.01em; }
+.kicker { font: 400 10px/1.6 var(--st-px) !important; letter-spacing: 0.12em !important; color: var(--st-pink) !important; }
+.kicker::before { content: "// "; }
+
+/* ---- the top bar: black, pixel links, gold for where you are */
+.nav { background: rgba(0, 0, 0, 0.92) !important; box-shadow: 0 1px 0 var(--st-line) !important; backdrop-filter: none !important; }
+.navlinks a { font: 400 10px/1 var(--st-px) !important; letter-spacing: 0.1em !important; color: var(--st-dim) !important; padding: 10px 10px !important; }
+.navlinks a:hover { color: #fff !important; }
+.navlinks a.on { color: var(--st-gold) !important; } .navlinks a.on::after { background: var(--st-gold) !important; bottom: 0 !important; }
+.ticker { background: #000 !important; box-shadow: inset 0 -1px 0 var(--st-line) !important; }
+.tk-in { font: 400 9px/1 var(--st-px2) !important; letter-spacing: 0.08em; }
+
+/* ---- buttons: gold for action, gold-outlined ghosts, square-ish corners, pixel letters */
+.btn { font: 400 11px/1 var(--st-px) !important; letter-spacing: 0.1em !important; text-transform: uppercase; border-radius: 6px !important; padding: 14px 18px !important; transition: background 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s, filter 0.2s; }
+.btn.big { padding: 17px 22px !important; font-size: 12px !important; }
+.btn.hot { background: var(--st-gold) !important; color: #000 !important; border: 0 !important; box-shadow: none !important; }
+.btn.hot:hover { filter: brightness(1.08); box-shadow: none !important; background: #ffd24d !important; }
+.btn.ghost, .btn.cy { background: rgba(0, 0, 0, 0.6) !important; color: var(--st-gold) !important; border: 1px solid var(--st-gold2) !important; border-radius: 2px !important; }
+.btn.ghost:hover, .btn.cy:hover { background: rgba(244, 196, 48, 0.12) !important; color: #ffd24d !important; border-color: var(--st-gold) !important; }
+.btn.cy::after { content: " ↗"; }
+.nav-r .btn { padding: 11px 14px !important; font-size: 9px !important; }
+.mainc .mc-a .btn { font-size: 9px !important; padding: 12px 8px !important; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---- panels: flat black bands, hairlines, no glass */
+#explore, #desk { background: var(--st-bg2) !important; border: 1px solid var(--st-line) !important; border-radius: 0 !important; box-shadow: none !important; backdrop-filter: none !important; }
+.lane, .count, .mainc { background: rgba(0, 0, 0, 0.72) !important; border: 1px solid var(--st-line) !important; border-radius: 0 !important; box-shadow: none !important; backdrop-filter: none !important; }
+.lane .ln-k, .mainc .mc-k { font: 400 9px/1.4 var(--st-px) !important; letter-spacing: 0.1em !important; color: var(--st-pink) !important; border: 0 !important; padding: 0 !important; }
+.lane b { font-family: Anton, Impact, sans-serif; font-size: 24px; }
+.cband-in { border-radius: 0 !important; border: 1px solid var(--st-line) !important; }
+.sitefoot { background: #000 !important; box-shadow: inset 0 1px 0 var(--st-line) !important; font-family: var(--st-read); }
+.stats b { font-family: Anton, Impact, sans-serif; color: var(--st-green); }
+.stats small, .count .lbl, .count .lbl2 { font: 400 8px var(--st-px) !important; letter-spacing: 0.1em; color: var(--st-faint) !important; }
+.count .c-top b, .mainc .mc-n b { color: var(--st-gold) !important; }
+
+/* ---- tabs: pixel labels; the chosen one a gold plate with black letters */
+.dk-tabs { border-bottom: 0 !important; gap: 4px !important; }
+.dk-tabs a { font: 400 9px/1.3 var(--st-px) !important; letter-spacing: 0.12em !important; color: var(--st-dim) !important; background: rgba(0, 0, 0, 0.6) !important; border: 1px solid var(--st-line) !important; border-radius: 0 !important; min-height: 40px !important; padding: 8px 12px !important; }
+.dk-tabs a:hover { color: #fff !important; border-color: rgba(255, 255, 255, 0.4) !important; }
+html[data-tab="now"] #t-now, html[data-tab="cards"] #t-cards, html[data-tab="ranks"] #t-ranks, html[data-tab="launch"] #t-launch, html[data-tab="fees"] #t-fees, html[data-tab="lp"] #t-lp,
+html[data-tab="wallets"] #t-wallets, html[data-tab="check"] #t-check, html[data-tab="mine"] #t-mine, html[data-tab="about"] #t-about { background: var(--st-gold) !important; color: #000 !important; border-color: var(--st-gold) !important; box-shadow: none !important; }
+.seg button, .rseg button { font: 400 9px/1 var(--st-px) !important; letter-spacing: 0.1em !important; border: 1px solid var(--st-line) !important; border-radius: 0 !important; background: rgba(0, 0, 0, 0.6) !important; color: var(--st-dim) !important; padding: 10px 12px !important; }
+.seg button.on, .rseg button[aria-pressed="true"] { background: var(--st-gold) !important; color: #000 !important; border-color: var(--st-gold) !important; }
+.tools input, .sortsel, #ck-m { border-radius: 0 !important; background: #000 !important; border: 1px solid var(--st-line) !important; font-family: var(--st-read) !important; }
+.cd-new { font-family: var(--st-px) !important; font-size: 7px !important; background: var(--st-pink) !important; color: #fff !important; }
+
+/* ---- coin cards: wanted posters — black, hairline, a gold frame when picked, money in green */
+.cc { border-radius: 0 !important; background: #050505 !important; border: 1px solid var(--st-line) !important; }
+.cc:hover { border-color: var(--st-gold2) !important; box-shadow: none !important; }
+.cc .poster { background: linear-gradient(180deg, #120c18, #07070c) !important; }
+.cc .poster img, .cc .poster .ini { border-radius: 0 !important; border: 1px solid var(--st-line) !important; }
+.cc .tag { font: 400 9px/1 var(--st-px) !important; letter-spacing: 0.1em; background: #000 !important; color: var(--st-pink) !important; padding: 6px 8px !important; border-radius: 0 !important; }
+.cc .poster .bounty { font: 400 8px/1 var(--st-px) !important; background: #000 !important; color: var(--st-green) !important; border: 1px solid var(--st-line) !important; padding: 6px 8px !important; }
+.cc h3 { font-family: Anton, Impact, sans-serif !important; }
+.cc .sym { color: var(--st-gold) !important; font-family: var(--st-px2); font-size: 11px; }
+.cc .row b { color: var(--st-green); font-family: Anton, Impact, sans-serif; font-weight: 400; font-size: 20px; }
+.cc .acts a { font: 400 8px/1 var(--st-px) !important; letter-spacing: 0.08em; border-radius: 0 !important; background: #000 !important; color: #fff !important; border: 1px solid var(--st-line); padding: 10px 6px !important; }
+.cc .acts a.pri { background: var(--st-gold) !important; color: #000 !important; border-color: var(--st-gold); }
+.cc.sup { border-color: var(--st-gold2) !important; } .cc.sup .tag { background: var(--st-gold) !important; color: #000 !important; }
+.cc .bar i { background: var(--st-gold) !important; }
+
+/* ---- the HUD: a clock box, the money in green like a game's cash, gold wanted stars */
+.gm-hud { gap: 4px !important; }
+.gm-clock { font: 400 12px/1 var(--st-px2); color: #fff; letter-spacing: 0.06em; }
+.gm-clock b { background: #000; padding: 3px 5px; margin-right: 1px; font-weight: 400; } .gm-clock small { font-size: 9px; margin-left: 6px; color: var(--st-faint); }
+.gm-cash { font: 400 clamp(14px, 1.6vw, 18px)/1 var(--st-px) !important; color: var(--st-green) !important; letter-spacing: 0.02em; text-shadow: 0 2px 0 #000 !important; }
+.gm-stars i { color: rgba(255, 255, 255, 0.18) !important; text-shadow: none !important; }
+.gm-stars i.on { color: var(--st-gold) !important; text-shadow: 0 0 8px rgba(244, 196, 48, 0.6) !important; }
+
+/* ---- the slot button, the LP tab, the cards tab in the same voice */
+.gm-slot { border-radius: 2px !important; border-color: var(--st-gold2) !important; background: #000 !important; font: 400 9px var(--st-px) !important; color: var(--st-gold) !important; }
+.gm-slot .gs-soon { background: var(--st-pink) !important; color: #fff !important; font: 400 7px var(--st-px) !important; }
+.lp-stats div, .lp-me div, .lp-coin, .lp-cell { border-radius: 0 !important; background: #050505 !important; border: 1px solid var(--st-line) !important; }
+.lp-stats b, .lp-me b { color: var(--st-green) !important; }
+.lp-stats small, .lp-me span, .lp-how summary, .lp-paid h4, .cd-h, .cd-odds, .cd-price span, .cd-rt, .cd-pk small { font-family: var(--st-px) !important; font-size: 9px !important; letter-spacing: 0.1em !important; }
+.cd-price b { color: var(--st-green) !important; }
+.cd-rt { color: var(--st-gold) !important; }
+
+/* ---- the phone's bottom bar: black, pixel labels, gold for where you are */
+@media (max-width: 760px) {
+  .bbar { background: rgba(0, 0, 0, 0.96) !important; backdrop-filter: none !important; box-shadow: 0 -1px 0 var(--st-line) !important; }
+  .bbar a, .bbar button { font: 400 8px/1 var(--st-px) !important; letter-spacing: 0.06em !important; gap: 7px !important; }
+  .bbar a.on { color: var(--st-gold) !important; } .bbar a.on::before { background: var(--st-gold) !important; }
+  .bbar .bb-plus { background: var(--st-gold) !important; color: #000 !important; }
+  .bbar .bb-go span { color: var(--st-gold) !important; }
+  .sec-h h2 { font-size: clamp(38px, 11vw, 56px); }
+  .cta .btn, .cta .btn.big { min-width: 0; font-size: 9px !important; padding: 12px 6px !important; letter-spacing: 0.06em !important; line-height: 1.4 !important; white-space: normal; }
+}
+@media (prefers-reduced-motion: reduce) { .btn { transition: none; } }
