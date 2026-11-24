@@ -1,0 +1,40 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:wght@600;700&family=Inter:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  html, body { margin: 0; background: transparent; }
+  .card { --r: #c9c4bd; width: 750px; height: 1050px; position: relative; overflow: hidden; border-radius: 28px; box-sizing: border-box; padding: 34px;
+    background: radial-gradient(120% 70% at 50% 0%, rgba(246, 210, 162, 0.16), transparent 60%), radial-gradient(90% 60% at 50% 100%, rgba(242, 167, 184, 0.14), transparent 60%), linear-gradient(180deg, #17141e, #0d0c12);
+    color: #f4f1ec; font-family: Inter, sans-serif; }
+  .card::before { content: ""; position: absolute; inset: 12px; border-radius: 20px; border: 2px solid var(--r); opacity: 0.85; pointer-events: none; }
+  .card::after { content: ""; position: absolute; inset: 20px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.08); pointer-events: none; }
+  .legendary { background: radial-gradient(120% 70% at 50% 0%, rgba(242, 196, 107, 0.32), transparent 60%), radial-gradient(90% 60% at 50% 100%, rgba(242, 167, 184, 0.22), transparent 60%), linear-gradient(180deg, #221a12, #0f0c0a); }
+  .legendary .foil { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 20%, rgba(255, 230, 160, 0.16) 35%, rgba(180, 220, 255, 0.12) 45%, rgba(255, 170, 220, 0.14) 55%, transparent 70%); mix-blend-mode: screen; }
+  .epic .foil { position: absolute; inset: 0; background: linear-gradient(115deg, transparent 30%, rgba(200, 160, 255, 0.12) 45%, transparent 60%); mix-blend-mode: screen; }
+  .top { position: relative; display: flex; justify-content: space-between; align-items: center; font: 700 22px "Barlow Condensed", sans-serif; letter-spacing: 0.32em; color: #cfc8d8; padding: 10px 14px 0; }
+  .top b { color: var(--r); letter-spacing: 0.18em; }
+  .art { position: relative; margin: 26px auto 0; width: 600px; height: 600px; border-radius: 18px; overflow: hidden; background: #0b0a10; box-shadow: 0 30px 60px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(255, 255, 255, 0.08); }
+  .art img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.18); }
+  .art::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 70%, rgba(13, 12, 18, 0.55)); }
+  .rar { position: absolute; left: 50%; top: 612px; transform: translateX(-50%); font: 700 22px "Barlow Condensed", sans-serif; letter-spacing: 0.34em; padding: 8px 22px 8px 28px; border-radius: 3px; background: var(--r); color: #121117; }
+  .name { position: relative; margin-top: 46px; text-align: center; font: 400 72px/1 Anton, sans-serif; letter-spacing: 0.01em; }
+  .line { position: relative; margin: 16px auto 0; width: 560px; text-align: center; font: 500 22px/1.4 Inter, sans-serif; color: #b6afbf; }
+  .foot { position: absolute; left: 46px; right: 46px; bottom: 44px; display: flex; justify-content: space-between; align-items: center; font: 700 20px "Barlow Condensed", sans-serif; letter-spacing: 0.24em; color: #8f889a; }
+  .foot img { height: 44px; }
+</style></head>
+<body><div id="c"></div>
+<script type="module">
+  const p = new URLSearchParams(location.search);
+  const { CARDS, RARITY } = await import("/cards-data.js");
+  const c = CARDS.find((x) => x.id === p.get("id"));
+  const R = RARITY[c.rarity];
+  document.getElementById("c").outerHTML = `<div class="card ${c.rarity}" style="--r:${R.color}"><div class="foil"></div>
+    <div class="top"><span>GTAFUN CARDS · S1</span><b>${String(c.no).padStart(2, "0")} / ${CARDS.length}</b></div>
+    <div class="art"><img src="/images/agent/${c.img}.webp"></div>
+    <div class="rar">${R.label.toUpperCase()}</div>
+    <div class="name">${c.name.toUpperCase()}</div>
+    <div class="line">${c.line}</div>
+    <div class="foot"><img src="/images/logo-192.webp"><span>SEASON 1</span></div></div>`;
+  await document.fonts.ready; await Promise.all([...document.images].map((i) => i.complete ? 0 : new Promise((r) => (i.onload = i.onerror = r))));
+  window.__ready = true;
+</script></body></html>

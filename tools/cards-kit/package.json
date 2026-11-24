@@ -1,0 +1,16 @@
+{
+  "name": "cards-kit",
+  "private": true,
+  "type": "module",
+  "scripts": { "build": "esbuild entry.mjs --bundle --minify --format=iife --platform=browser --target=es2020 --define:global=globalThis --outfile=${OUT:-../../vendor/cards-kit.js}" },
+  "dependencies": {
+    "@metaplex-foundation/mpl-core": "1.10.0",
+    "@metaplex-foundation/mpl-core-candy-machine": "0.3.0",
+    "@metaplex-foundation/umi": "1.6.0",
+    "@metaplex-foundation/umi-bundle-defaults": "1.6.0",
+    "@metaplex-foundation/umi-signer-wallet-adapters": "1.6.0",
+    "@metaplex-foundation/mpl-toolbox": "*",
+    "buffer": "6.0.3"
+  },
+  "devDependencies": { "esbuild": "0.25.0" }
+}

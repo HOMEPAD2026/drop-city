@@ -25,6 +25,10 @@ export const PAD = {
   // coin paid out, daily in total (split hour by hour across the pools by liquidity, main-coin pairs × boostMain, inside a
   // pool by LP held). wallet = the rewards wallet that pays (a GM's own; PAD_LP_WALLET overrides); PAD_LP_DAILY the amount
   lp: { daily: 1000000, boostMain: 1.5, minUsd: 10, minPoolUsd: 1000, minPay: 100, wallet: "", exclude: [] }, // minPoolUsd: a smaller pool earns nothing
+  // GTAFUN CARDS (the owner, 2026-11-24): NFT packs of 3 for 0.1 SOL from a Core Candy Machine (cards-data.js). cm and
+  // collection are filled by the operations wallet's setup on the page (or PAD_CARDS_CM / PAD_CARDS_COLLECTION); wallet =
+  // the operations wallet that owns the machine and receives the SOL (PAD_CARDS_WALLET, else PAD_LP_WALLET)
+  cards: { cm: "", collection: "", wallet: "" },
   // coins the city SUPPORTS (the owner, 2026-11-20): not launched here, shown in EXPLORE with a SUPPORTED tag and kept
   // for the slot mini-game to come. note = the line under the card
   supported: [

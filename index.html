@@ -14,12 +14,13 @@
 <link rel="stylesheet" href="/site.css?v=m5">
 <link rel="stylesheet" href="/game.css?v=9">
 <link rel="stylesheet" href="/premium.css?v=1">
+<link rel="stylesheet" href="/cards.css?v=1">
 <link rel="stylesheet" href="/intro.css?v=5">
-<script>(function(){var d=document.documentElement,T={vote:"now",live:"now",today:"now",ranks:"ranks",launch:"launch",fees:"fees",lp:"lp",wallets:"wallets",check:"check",creators:"mine",about:"about"},s="";
+<script>(function(){var d=document.documentElement,T={vote:"now",live:"now",today:"now",ranks:"ranks",launch:"launch",fees:"fees",lp:"lp",cards:"cards",wallets:"wallets",check:"check",creators:"mine",about:"about"},s="";
 d.classList.add("js","nodrops");
 try{if(sessionStorage.getItem("dc.intro")&&!/[?&]intro=1\b/.test(location.search))d.classList.add("nointro");s=sessionStorage.getItem("dc.tab")||""}catch(e){}
 var P=location.hash.slice(1);d.dataset.page=P==="explore"?"explore":T[P]||P==="desk"?"desk":"home";
-d.dataset.tab=T[location.hash.slice(1)]||(/^(now|ranks|launch|fees|lp|wallets|check|mine|about)$/.test(s)?s:"now");
+d.dataset.tab=T[location.hash.slice(1)]||(/^(now|cards|ranks|launch|fees|lp|wallets|check|mine|about)$/.test(s)?s:"now");
 addEventListener("hashchange",function(){var k=T[location.hash.slice(1)];if(k)d.dataset.tab=k});
 setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on){i.remove();d.style.overflow="";window.__introDone=1;dispatchEvent(new Event("intro:done"))}},7000)})()</script>
 </head>
@@ -28,7 +29,7 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
 <nav class="nav" id="nav">
   <a class="logo" href="/"><img class="logo-img" src="/images/logo-96.webp" srcset="/images/logo-96.webp 1x, /images/logo-192.webp 2x" alt="GTAFUN" width="70" height="48" decoding="async"><b data-name class="sr-only">DROP CITY</b></a>
   <div class="navlinks" id="links">
-    <a href="#explore" data-i18n="nExplore">Explore</a><a href="#vote" data-i18n="nVote">Vote</a><a href="#launch" data-i18n="nLaunch">Launch</a><a href="#fees" data-i18n="nFees">Fees</a><a href="#lp" data-i18n="tLp">LP Rewards</a><a href="#check" data-i18n="nCheck">Check a CA</a><a href="/city" data-i18n="nCity">Play the city</a>
+    <a href="#explore" data-i18n="nExplore">Explore</a><a href="#cards" data-i18n="tCards">Cards</a><a href="#vote" data-i18n="nVote">Vote</a><a href="#launch" data-i18n="nLaunch">Launch</a><a href="#fees" data-i18n="nFees">Fees</a><a href="#lp" data-i18n="tLp">LP Rewards</a><a href="#check" data-i18n="nCheck">Check a CA</a><a href="/city" data-i18n="nCity">Play the city</a>
     <a class="nx" href="#main-coin" data-i18n="nMain">Main coin</a><a class="nx" href="#live" data-i18n="nLive">Live</a><a class="nx" href="#ranks" data-i18n="nRanks">Ranks</a><a class="nx" href="#wallets" data-i18n="nWallets">Wallets</a><a class="nx" href="#creators" data-i18n="nCreators">Creators</a><a class="nx" href="#about" data-i18n="nAbout">About</a>
     <select class="nx" id="lang3" aria-label="Language" data-i18n-al="aLang"><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文</option><option value="tr">Türkçe</option></select>
   </div>
@@ -82,6 +83,7 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
   <section id="desk" class="sec dk" data-rv>
     <div class="dk-tabs" id="dk-tabs" role="tablist" aria-label="Sections" data-i18n-al="aTabs">
       <a role="tab" id="t-now" href="#vote" aria-controls="p-now"><span data-i18n="tNow">This hour</span><i class="dk-dot" hidden></i></a>
+      <a role="tab" id="t-cards" href="#cards" aria-controls="p-cards"><span data-i18n="tCards">Cards</span><i class="cd-new">NEW</i></a>
       <a role="tab" id="t-ranks" href="#ranks" aria-controls="p-ranks" data-i18n="tRanks">Ranks</a>
       <a role="tab" id="t-launch" href="#launch" aria-controls="p-launch" data-i18n="nLaunch">Launch</a>
       <a role="tab" id="t-fees" href="#fees" aria-controls="p-fees" data-i18n="nFees">Fees</a>
@@ -105,6 +107,13 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
         <div class="sec-h"><h2 data-i18n="hLive">LIVE ON THE CURVES</h2><p data-i18n="pLive">Every buy and sell on the city's coins, as it lands.</p></div>
         <div id="livebox" class="livebox"></div>
         <button type="button" class="btn ghost live-more" id="live-more" aria-controls="livebox" aria-expanded="false" data-i18n="liveMore">More trades</button>
+      </div>
+    </div>
+
+    <div class="dk-p" id="p-cards" role="tabpanel" aria-labelledby="t-cards" tabindex="0">
+      <div class="dk-b" id="cards">
+        <div class="sec-h"><h2 data-i18n="hCards">GTAFUN CARDS</h2><p data-i18n="pCards">Season 1 — the city's 18 characters as NFT cards. Packs of 3, 0.1 SOL, every card picked at random on chain.</p></div>
+        <div id="cardsbox" class="cardsbox"><p class="fine">…</p></div>
       </div>
     </div>
 

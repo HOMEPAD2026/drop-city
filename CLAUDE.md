@@ -33,6 +33,14 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   the pools by liquidity (main-coin pairs × boostMain 1.5) and inside a pool by LP held; burned / locked LP, holdings under
   $10, pools under minPoolUsd $1,000 (a dust pool would take the whole day) and the rewards wallet earn nothing. Paid in the MAIN COIN by the rewards wallet (PAD_LP_WALLET — a GM's own
   wallet, signs in the LP REWARDS tab; the server only reads the transfer and marks it paid, it holds no key).
+- **GTAFUN CARDS (the owner, 2026-11-24):** NFT gacha — packs of 3 cards for 0.1 SOL (cards-data.js SEASON / CARDS /
+  RARITY: the city's 18 mascots, 3,000 items: 1 legendary ×30, 2 epic ×85, 4 rare ×150, 11 common ×200, shuffled by the
+  season's seed). Metaplex Core assets from a Core Candy Machine (random on chain, solPayment 1/3 of 0.1 SOL a card to the
+  operations wallet, 5 % royalties), names "GTAFUN Card #<i+1>", metadata nft/m/<i>.json + pictures nft/img (built by
+  tools/cards-build.mjs from tools/cards-render.html). vendor/cards-kit.js (tools/cards-kit: Umi + mpl-core-candy-machine)
+  builds the transactions; the visitor's wallet signs. The operations wallet (PAD_CARDS_WALLET, else PAD_LP_WALLET) sets
+  the machine up from the CARDS tab (collection + machine, then the item lines); the server (lib/_cards.mjs) only checks the
+  machine's authority on chain and records each pack read back from the chain. It holds no key.
 - **Supported coins (the owner, 2026-11-20):** pad-config.js `supported` — coins the city supports without launching them
   ($DCTY 9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump first; 2026-11-24: + DKYcjob…pump, 2xCd5q…cJjX, 6MKD1N…pump, 9jhs5q…pump; a token without Metaplex metadata gets its card from Dexscreener, a partner off the pump.fun curve is priced there). The list carries them as kind "partner" (no creator, no
   fees, never in creator ranks), EXPLORE pins them after the main coin with a gold SUPPORTED tag, and they'll be on the
