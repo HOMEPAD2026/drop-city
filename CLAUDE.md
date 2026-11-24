@@ -31,7 +31,7 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   (found through Raydium's API, lib/_lp.mjs); every hour (?lp=tick, from the GitHub workflow) the LP holders are read
   from the chain and the hour's reward (pad-config.js lp.daily / PAD_LP_DAILY, default 1,000,000 a day) is split across
   the pools by liquidity (main-coin pairs × boostMain 1.5) and inside a pool by LP held; burned / locked LP, holdings under
-  $10 and the rewards wallet earn nothing. Paid in the MAIN COIN by the rewards wallet (PAD_LP_WALLET — a GM's own
+  $10, pools under minPoolUsd $1,000 (a dust pool would take the whole day) and the rewards wallet earn nothing. Paid in the MAIN COIN by the rewards wallet (PAD_LP_WALLET — a GM's own
   wallet, signs in the LP REWARDS tab; the server only reads the transfer and marks it paid, it holds no key).
 - **Supported coins (the owner, 2026-11-20):** pad-config.js `supported` — coins the city supports without launching them
   ($DCTY 9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump first; 2026-11-24: + DKYcjob…pump, 2xCd5q…cJjX, 6MKD1N…pump, 9jhs5q…pump; a token without Metaplex metadata gets its card from Dexscreener, a partner off the pump.fun curve is priced there). The list carries them as kind "partner" (no creator, no

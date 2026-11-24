@@ -15,6 +15,7 @@ const MAIN = PAD.main, COIN = PAD.supported[0].mint;
   ok(Math.abs(perPool.p1 - 40) < 1e-9 && Math.abs(perPool.p2 - 60) < 1e-9, "pools by liquidity, main-coin pairs ×1.5 (1000 : 1500 → 40 / 60)");
   ok(Math.abs(out[A] - 20) < 1e-9 && Math.abs(out[B] - 20) < 1e-9 && Math.abs(out[Cc] - 60) < 1e-9, "inside a pool by LP held");
   ok(Object.keys(splitHour([{ id: "x", kind: "sol", tvl: 0, eligible: 1, holders: { [A]: 1 } }], 100).out).length === 0, "an empty pool pays nothing"); }
+ok(lpCfg().minPoolUsd === 1000, "a pool needs $1,000 of liquidity to earn");
 ok(lpCfg().wallet === REWARDS && lpCfg().daily === 2400, "the rewards wallet and the daily amount come from the environment");
 
 // ---------------- a store, Raydium's API and the chain, made up
@@ -46,6 +47,7 @@ ok(Math.abs(led.earned[H1] / led.earned[H2] - 75 / 24.99) < 1e-3, "pro rata to L
 ok((await L.tick()).done === true && docs.get("lp/ledger.json").hours === 1, "the same hour isn't counted twice");
 clock += 3600e3; await L.tick(); ok(docs.get("lp/ledger.json").hours === 2 && Math.abs(docs.get("lp/ledger.json").earned[H3] - 100) < 1e-6, "the next hour adds up");
 const v = await L.view(H3);
+{ const dust = splitHour([], 100); ok(Object.keys(dust.out).length === 0, "nothing to split, nothing paid"); }
 ok(v.daily === 2400 && v.pools.length === 2 && v.me.pending === 100 && v.pools.every((p) => p.apr > 0), "the view: pools with an APR, a wallet's pending reward");
 ok((await L.due()).map((x) => x.owner).includes(H3), "owed ≥ the minimum shows in the due list");
 

@@ -28,6 +28,7 @@ export async function paintLp(box, { coins, CFG }) {
       <div class="lp-kv"><span>${esc(t("lpTvl", "Liquidity"))}</span><b>${usd(p.tvl)}</b></div>
       <div class="lp-kv"><span>${esc(t("lpDay", "Reward / day"))}</span><b>${fmt(p.perDay)} $${esc(mainSym)}</b></div>
       <div class="lp-kv"><span>APR</span><b>${p.apr != null ? (p.apr * 100).toFixed(p.apr >= 1 ? 0 : 1) + "%" : "–"}</b></div>
+      ${p.eligible === false ? `<small class="lp-min">${esc(t("lpMin", "Earns once the pool holds"))} ${usd(V.minPoolUsd)}</small>` : ""}
       <a class="btn hot" href="${RAY_ADD(p.id)}" target="_blank" rel="noopener">${esc(t("lpAdd", "Add liquidity"))} ↗</a></div>`;
   };
   const me = V.me;

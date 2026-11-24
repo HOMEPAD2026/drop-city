@@ -187,3 +187,4 @@ html[data-tab="lp"] #p-lp { display: block; animation: dkin 0.32s ease both; }
 .lp-admin { margin-top: 18px; padding: 14px; border: 1px solid rgba(255, 211, 110, 0.5); box-shadow: inset 0 2px 0 var(--vc-gold); }
 .lp-due { display: grid; grid-template-columns: 1fr auto; gap: 2px 14px; margin: 8px 0 12px; font: 13px "JetBrains Mono", monospace; max-height: 220px; overflow: auto; }
 @media (max-width: 760px) { .lp-stats { grid-template-columns: repeat(2, 1fr); } }
+.lp-min { color: var(--vc-gold); font: 700 12px var(--ui); letter-spacing: 0.04em; }
