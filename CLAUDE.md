@@ -79,6 +79,10 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   wallet, fee, coin and launch windows read in ko / zh / tr (t() in wallet.js, fees.js, launch.js, site.js openCoin).
   The screenshot walk (every page + window, phone in Korean, desktop in English, listing any English left on the Korean
   screens) is the check after a design change.
+  The phone menu (2026-11-25, "정리가 안되어 있어"): Launch · NFT · LP · Game · Explore · More as icon tiles in two
+  columns (Launch pink, icons as CSS masks keyed by href), the desk's extra pages as compact two-column buttons, the
+  language at the foot — one screen, no scroll. Coins with no picture: lib/_pad.mjs supported() takes Dexscreener's logo;
+  the page draws the ticker's letters in a round pink badge.
 - **No flicker on arrival + the loading scene (the owner, 2026-11-25: "처음 들어가면 깜빡거리던데 … 새로고침 하는듯이 그런것도
   없애줘", "로딩 장면도 수정해봐"):** Pretendard is SELF-HOSTED (fonts/pretendard: the npm package's 92-file dynamic subset,
   OFL — the CDN copy arrived after first paint and every line swapped face); subsets 90 + 91 (Latin + common Hangul) are
