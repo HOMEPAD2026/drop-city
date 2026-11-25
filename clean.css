@@ -201,3 +201,84 @@ a.btn, a.btn:hover { text-decoration: none !important; }
 /* no live blur over the moving sky (it halved the frame rate): solid enough panels instead */
 .lane, .count, .mainc { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(14, 14, 19, 0.9) !important; }
 .hero .btn.ghost, .hero .btn.cy { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: rgba(12, 12, 16, 0.86) !important; }
+/* the dock, evened out (the owner, 2026-11-25: "아래 메뉴도 공간 위쪽이 더 넓은데"): every item the same height, centred, the
+   Launch key the same size box as the icons so all five labels sit on one line */
+@media (max-width: 760px) {
+  .bbar { align-items: center !important; padding: 6px !important; gap: 4px !important; }
+  .bbar a, .bbar button { height: 56px !important; min-height: 56px !important; padding: 0 2px !important; display: flex !important; flex-direction: column !important; align-items: center !important; justify-content: center !important; gap: 5px !important; margin: 0 !important; line-height: 1 !important; }
+  .bbar svg { width: 22px !important; height: 22px !important; flex: 0 0 22px; }
+  .bbar .bb-plus { width: 26px !important; height: 26px !important; flex: 0 0 26px !important; margin: -2px 0 0 !important; border-radius: 8px !important; display: grid !important; place-items: center; }
+  .bbar .bb-plus svg { width: 16px !important; height: 16px !important; flex: 0 0 16px; stroke-width: 2.4; }
+  .bbar span { line-height: 1 !important; display: block; }
+}
+/* ===== pass 2 (the owner, 2026-11-25: "전체적인 디자인을 하나씩 다 스샷 찍어서 모바일, pc 어색한 부분 수정") ===== */
+/* no tracking anywhere — Korean spread out letter by letter ("메 인 코 인 구 매"); the big titles keep their own tightening */
+body *:not(code):not(.mono) { letter-spacing: 0 !important; }
+.hero h1, .sec-h h2, .cb-h, .cm-in h2, .mc-h b, .cc h3, .cc .row b, .stats b, .lp-stats b, .cb-stats b { letter-spacing: -0.02em !important; }
+/* the ranks switch: one row of pills, never two lines inside a pill */
+.rseg { display: flex !important; flex-wrap: nowrap !important; overflow-x: auto; scrollbar-width: none; }
+.rseg::-webkit-scrollbar { display: none; }
+.rseg button { flex: 0 0 auto !important; white-space: nowrap !important; line-height: 1.2 !important; }
+.rseg button br { display: none; }
+/* the fee split bar: labels that fit their part */
+#splitbar { border-radius: 14px !important; overflow: hidden; height: 44px !important; }
+#splitbar > div { display: grid !important; place-items: center; font-size: 15px !important; font-weight: 800 !important; color: #0a0a0c !important; min-width: 44px; white-space: nowrap; overflow: hidden; }
+#splitbar > div:nth-child(1) { background: var(--cl-pink) !important; } #splitbar > div:nth-child(2) { background: #fff !important; } #splitbar > div:nth-child(3) { background: #8d8d93 !important; }
+#feecards > div { border-radius: var(--cl-r) !important; background: var(--cl-card) !important; border: 1px solid var(--cl-line) !important; }
+#feecards > div > b { font-size: 30px !important; font-weight: 800 !important; }
+#feecards > div:nth-child(1) > b { color: var(--cl-pink) !important; } #feecards > div:nth-child(2) > b, #feecards > div:nth-child(3) > b { color: #fff !important; }
+#feecards code { word-break: break-all; font-size: 12px !important; color: var(--cl-dim); }
+/* the wallets tab: plain labels */
+.wl .k { font-size: 12.5px !important; font-weight: 800 !important; color: var(--cl-pink) !important; }
+/* the coin window: the same card language */
+.cm-card { border-radius: 24px !important; background: var(--cl-card) !important; border: 1px solid var(--cl-line2) !important; }
+.cm-card .poster { background: radial-gradient(70% 60% at 50% 60%, rgba(255, 46, 136, 0.16), transparent 70%), var(--cl-card2) !important; }
+.cm-card .poster img, .cm-card .poster .ini { border-radius: 50% !important; border: 0 !important; }
+.cm-card .poster .tag { font-size: 12px !important; font-weight: 800 !important; padding: 6px 12px !important; border-radius: 999px !important; background: rgba(0, 0, 0, 0.6) !important; color: #fff !important; top: 14px !important; left: 14px !important; }
+.cm-in h2 { font-size: 32px !important; font-weight: 800 !important; line-height: 1.1 !important; }
+.cm-in .kv > div { border-radius: 14px !important; background: rgba(255, 255, 255, 0.04) !important; border: 1px solid var(--cl-line) !important; }
+.cm-in .kv b { font-size: 17px !important; font-weight: 800 !important; }
+.cm-in .kv small { font-size: 12px !important; text-transform: none !important; color: var(--cl-faint) !important; }
+.cm-in .links a, .cm-in .links button { border-radius: 999px !important; font-size: 13.5px !important; font-weight: 700 !important; padding: 10px 14px !important; background: rgba(255, 255, 255, 0.06) !important; border: 0 !important; color: #fff !important; }
+.cm-in .links a.pri { background: var(--cl-pink) !important; }
+.wm-x, .sheet-x { border-radius: 50% !important; }
+.fbox { border-radius: var(--cl-r) !important; }
+.fb-big b { font-size: 30px !important; font-weight: 800 !important; }
+.fb-h .mc-k { font-size: 12px !important; font-weight: 800 !important; }
+/* the launch sheet and the wallet window */
+.sheet > div, .wm-card, .wm { border-radius: 24px !important; }
+.sheet h2 { font-size: 28px !important; font-weight: 800 !important; }
+.sheet .lbl, .sheet label { font-size: 13px !important; font-weight: 700 !important; text-transform: none !important; color: var(--cl-dim); }
+.sheet input, .sheet textarea { border-radius: 12px !important; font-size: 15px !important; }
+.wm-row { border-radius: 14px !important; }
+@media (max-width: 760px) {
+  /* the footer cleared the dock twice (its own padding + the page's): once is enough */
+  .sitefoot { padding-bottom: 24px !important; }
+  body { padding-bottom: calc(92px + env(safe-area-inset-bottom)) !important; }
+  #splitbar > div { font-size: 13px !important; }
+  .cm-in h2 { font-size: 26px !important; }
+}
+/* the phone menu: a solid full-screen sheet of rows (it was see-through, the page showed behind it) */
+@media (max-width: 760px) {
+  .navlinks.open { position: fixed !important; left: 0 !important; right: 0 !important; top: 60px !important; bottom: 0 !important; max-height: none !important; z-index: 40 !important;
+    background: var(--cl-bg) !important; backdrop-filter: none !important; padding: 8px 16px calc(110px + env(safe-area-inset-bottom)) !important; gap: 0 !important; overflow-y: auto; flex-direction: column; box-shadow: none !important; border: 0 !important; }
+  .navlinks.open a { min-height: 54px !important; font-size: 17px !important; font-weight: 700 !important; color: var(--cl-ink) !important; border-bottom: 1px solid var(--cl-line) !important; padding: 0 4px !important; }
+  .navlinks.open a.on { color: var(--cl-pink) !important; } .navlinks.open a::after { display: none !important; }
+  .navlinks.open select { margin-top: 16px; }
+}
+/* windows' titles: upright and bold (they came out italic and thin) */
+.sheet h2, .wm h3, .wm-card h3, [role="dialog"] h2, [role="dialog"] h3 { font-style: normal !important; font-weight: 800 !important; letter-spacing: -0.02em !important; }
+@media (max-width: 760px) {
+  /* the nav's blur makes it the box a fixed child measures against — the open menu sized itself to the 60 px bar */
+  .nav:has(.navlinks.open) { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; background: var(--cl-bg) !important; }
+  .navlinks.open { height: calc(100dvh - 60px) !important; }
+}
+/* the fee cards' big share never breaks between the number and its % */
+#feecards > div > b { white-space: nowrap !important; }
+/* the coin window's actions: an even grid that always fits the card (a button ran past the edge on a computer) */
+.cm-in .links { display: grid !important; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)) !important; gap: 8px !important; }
+.cm-in .links a, .cm-in .links button { text-align: center; justify-content: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+/* the main coin card's numbers in white, like everywhere else */
+.mainc .mc-n b, .count .c-top b { color: var(--cl-ink) !important; font-weight: 800 !important; }
+/* coin cards on a computer: the actions sit on the card's floor, so a row lines up even when one card says more */
+@media (min-width: 761px) { .cc { display: flex !important; flex-direction: column; } .cc .body { flex: 1; display: flex; flex-direction: column; } .cc .acts { margin-top: auto !important; padding-top: 10px; } }

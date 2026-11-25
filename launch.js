@@ -1,6 +1,7 @@
 // launch.js — a launch: find an address ending with the suffix (in this browser), host the details, launch on pump.fun from the sponsor's own wallet with the fee split locked in the same signing,
 // register the coin. Used by the website and the city. Nothing custodial: the server hosts the details and checks the chain.
 import { $, esc, sleep, post, note, DEMO, sol, kit, conn } from "/common.js";
+import { t } from "/i18n.js";
 import { openWallet } from "/wallet.js";
 // the crew's shares: the same rule as the server's (lib/_pad.mjs crewBps) — equal parts, the launcher keeps the odd bps
 export const CREW_MAX = 4;
@@ -33,24 +34,24 @@ export function openDrop(o = {}) {
   const sh = $("sheet"); sh.hidden = false;
   const f = { dev: 0, logo: "", logoData: "", quote: null };
   const QS = (CFG.quotes || []).filter((x) => x && x.mint && x.live !== false);
-  sh.innerHTML = `<div role="dialog" aria-label="Launch a coin" class="wide"><button type="button" class="sheet-x" data-f="x" aria-label="Close">×</button><h2>LAUNCH A COIN</h2><p class="sub">Any time, as many as you like. On pump.fun, from your own wallet.</p>
+  sh.innerHTML = `<div role="dialog" aria-label="Launch a coin" class="wide"><button type="button" class="sheet-x" data-f="x" aria-label="Close">×</button><h2>${esc(t("lsH", "LAUNCH A COIN"))}</h2><p class="sub">${esc(t("lsSub", "Any time, as many as you like. On pump.fun, from your own wallet."))}</p>
     <div class="lf"><div class="form">
-      <label class="w logo-pick"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden data-f="file"><span class="pv" data-f="pv">+</span><span>Logo<br><small data-f="lmsg">square image, 512 px is plenty</small></span></label>
-      <label>Name<input data-f="name" maxlength="32" placeholder="Night Owl"></label>
-      <label>Ticker<input data-f="symbol" maxlength="13" placeholder="OWL"></label>
-      <label class="w">Story<textarea data-f="description" rows="2" maxlength="500" placeholder="What's the coin about?"></textarea></label>
-      <label>X link<input data-f="twitter" placeholder="https://x.com/…"></label>
+      <label class="w logo-pick"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden data-f="file"><span class="pv" data-f="pv">+</span><span>${esc(t("lsLogo", "Logo"))}<br><small data-f="lmsg">${esc(t("lsLogoP", "square image, 512 px is plenty"))}</small></span></label>
+      <label>${esc(t("lsName", "Name"))}<input data-f="name" maxlength="32" placeholder="Night Owl"></label>
+      <label>${esc(t("lsTicker", "Ticker"))}<input data-f="symbol" maxlength="13" placeholder="OWL"></label>
+      <label class="w">${esc(t("lsStory", "Story"))}<textarea data-f="description" rows="2" maxlength="500" placeholder="${esc(t("lsStoryP", "What's the coin about?"))}"></textarea></label>
+      <label>${esc(t("lsX", "X link"))}<input data-f="twitter" placeholder="https://x.com/…"></label>
       <label>Telegram<input data-f="telegram" placeholder="https://t.me/…"></label>
-      <label class="w">Website<input data-f="website" placeholder="https://…"></label>
-      ${QS.length ? `<div class="w pairset"><span class="lbl">Pair — what your coin trades against</span><div class="seg pairs" data-f="pairs"><button type="button" class="on" data-q="">SOL</button>${QS.map((x) => `<button type="button" data-q="${esc(x.id)}">${esc(x.id)}</button>`).join("")}</div><small class="pairline" data-f="pairline">Bought and sold with SOL — the usual pump.fun coin.</small></div>` : ""}
-      <div class="w crewset"><span class="lbl">Crew (optional) — split your ${(CFG.split.creator / 100)}% with up to ${CREW_MAX - 1} more wallets</span>
-        <div class="crew" data-f="crew"></div><button type="button" class="btn ghost addcrew" data-f="addcrew">+ Add a crew wallet</button><small class="crewline" data-f="crewline">Just you: the whole ${(CFG.split.creator / 100)}% is yours.</small></div>
-      <label class="w buyset"><span class="lbl">Your first buy (optional) — bought in the same signing, before anyone else</span>
-        <span class="custom"><input data-f="devsol" inputmode="decimal" placeholder="0" style="max-width:180px"> <b data-f="unit">SOL</b></span><small class="buyline" data-f="buyline">Leave it empty for no first buy.</small></label>
-    </div><div class="lprev"><p class="cap">PREVIEW</p><div data-f="prev"></div></div></div>
-    <div class="note"><b>Fees, locked on chain<span data-f="feeunit"></span>:</b> <span data-f="you">${(CFG.split.creator / 100)}% you</span> · ${(CFG.split.vault / 100)}% THE VAULT · ${(CFG.split.buyer / 100)}% buys $${esc(CFG.ticker)}.${CFG.suffix ? ` <b>Your coin's address will end in ${esc(CFG.suffix)}</b> — found in this browser, the key never leaves it.` : ""} No launch fee; about 0.03 SOL of network costs.</div>
+      <label class="w">${esc(t("lsWeb", "Website"))}<input data-f="website" placeholder="https://…"></label>
+      ${QS.length ? `<div class="w pairset"><span class="lbl">${esc(t("lsPair", "Pair — what your coin trades against"))}</span><div class="seg pairs" data-f="pairs"><button type="button" class="on" data-q="">SOL</button>${QS.map((x) => `<button type="button" data-q="${esc(x.id)}">${esc(x.id)}</button>`).join("")}</div><small class="pairline" data-f="pairline">${esc(t("lsPairSol", "Bought and sold with SOL — the usual pump.fun coin."))}</small></div>` : ""}
+      <div class="w crewset"><span class="lbl">${esc(t("lsCrew", "Crew (optional) — split your share with up to 3 more wallets"))} (${(CFG.split.creator / 100)}%)</span>
+        <div class="crew" data-f="crew"></div><button type="button" class="btn ghost addcrew" data-f="addcrew">+ ${esc(t("lsCrewAdd", "Add a crew wallet"))}</button><small class="crewline" data-f="crewline">${esc(t("lsJustYou", "Just you: your whole share is yours."))} (${(CFG.split.creator / 100)}%)</small></div>
+      <label class="w buyset"><span class="lbl">${esc(t("lsBuy", "Your first buy (optional) — bought in the same signing, before anyone else"))}</span>
+        <span class="custom"><input data-f="devsol" inputmode="decimal" placeholder="0" style="max-width:180px"> <b data-f="unit">SOL</b></span><small class="buyline" data-f="buyline">${esc(t("lsBuyNone", "Leave it empty for no first buy."))}</small></label>
+    </div><div class="lprev"><p class="cap">${esc(t("lsPrev", "PREVIEW"))}</p><div data-f="prev"></div></div></div>
+    <div class="note"><b>${esc(t("lsFees", "Fees, locked on chain"))}<span data-f="feeunit"></span>:</b> <span data-f="you">${(CFG.split.creator / 100)}% you</span> · ${(CFG.split.vault / 100)}% THE VAULT · ${(CFG.split.buyer / 100)}% buys $${esc(CFG.ticker)}.${CFG.suffix ? ` <b>${esc(t("lsSuffix", "Your coin's address will end in"))} ${esc(CFG.suffix)}</b> — ${esc(t("lsSuffixP", "found in this browser, the key never leaves it."))}` : ""} ${esc(t("lsCost", "No launch fee; about 0.03 SOL of network costs."))}</div>
     <ol class="steps" data-f="steps" hidden></ol><p class="err" data-f="err" hidden></p>
-    <div class="foot"><button type="button" class="btn ghost" data-f="close">Close</button><button type="button" class="btn hot" data-f="go">Launch on pump.fun</button></div></div>`;
+    <div class="foot"><button type="button" class="btn ghost" data-f="close">${esc(t("close", "Close"))}</button><button type="button" class="btn hot" data-f="go">${esc(t("lsGo", "Launch on pump.fun"))}</button></div></div>`;
   const q = (k) => sh.querySelector(`[data-f="${k}"]`);
   // the card as it will look in Explore, while you type
   const prev = () => { const v = (k) => String((q(k) && q(k).value) || "").trim(), sym = v("symbol") || "TICKER", nm = v("name") || "Your coin";
@@ -61,17 +62,17 @@ export function openDrop(o = {}) {
   const esc0 = (e) => { if (e.key === "Escape" && !busy) q("close").onclick(); }; document.addEventListener("keydown", esc0);
   sh.onclick = (e) => { if (e.target === sh && !busy) q("close").onclick(); };
   const buyline = () => { const u = f.quote ? f.quote.id : "SOL";
-    q("buyline").textContent = f.dev > 0 ? (f.quote ? `Buys your coin with ${f.dev} ${u} in the very next transaction — you sign both at once.` : `≈ ${pctForSol(f.dev).toFixed(2)}% of the supply for ${f.dev} SOL, the moment it launches.`) : "Leave it empty for no first buy."; };
+    q("buyline").textContent = f.dev > 0 ? (f.quote ? `Buys your coin with ${f.dev} ${u} in the very next transaction — you sign both at once.` : `≈ ${pctForSol(f.dev).toFixed(2)}% ${t("lsBuyPct", "of the supply for")} ${f.dev} SOL`) : t("lsBuyNone", "Leave it empty for no first buy."); };
   q("devsol").oninput = (e) => { const v = Math.max(0, Math.min(f.quote ? 1000 : 50, parseFloat(e.target.value) || 0)); f.dev = Math.round(v * 1e6) / 1e6; buyline(); };
   if (QS.length) q("pairs").onclick = (e) => { const b = e.target.closest("[data-q]"); if (!b || busy) return;
     q("pairs").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b));
     f.quote = QS.find((x) => x.id === b.dataset.q) || null; q("unit").textContent = f.quote ? f.quote.id : "SOL";
-    q("pairline").textContent = f.quote ? `Bought and sold with ${f.quote.name || f.quote.id} on pump.fun. Your first buy and the creator fees are in ${f.quote.id}; you still pay about 0.03 SOL of network costs.` : "Bought and sold with SOL — the usual pump.fun coin.";
+    q("pairline").textContent = f.quote ? `Bought and sold with ${f.quote.name || f.quote.id} on pump.fun. Your first buy and the creator fees are in ${f.quote.id}; you still pay about 0.03 SOL of network costs.` : t("lsPairSol", "Bought and sold with SOL — the usual pump.fun coin.");
     q("feeunit").textContent = f.quote ? `, paid in ${f.quote.id}` : ""; q("devsol").value = ""; f.dev = 0; buyline(); prev(); };
   // the crew: wallets that share the creator's part in equal shares, locked on chain with the rest of the split
   const crewList = () => [...q("crew").querySelectorAll("input")].map((i) => i.value.trim()).filter(Boolean);
   const crewLine = () => { const n = 1 + crewList().length, bps = crewBps(n, CFG.split.creator);
-    q("crewline").textContent = n === 1 ? `Just you: the whole ${CFG.split.creator / 100}% is yours.` : `A crew of ${n}: ${bps.map((b) => b / 100 + "%").join(" · ")} — you first, then each crew wallet. Locked forever, paid out to everyone at once.`;
+    q("crewline").textContent = n === 1 ? `${t("lsJustYou", "Just you: your whole share is yours.")} (${CFG.split.creator / 100}%)` : `A crew of ${n}: ${bps.map((b) => b / 100 + "%").join(" · ")} — you first, then each crew wallet. Locked forever, paid out to everyone at once.`;
     q("addcrew").hidden = q("crew").children.length >= CREW_MAX - 1; q("you").textContent = n === 1 ? `${CFG.split.creator / 100}% you` : `${CFG.split.creator / 100}% you and your crew of ${n}`; };
   q("addcrew").onclick = () => { if (busy || q("crew").children.length >= CREW_MAX - 1) return; const r = document.createElement("div"); r.className = "crow";
     r.innerHTML = `<input placeholder="Solana wallet address" autocomplete="off" spellcheck="false" maxlength="44"><button type="button" aria-label="Remove">×</button>`;
@@ -84,10 +85,10 @@ export function openDrop(o = {}) {
       const m = Math.min(img.width, img.height), d = Math.min(512, m), c = document.createElement("canvas"); c.width = c.height = d;
       c.getContext("2d").drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, d, d);
       let data = c.toDataURL("image/webp", 0.86); if (!data.startsWith("data:image/webp")) data = c.toDataURL("image/png");
-      f.logoData = data; q("pv").innerHTML = `<img src="${data}" alt="">`; q("lmsg").textContent = "ready"; err(""); prev();
+      f.logoData = data; q("pv").innerHTML = `<img src="${data}" alt="">`; q("lmsg").textContent = t("lsReady", "ready"); err(""); prev();
     } catch (x) { err(String((x && x.message) || x)); }
   };
-  const STEPS = [["find", CFG.suffix ? `Find an address ending in ${CFG.suffix}` : "Make the coin's address"], ["host", "Host the logo and details"], ["sign", "Sign the launch"], ["launch", "Launch on pump.fun"], ["split", "Lock the fee split"], ["list", "Move into the city"]];
+  const STEPS = [["find", CFG.suffix ? `${t("stFind", "Find an address ending in")} ${CFG.suffix}` : t("stMake", "Make the coin's address")], ["host", t("stHost", "Host the logo and details")], ["sign", t("stSign", "Sign the launch")], ["launch", t("lsGo", "Launch on pump.fun")], ["split", t("stSplit", "Lock the fee split")], ["list", t("stList", "Move into the city")]];
   const step = (k, st, html) => { const li = q("steps").querySelector(`[data-s="${k}"]`); if (!li) return; li.className = st; if (html != null) li.querySelector("small").innerHTML = html; };
   const scan = (s) => `<a href="https://solscan.io/tx/${esc(s)}" target="_blank" rel="noopener">Solscan ↗</a>`;
   let busy = false;

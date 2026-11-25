@@ -2,6 +2,7 @@
 // phones without one open the page inside a wallet's browser, and once connected: the address, balance, copy, explorer,
 // disconnect. openWallet() resolves when the window closes; walletButton(el) keeps a button in step.
 import { esc, short, note, sol, kit, conn, rpc1 } from "/common.js";
+import { t } from "/i18n.js";
 
 const COLORS = { phantom: "#ab9ff2", solflare: "#fc7d22", backpack: "#e33e3f", metamask: "#f6851b" };
 const badge = (w) => (w.icon ? `<img src="${esc(w.icon)}" alt="">` : `<span style="background:${COLORS[w.name.toLowerCase()] || "#ff2e88"}">${esc(w.name[0])}</span>`);
@@ -21,7 +22,7 @@ export async function openWallet() {
     const esc_ = (e) => { if (e.key === "Escape") close(); };
     document.addEventListener("keydown", esc_);
     const paint = async () => {
-      if (!S) { const el = shell(`<h3>Connect a wallet</h3><p class="wm-sub">No Solana wallet in this browser.</p>${GET.map(([n, u]) => `<a class="wm-row" href="${u}" target="_blank" rel="noopener">${badge({ name: n })}<b>Get ${n}</b><i>↗</i></a>`).join("")}`); wire(el); return; }
+      if (!S) { const el = shell(`<h3>${esc(t("wmH", "Connect a wallet"))}</h3><p class="wm-sub">No Solana wallet in this browser.</p>${GET.map(([n, u]) => `<a class="wm-row" href="${u}" target="_blank" rel="noopener">${badge({ name: n })}<b>${esc(t("wmGet", "Get"))} ${n}</b><i>↗</i></a>`).join("")}`); wire(el); return; }
       if (S.key) {
         const el = shell(`<h3>Your wallet</h3><div class="wm-acct">${badge({ name: S.name || "Wallet" })}<div><b>${esc(short(S.key))}</b><small>${esc(S.name || "")} · <span data-bal>…</span></small></div></div>
           <div class="wm-acts"><button type="button" data-a="copy">Copy address</button><a href="https://solscan.io/account/${esc(S.key)}" target="_blank" rel="noopener">Solscan ↗</a><button type="button" data-a="off" class="danger">Disconnect</button></div>`);
@@ -30,20 +31,20 @@ export async function openWallet() {
         return;
       }
       const list = S.providers();
-      const el = shell(`<h3>Connect a wallet</h3><p class="wm-sub">Solana · you sign every launch yourself. Nothing is held for you.</p>
-        ${list.length ? `<div class="wm-list">${list.map((w, i) => `<button type="button" class="wm-row" data-i="${i}">${badge(w)}<b>${esc(w.name)}</b><i>Detected</i></button>`).join("")}</div>` : ""}
-        ${!list.length && S.mobile() ? `<p class="wm-sub">Open this page inside your wallet app:</p>${["Phantom", "Solflare"].map((n) => `<a class="wm-row" href="${esc(S.openIn(n))}">${badge({ name: n })}<b>Open in ${n}</b><i>↗</i></a>`).join("")}` : ""}
-        ${!list.length && !S.mobile() ? GET.map(([n, u]) => `<a class="wm-row" href="${u}" target="_blank" rel="noopener">${badge({ name: n })}<b>Get ${n}</b><i>↗</i></a>`).join("") : ""}
-        <p class="wm-fine">By connecting you agree that meme coins are risky and you act for yourself.</p>`);
+      const el = shell(`<h3>${esc(t("wmH", "Connect a wallet"))}</h3><p class="wm-sub">${esc(t("wmSub", "Solana · you sign every launch yourself. Nothing is held for you."))}</p>
+        ${list.length ? `<div class="wm-list">${list.map((w, i) => `<button type="button" class="wm-row" data-i="${i}">${badge(w)}<b>${esc(w.name)}</b><i>${esc(t("wmDet", "Detected"))}</i></button>`).join("")}</div>` : ""}
+        ${!list.length && S.mobile() ? `<p class="wm-sub">${esc(t("wmApp", "Open this page inside your wallet app:"))}</p>${["Phantom", "Solflare"].map((n) => `<a class="wm-row" href="${esc(S.openIn(n))}">${badge({ name: n })}<b>${esc(t("wmOpenIn", "Open in"))} ${n}</b><i>↗</i></a>`).join("")}` : ""}
+        ${!list.length && !S.mobile() ? GET.map(([n, u]) => `<a class="wm-row" href="${u}" target="_blank" rel="noopener">${badge({ name: n })}<b>${esc(t("wmGet", "Get"))} ${n}</b><i>↗</i></a>`).join("") : ""}
+        <p class="wm-fine">${esc(t("wmFine", "By connecting you agree that meme coins are risky and you act for yourself."))}</p>`);
       wire(el);
     };
     const wire = (el) => {
       el.onclick = async (e) => {
         if (e.target === el || e.target.closest(".wm-x")) return close();
         const r = e.target.closest("[data-i]");
-        if (r) { r.classList.add("busy"); r.querySelector("i").textContent = "Connecting…"; try { await S.connect(Number(r.dataset.i)); note("Wallet connected"); close(); } catch (x) { r.classList.remove("busy"); r.querySelector("i").textContent = "Try again"; note(String((x && x.message) || x).slice(0, 120)); } return; }
+        if (r) { r.classList.add("busy"); r.querySelector("i").textContent = t("wmConning", "Connecting…"); try { await S.connect(Number(r.dataset.i)); note(t("wmOk", "Wallet connected")); close(); } catch (x) { r.classList.remove("busy"); r.querySelector("i").textContent = t("wmTry", "Try again"); note(String((x && x.message) || x).slice(0, 120)); } return; }
         const a = e.target.closest("[data-a]");
-        if (a && a.dataset.a === "copy") { try { await navigator.clipboard.writeText(S.key); note("Address copied"); } catch {} }
+        if (a && a.dataset.a === "copy") { try { await navigator.clipboard.writeText(S.key); note(t("wmCopied", "Address copied")); } catch {} }
         if (a && a.dataset.a === "off") { await S.disconnect(); close(); }
       };
     };
@@ -52,7 +53,7 @@ export async function openWallet() {
 }
 /// keep a button showing the wallet's state; a click opens the window
 export async function walletButton(btn, onChange) {
-  const paint = async () => { const S = await sol(); const on = !!(S && S.key); btn.innerHTML = on ? `<span class="wdot"></span>${esc(short(S.key))}` : "Connect wallet"; btn.classList.toggle("on", on); onChange && onChange(on ? S.key : ""); };
+  const paint = async () => { const S = await sol(); const on = !!(S && S.key); btn.innerHTML = on ? `<span class="wdot"></span>${esc(short(S.key))}` : esc(t("connect", "Connect wallet")); btn.classList.toggle("on", on); onChange && onChange(on ? S.key : ""); };
   btn.onclick = async () => { await openWallet(); paint(); };
   document.addEventListener("arc:solwallet", paint);
   sol().then((S) => S && S.quiet && S.quiet()).finally(paint);

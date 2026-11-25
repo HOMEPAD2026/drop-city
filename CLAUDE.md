@@ -68,6 +68,14 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   actions under), the desk's tabs one sideways-scrolling pill row, the game HUD hidden, a floating rounded icon dock with
   the chosen page in a pink tint. No live backdrop blur over the moving hero sky (it halved the frame rate). Colours stay
   black · white · pink.
+- **Pass 2 of the clean look (the owner, 2026-11-25: "아래 메뉴도 공간 위쪽이 더 넓은데 … 하나씩 다 스샷 찍어서"):** the dock's five
+  items are one height (56 px) and centred (it was bottom-aligned: 16 px above, 7 below), the Launch key a 26 px box; no
+  letter-spacing anywhere (Korean spread letter by letter); the phone menu a solid full-screen list (the nav's blur made
+  the open menu size itself to the 60 px bar — .nav:has(.navlinks.open) drops it); the desk's chosen tab scrolls into
+  view; ranks / filters one row of pills; the coin window's actions an even grid; the footer clears the dock once. The
+  wallet, fee, coin and launch windows read in ko / zh / tr (t() in wallet.js, fees.js, launch.js, site.js openCoin).
+  The screenshot walk (every page + window, phone in Korean, desktop in English, listing any English left on the Korean
+  screens) is the check after a design change.
 - **Translations (2026-11-25):** i18n.js — each language's lines go into ITS OWN block (MORE.ko / .zh / .tr); on
   2026-11-24 the zh and tr lines of 84 keys were pasted into the ko block and Korean readers saw Turkish.
   tests/i18n.test.mjs fails on a key twice in a block, a key missing from a language, or a line in the wrong script.
