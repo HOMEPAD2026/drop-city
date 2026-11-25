@@ -60,6 +60,26 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   is graded grey with pink laid over it (CSS); the intro's paintings are graded once as they load (intro.js duo — canvas
   blend modes, never a filter on the moving canvas: that dropped frames on phones). Card rarities: common grey, rare
   white, epic light pink, legendary pink. The GTAFUN logo keeps its own colours.
+- **The clean look (the owner, 2026-11-25: "글자 깨지는 부분 … 저런식으로 깔끔하게", basketlaunch.xyz / app.meteora.ag as the
+  reference):** clean.css loads last — ONE typeface, Pretendard Variable (jsDelivr dynamic subset: Latin + Hangul, the CJK
+  fallback after it) for every element, JetBrains Mono only for addresses; no pixel / condensed faces (they had no Korean
+  glyphs — Korean broke into fallback boxes). Rounded cards (20 px) on near-black, pill buttons and tabs, no caps / wide
+  tracking, big 800-weight numbers; phones: coins as a single column of row cards (round picture left, name + market cap,
+  actions under), the desk's tabs one sideways-scrolling pill row, the game HUD hidden, a floating rounded icon dock with
+  the chosen page in a pink tint. No live backdrop blur over the moving hero sky (it halved the frame rate). Colours stay
+  black · white · pink.
+- **Translations (2026-11-25):** i18n.js — each language's lines go into ITS OWN block (MORE.ko / .zh / .tr); on
+  2026-11-24 the zh and tr lines of 84 keys were pasted into the ko block and Korean readers saw Turkish.
+  tests/i18n.test.mjs fails on a key twice in a block, a key missing from a language, or a line in the wrong script.
+- **Trader cashback (the owner, 2026-11-25: "거래자 캐시백 GTAFUN에 붙여줘"):** lib/_cashback.mjs — every trade of a coin
+  launched here (kind drop / user) and of the main coin, on ANY venue (the mint's own transaction list is read from a
+  cursor; a trade = the signer's coin and SOL/WSOL moving in opposite directions), earns its trader pad-config.js
+  cashback.bps (30 = 0.3 %) of the trade's dollar value back in the MAIN COIN, inside cashback.daily (500,000 a UTC day)
+  and perWallet (50,000 a day), trades from minUsd $2; the coin's creator and the platform's wallets earn nothing; a coin
+  seen for the first time starts from then (no back pay). Run with ?lp=tick (the GitHub workflow, ~5× an hour; ≤ 120
+  transactions a run). Credits in cb/ledger.json; the LP payout owes LP rewards + cashback − paid (lib/_lp.mjs due /
+  view, cashback()) and the same rewards wallet pays both. ?cb=1&w= is the view; the LP tab opens with the cashback
+  card, the hero carries the 0.3 % line (cbChip — change its words if bps changes). Supported coins don't earn it.
 - **Speed (2026-11-25):** the home page never loads the 1 MB Solana kit (vendor/pump-kit.js) — balances on first paint go
   through common.js rpc1 (one JSON-RPC call through ?solrpc); kit() loads only when a wallet action needs it. Inter is
   gone (Barlow Condensed reads everywhere).

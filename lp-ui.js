@@ -15,7 +15,8 @@ const SOLM = "So11111111111111111111111111111111111111112";
 export async function paintLp(box, { coins, CFG }) {
   if (!box) return;
   let V = null;
-  try { const W = await sol().catch(() => null); V = await getJ(`?lp=1${W && W.key ? "&w=" + W.key : ""}`); }
+  let CB = null;
+  try { const W = await sol().catch(() => null), q = W && W.key ? "&w=" + W.key : ""; [V, CB] = await Promise.all([getJ(`?lp=1${q}`), getJ(`?cb=1${q}`).catch(() => null)]); }
   catch { V = null; }
   if (!V || !V.pools) { box.innerHTML = `<p class="fine">${esc(t("lpErr", "The LP rewards couldn't be read right now — try again in a moment."))}</p>`; return; }
   const main = coins.find((c) => c.mint === CFG.main), mainSym = main ? main.symbol : CFG.ticker || "MAIN";
@@ -32,9 +33,9 @@ export async function paintLp(box, { coins, CFG }) {
       <a class="btn hot" href="${RAY_ADD(p.id)}" target="_blank" rel="noopener">${esc(t("lpAdd", "Add liquidity"))} ↗</a></div>`;
   };
   const me = V.me;
-  box.innerHTML = `
+  box.innerHTML = `${cbCard(CB, mainSym)}
     <div class="lp-stats"><div><b>${fmt(V.daily)}</b><small>$${esc(mainSym)} ${esc(t("lpPerDay", "a day to LPs"))}</small></div><div><b>${fmt(V.total)}</b><small>${esc(t("lpEarnedAll", "earned so far"))}</small></div><div><b>${fmt(V.paidTotal)}</b><small>${esc(t("lpPaidAll", "paid out"))}</small></div><div><b>${V.hours}</b><small>${esc(t("lpHours", "hours counted"))}</small></div></div>
-    <div class="lp-me">${me ? `<div><span>${esc(t("lpEarned", "Earned"))}</span><b>${fmt(me.earned)}</b></div><div><span>${esc(t("lpPaid", "Paid"))}</span><b>${fmt(me.paid)}</b></div><div class="hi"><span>${esc(t("lpPending", "Pending"))}</span><b>${fmt(me.pending)} $${esc(mainSym)}</b></div>`
+    <div class="lp-me">${me ? `<div><span>${esc(t("lpEarned", "Earned"))}</span><b>${fmt(me.earned)}</b></div>${me.cashback ? `<div><span>${esc(t("cbMine", "Cashback"))}</span><b>${fmt(me.cashback)}</b></div>` : ""}<div><span>${esc(t("lpPaid", "Paid"))}</span><b>${fmt(me.paid)}</b></div><div class="hi"><span>${esc(t("lpPending", "Pending"))}</span><b>${fmt(me.pending)} $${esc(mainSym)}</b></div>`
       : `<p>${esc(t("lpConnect", "Connect your wallet to see what your liquidity has earned."))}</p><button type="button" class="btn ghost" data-lp="conn">${esc(t("connect", "Connect wallet"))}</button>`}</div>
     <div class="lp-grid">${sup.map((c) => `<div class="lp-coin"><div class="lp-ch">${c.image ? `<img src="${esc(c.image)}" alt="" loading="lazy">` : ""}<b>$${esc(c.symbol)}</b><small>${esc(c.name || "")}</small></div>${cell(c, "sol")}${cell(c, "main")}</div>`).join("") || `<p class="fine">${esc(t("lpNoSup", "No supported coins yet."))}</p>`}</div>
     <details class="lp-how"><summary>${esc(t("lpHowH", "How the rewards work"))}</summary><ol>
@@ -83,3 +84,18 @@ async function adminDesk(el, { CFG, mainSym, W, again }) {
     } catch (e) { const s = String((e && e.message) || e); note(/reject|denied|cancel/i.test(s) ? "Cancelled in your wallet." : s.slice(0, 160), 5000); pb.disabled = false; pb.textContent = t("lpPay", "Pay everyone due"); }
   };
 }
+
+/// the trader cashback card (lib/_cashback.mjs): the rate, how it works, today's room, the latest, my own
+function cbCard(CB, mainSym) {
+  if (!CB || !CB.on) return "";
+  const pct = String(CB.bps / 100), ago = (at) => { const m = Math.max(0, Math.round((Date.now() - at) / 60e3)); return m < 60 ? m + "m" : Math.round(m / 60) + "h"; };
+  const S = "$" + mainSym;
+  return `<div class="cb-card">
+    <div class="cb-top"><span class="cb-k">${esc(t("cbK", "Trader cashback"))}</span><b class="cb-h">${esc(tfill(t("cbH", "{p}% back on every trade"), { p: pct }))}</b>
+      <p>${esc(tfill(t("cbP", "Trade any coin launched on GTAFUN — or {s} itself — anywhere (pump.fun, PumpSwap, Raydium, Jupiter …) and {p}% of the trade comes back to your wallet in {s}. Counted every few minutes, paid out with the LP rewards."), { p: pct, s: S }))}</p></div>
+    <div class="cb-stats"><div><b>${fmt(CB.total)}</b><small>${esc(S)} ${esc(t("cbTotal", "earned by traders"))}</small></div><div><b>${CB.trades}</b><small>${esc(t("cbTrades", "trades counted"))}</small></div><div><b>${fmt(Math.max(0, CB.daily - CB.spentToday))}</b><small>${esc(t("cbLeft", "left today"))}</small></div>
+      ${CB.me ? `<div class="hi"><b>${fmt(CB.me.earned)}</b><small>${esc(t("cbMe", "your cashback"))}</small></div>` : ""}</div>
+    ${CB.last && CB.last.length ? `<div class="cb-last">${CB.last.slice(0, 6).map((x) => `<a href="https://solscan.io/tx/${esc(x.sig)}" target="_blank" rel="noopener"><span class="cb-w">${esc(short(x.w))}</span><span class="cb-s ${x.side === "sell" ? "sell" : "buy"}">${esc(x.side === "sell" ? t("tkSell", "SELL") : t("tkBuy", "BUY"))} $${esc(x.sym)} · ${usd(x.usd)}</span><b>+${fmt(x.amt)}</b><small>${ago(x.at)}</small></a>`).join("")}</div>` : ""}
+    <p class="cb-fine">${esc(tfill(t("cbFine", "Up to {w} {s} a wallet a day · trades from {m} · the coin's own creator and the platform's wallets don't earn it."), { w: fmt(CB.perWallet), s: S, m: usd(CB.minUsd) }))}</p></div>`;
+}
+const tfill = (s, v) => String(s).replace(/\{(\w+)\}/g, (m, k) => (k in v ? v[k] : m));

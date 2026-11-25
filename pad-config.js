@@ -25,6 +25,11 @@ export const PAD = {
   // coin paid out, daily in total (split hour by hour across the pools by liquidity, main-coin pairs × boostMain, inside a
   // pool by LP held). wallet = the rewards wallet that pays (a GM's own; PAD_LP_WALLET overrides); PAD_LP_DAILY the amount
   lp: { daily: 1000000, boostMain: 1.5, minUsd: 10, minPoolUsd: 1000, minPay: 100, wallet: "", exclude: [] }, // minPoolUsd: a smaller pool earns nothing
+  // trader cashback (the owner, 2026-11-25): every trade of a coin launched here and of the main coin, on any venue, earns
+  // its trader bps (30 = 0.3 %) of the trade's dollar value back in the main coin, paid with the LP rewards by the rewards
+  // wallet. daily = the most paid out in a UTC day, perWallet = one wallet's most a day, minUsd = the smallest trade that
+  // counts. PAD_CB_BPS / PAD_CB_DAILY / PAD_CB_WALLET_DAY override; PAD_CB=0 turns it off
+  cashback: { on: true, bps: 30, daily: 500000, perWallet: 50000, minUsd: 2, exclude: [] },
   // GTAFUN CARDS (the owner, 2026-11-24): NFT packs of 3 for 0.1 SOL from a Core Candy Machine (cards-data.js). cm and
   // collection are filled by the operations wallet's setup on the page (or PAD_CARDS_CM / PAD_CARDS_COLLECTION); wallet =
   // the operations wallet that owns the machine and receives the SOL (PAD_CARDS_WALLET, else PAD_LP_WALLET)

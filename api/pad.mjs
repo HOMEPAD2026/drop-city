@@ -13,6 +13,7 @@ import { proxy } from "../lib/_chain.mjs";
 import { blobStore, blobEnabled } from "../lib/_blob.mjs";
 import { makeAgent } from "../lib/_agent.mjs";
 import { makeLp } from "../lib/_lp.mjs";
+import { makeCashback } from "../lib/_cashback.mjs";
 import { makeCards } from "../lib/_cards.mjs";
 import { makeExtra } from "../lib/_extra.mjs";
 import { makeTg } from "../lib/_tg.mjs";
@@ -29,7 +30,8 @@ let AG = null;
 let EX = null;
 const extra = () => (EX = EX || makeExtra({ pad: pad() }));
 let CDX = null; const cards = () => (CDX = CDX || makeCards({ store: pad().store }));
-let LPX = null; const lp = () => (LPX = LPX || makeLp({ store: pad().store, pad: pad() }));
+let CBX = null; const cb = () => (CBX = CBX || makeCashback({ store: pad().store, pad: pad() }));
+let LPX = null; const lp = () => (LPX = LPX || makeLp({ store: pad().store, pad: pad(), cashback: () => cb().earned() }));
 const agent = () => (AG = AG || makeAgent({ pad: pad(), extra: extra(), tg: makeTg({ pad: pad(), extra: extra() }) }));
 let ST = null;
 const street = () => (ST = ST || makeStreet({ store: blobEnabled() ? blobStore() : null }));
@@ -142,9 +144,10 @@ export async function GET(req) {
       return json(r.status, r.body, "no-store");
     }
     if (q.has("cards")) return json(200, await cards().view(String(q.get("w") || "")), "public, max-age=10"); // GTAFUN CARDS: the machine, the board, a wallet's cards
+    if (q.has("cb")) return json(200, await cb().view(String(q.get("w") || "")), "public, max-age=20"); // trader cashback: the rate, the totals, the latest, a wallet's own
     if (q.has("lp")) { // LP rewards: ?lp=1&w=<wallet> the view · ?lp=tick the hour's snapshot · ?lp=due what is owed
       const m = q.get("lp");
-      if (m === "tick") { if (limited("lpt:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" }); return json(200, await lp().tick(), "no-store"); }
+      if (m === "tick") { if (limited("lpt:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" }); const a = await lp().tick().catch((e) => ({ error: String((e && e.message) || e).slice(0, 120) })); const c = await cb().tick().catch((e) => ({ error: String((e && e.message) || e).slice(0, 120) })); return json(200, { ...a, cashback: c }, "no-store"); }
       if (m === "due") return json(200, { due: await lp().due() }, "no-store");
       return json(200, await lp().view(String(q.get("w") || "")), "public, max-age=20");
     }
@@ -154,7 +157,7 @@ export async function GET(req) {
       return json(200, await agent().tick(), "no-store");
     }
   } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 160) }); }
-  return json(400, { error: "use ?cfg, ?list, ?slot, ?agent, ?tick, ?lp, ?cards, ?check, ?verify, ?coin, ?trades, ?vote or ?page" });
+  return json(400, { error: "use ?cfg, ?list, ?slot, ?agent, ?tick, ?lp, ?cb, ?cards, ?check, ?verify, ?coin, ?trades, ?vote or ?page" });
 }
 export async function POST(req) {
   const ip = ipOf(req);
