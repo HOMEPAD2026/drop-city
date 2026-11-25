@@ -9,7 +9,7 @@ const { makeCards, decodeMachine, decodeAsset, cardsCfg, CM_PROGRAM, CORE_PROGRA
 
 // ---- the set
 const map = D.itemMap(); const n = {}; map.forEach((x) => (n[x] = (n[x] || 0) + 1));
-ok(map.length === 3000 && D.CARDS.length === 18 && n.boss === 30 && n.shark === 85 && n.flamingo === 150 && n.croc === 200, "3,000 items: 1 legendary ×30, 2 epic ×85, 4 rare ×150, 11 common ×200");
+ok(map.length === 3000 && D.CARDS.length === 10 && n.doge === 30 && n.pepe === 150 && n.pengu === 150 && n.shib === 290 && n.bonk === 290 && n.wif === 450 && n.brett === 450, "3,000 items: 1 legendary ×30, 2 epic ×150, 3 rare ×290, 4 common ×450");
 ok(D.itemMap().join() === map.join(), "the shuffle is the same every time (the season's seed)");
 ok(D.cardOfName("GTAFUN Card #1", map).id === map[0] && D.cardOfName("GTAFUN Card #3000", map).id === map[2999] && D.cardOfName("GTAFUN Card #3001", map) === null, "an asset's name (#index + 1) → its card");
 ok(D.CARD_LAMPORTS * D.SEASON.pack >= 0.1e9 && D.CARD_LAMPORTS * D.SEASON.pack < 0.1e9 + 10, "three cards make the 0.1 SOL pack");

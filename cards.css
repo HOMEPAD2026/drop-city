@@ -42,7 +42,7 @@ html[data-tab="cards"] #p-cards { display: block; animation: dkin 0.32s ease bot
 .cd-rev { grid-template-rows: auto auto auto; align-content: center; gap: 22px; }
 .cd-rt { text-align: center; font: 700 13px var(--ui); letter-spacing: 0.24em; text-transform: uppercase; color: var(--pm-acc, #e8b47a); }
 .cd-row { display: flex; gap: clamp(8px, 2vw, 22px); justify-content: center; perspective: 1200px; }
-.cd-f { width: clamp(96px, 26vw, 250px); aspect-ratio: 750 / 1050; cursor: pointer; animation: cdin 0.5s cubic-bezier(0.2, 0.9, 0.2, 1) both; animation-delay: var(--d); }
+.cd-f { width: clamp(96px, 26vw, 250px); aspect-ratio: 600 / 960; cursor: pointer; animation: cdin 0.5s cubic-bezier(0.2, 0.9, 0.2, 1) both; animation-delay: var(--d); }
 @keyframes cdin { from { opacity: 0; transform: translateY(40px) scale(0.9); } to { opacity: 1; transform: none; } }
 .cd-in { position: relative; width: 100%; height: 100%; transform-style: preserve-3d; transition: transform 0.7s cubic-bezier(0.3, 0.7, 0.2, 1); }
 .cd-f.up .cd-in { transform: rotateY(180deg); }

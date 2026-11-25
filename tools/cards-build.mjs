@@ -1,29 +1,24 @@
-// tools/cards-build.mjs — GTAFUN CARDS, Season 1: renders each card's picture (tools/cards-render.html in a browser) to
-// nft/img/<id>.png (750×1050, what the NFT shows) and nft/img/<id>-360.webp (the site), and writes the metadata every
+// tools/cards-build.mjs — GTAFUN CARDS, Season 1: each card's picture from the owner's art (nft/src/<id>.png) to
+// nft/img/<id>.png (600×960, what the NFT shows) and nft/img/<id>-360.webp (the site), and writes the metadata every
 // minted asset points at: nft/collection.json and nft/m/<index>.json (one per item; the machine's URIs are
-// <site>/nft/m/$ID$.json). Run from the repo root with the local server up: node tools/cards-build.mjs [http://localhost:8791]
+// <site>/nft/m/$ID$.json). Run from the repo root: node tools/cards-build.mjs
 import { mkdirSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { SEASON, CARDS, RARITY, itemMap } from "../cards-data.js";
 const require = createRequire(import.meta.url);
-const base = process.argv[2] || "http://localhost:8791";
 mkdirSync("nft/img", { recursive: true }); mkdirSync("nft/m", { recursive: true });
-// ---- the pictures
-const { chromium } = require(process.env.PW || "playwright");
+// ---- the pictures: the owner's card art (nft/src/<id>.png, cut from their sheet, 2026-11-25) centred on one 600×960
+// transparent canvas, so every card has the same shape on the page and in wallets
 const sharp = require(new URL("./cards-kit/node_modules/sharp", import.meta.url).pathname);
-const b = await chromium.launch();
-const p = await b.newPage({ viewport: { width: 750, height: 1050 }, deviceScaleFactor: 1 });
 for (const c of CARDS) {
-  await p.goto(`${base}/tools/cards-render.html?id=${c.id}`); await p.waitForFunction(() => window.__ready, null, { timeout: 20000 });
-  const png = await p.locator(".card").screenshot({ omitBackground: true });
-  writeFileSync(`nft/img/${c.id}.png`, await sharp(png).png({ compressionLevel: 9, palette: true, quality: 92, effort: 10 }).toBuffer());
-  writeFileSync(`nft/img/${c.id}-360.webp`, await sharp(png).resize(360).webp({ quality: 84 }).toBuffer());
+  const png = await sharp(`nft/src/${c.img}.png`).resize(600, 960, { fit: "contain", background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer();
+  writeFileSync(`nft/img/${c.id}.png`, await sharp(png).png({ compressionLevel: 9, quality: 92, effort: 10 }).toBuffer());
+  writeFileSync(`nft/img/${c.id}-360.webp`, await sharp(png).resize(360).webp({ quality: 86 }).toBuffer());
   console.log("card", c.id);
 }
-await b.close();
 // ---- the metadata
 const img = (c) => `${SEASON.site}/nft/img/${c.id}.png`;
-writeFileSync("nft/collection.json", JSON.stringify({ name: SEASON.name, symbol: SEASON.symbol, description: `${CARDS.length} characters of the city, ${SEASON.supply} cards. Packs of ${SEASON.pack} on ${SEASON.site.replace(/^https?:\/\//, "")}.`, image: img(CARDS[0]), external_url: SEASON.site + "/#cards" }));
+writeFileSync("nft/collection.json", JSON.stringify({ name: SEASON.name, symbol: SEASON.symbol, description: `The ${CARDS.length} top meme characters, ${SEASON.supply} cards. Packs of ${SEASON.pack} on ${SEASON.site.replace(/^https?:\/\//, "")}.`, image: img(CARDS[0]), external_url: SEASON.site + "/#cards" }));
 const map = itemMap();
 map.forEach((id, i) => {
   const c = CARDS.find((x) => x.id === id);

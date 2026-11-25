@@ -1,5 +1,5 @@
 // cards-data.js — GTAFUN CARDS, Season 1 (the owner, 2026-11-24: GTA-style meme cards as NFTs, a gacha pack of 3 for
-// 0.1 SOL, the city's own mascots as the art, the SOL to the operations wallet). Shared by the page, the build script
+// 0.1 SOL, the SOL to the operations wallet; 2026-11-25 the art is the owner's ten meme cards, nft/src). Shared by the page, the build script
 // (tools/cards-build.mjs: card pictures + metadata) and the server.
 // The cards are Metaplex Core assets from a Core Candy Machine: every mint picks a random remaining item on chain
 // (isSequential false), so the odds below are the share of each card among the 3,000 items — fixed and public.
@@ -17,31 +17,25 @@ export const SEASON = {
 // lamports a single card (3 make the 0.1 SOL pack: 33,333,334 × 3 = 100,000,002 ≈ 0.1 SOL)
 export const CARD_LAMPORTS = Math.ceil((SEASON.packSol * 1e9) / SEASON.pack);
 export const RARITY = {
-  common: { label: "Common", each: 200, color: "#8d8d93" },
-  rare: { label: "Rare", each: 150, color: "#ffffff" },
-  epic: { label: "Epic", each: 85, color: "#ff7ab8" },
+  // 10 cards, 3,000 items: 4 common ×450 · 3 rare ×290 · 2 epic ×150 · 1 legendary ×30 → 60 % · 29 % · 10 % · 1 %
+  common: { label: "Common", each: 450, color: "#8d8d93" },
+  rare: { label: "Rare", each: 290, color: "#ffffff" },
+  epic: { label: "Epic", each: 150, color: "#ff7ab8" },
   legendary: { label: "Legendary", each: 30, color: "#ff2e88" },
 };
-// [id, name, picture (images/agent), rarity, the line on the card]
+// [id, name, picture (nft/src/<id>.png — the owner's card art, 2026-11-25), rarity, the line on the card]
+// the owner's ten meme cards, ranked #1–#10 on the art; the top of the list is the rarest
 export const CARDS = [
-  ["boss", "The Boss", "boss-1", "legendary", "Runs the city from the top floor. Nobody sees him; everybody pays him."],
-  ["shark", "Pier Shark", "shark-1", "epic", "Owns the docks after midnight. Smiles before he bites."],
-  ["cruiser", "Midnight Cruiser", "cruiser-1", "epic", "The fastest ride on the coast road, always one block ahead."],
-  ["swamp", "Swamp King", "croc-2", "rare", "Came up from the canals with a gold chain and a plan."],
-  ["flamingo", "Rooftop Flamingo", "flamingo-1", "rare", "Pink, sharp and never on the ground for long."],
-  ["driver", "Gold Driver", "driver-1", "rare", "Gets the crew out. Never asks where to."],
-  ["shadow", "Rooftop Shadow", "shadow-1", "rare", "You only see the outline against the sunset."],
-  ["croc", "Dockside Croc", "croc-1", "common", "Cracked the rooftop vault at 3 a.m."],
-  ["raccoon", "Alley Raccoon", "raccoon-1", "common", "Every back door in the city knows him."],
-  ["bandit", "Palm Bandit", "bandit-1", "common", "Masked, quick, gone before the sirens."],
-  ["cat", "Getaway Cat", "cat-1", "common", "Nine lives, one getaway car."],
-  ["fox", "Jackpot Fox", "fox-1", "common", "Hits the jackpot, then hits the road."],
-  ["gull", "Night Gull", "gull-1", "common", "Steals fries and secrets off the pier."],
-  ["owl", "Neon Owl", "owl-1", "common", "Works the night shift. Sees everything."],
-  ["pigeon", "Street Pigeon", "pigeon-1", "common", "Knows every rumour in the plaza first."],
-  ["racer", "Overpass Racer", "racer-1", "common", "Born under the overpass, raised on neon."],
-  ["rat", "Neon Rat", "rat-1", "common", "Small, fast, everywhere."],
-  ["buckz", "Buckz", "next-buckz", "common", "Fresh cash on Clock Plaza."],
+  ["doge", "Doge", "doge", "legendary", "#1 — the original. Shades on, chain on, palms behind."],
+  ["pepe", "Pepe", "pepe", "epic", "#2 — arms crossed, hood up, unbothered."],
+  ["pengu", "Pengu", "pengu", "epic", "#3 — a wink and a beanie on a neon night."],
+  ["shib", "Shib", "shib", "rare", "#4 — red bandana, sunset gate, no fear."],
+  ["floki", "Floki", "floki", "rare", "#5 — horns up, ship in the harbour."],
+  ["bonk", "Bonk", "bonk", "rare", "#6 — one fist, one bonk."],
+  ["wif", "Wif", "wif", "common", "#7 — the hat stays on."],
+  ["spx", "SPX6900", "spx", "common", "#8 — shades and a skyline."],
+  ["trump", "Trump", "trump", "common", "#9 — pointing straight at you."],
+  ["brett", "Brett", "brett", "common", "#10 — blue, wide-eyed, ready."],
 ].map(([id, name, img, rarity, line], i) => ({ id, no: i + 1, name, img, rarity, line }));
 export const cardById = (id) => CARDS.find((c) => c.id === id) || null;
 

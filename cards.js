@@ -39,7 +39,7 @@ export async function paintCards(box, { CFG }) {
       <div class="cd-pack" aria-hidden="true"><div class="cd-pk"><img src="/images/logo-192.webp" alt=""><b>GTAFUN CARDS</b><small>SEASON 1 · ${SEASON.pack} ${esc(t("cdCardsWord", "CARDS"))}</small></div></div>
       <div class="cd-buy">
         <h3>${esc(t("cdPackH", "Open a pack"))}</h3>
-        <p>${esc(tf("cdPackP", "{n} random cards from the city's 18 characters — real NFTs in your wallet, picked on chain.", { n: SEASON.pack }))}</p>
+        <p>${esc(tf("cdPackP", "{n} random cards from the 10 top meme characters — real NFTs in your wallet, picked on chain.", { n: SEASON.pack }))}</p>
         <div class="cd-price"><b>${SEASON.packSol} SOL</b><span>${left != null ? esc(tf("cdLeft", "{n} packs left", { n: left.toLocaleString("en-US") })) : esc(t("cdSoon", "On sale soon"))}</span></div>
         <button type="button" class="btn hot big" data-cd="open" ${V.ready || DEMO ? "" : "disabled"}>${esc(V.ready || DEMO ? t("cdOpen", "Open a pack") : t("cdSoon", "On sale soon"))}</button>
         <div class="cd-odds">${Object.entries(RARITY).map(([k, r]) => `<span style="--r:${r.color}"><i></i>${esc(t("rar_" + k, r.label))} ${(od[k] * 100).toFixed(od[k] < 0.02 ? 1 : 0)}%</span>`).join("")}</div>
@@ -76,7 +76,7 @@ function reveal(cards, again) {
 }
 
 async function openPack(V, done) {
-  if (DEMO) return reveal(["shark", "croc", "flamingo"].map(cardById), () => openPack(V, done));
+  if (DEMO) return reveal(["pepe", "wif", "bonk"].map(cardById), () => openPack(V, done));
   const W = await sol(); if (!W) return note(t("noWallet", "No Solana wallet found — open this page in Phantom or Solflare."));
   if (!W.key) { await openWallet(); if (!W.key) return; }
   const btn = document.querySelector('[data-cd="open"]'), label = btn ? btn.textContent : "";
