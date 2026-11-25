@@ -1,6 +1,6 @@
 // site-x.js — the website's extras: languages, sound, the vote on the next drop, the live trades, leaderboards, the CA
 // check, the wallets out in the open, the creator window, the top-of-the-hour takeover, numbers that roll.
-import { $, esc, short, usd, note, DEMO, getJ, post, sol, kit, conn, b58, pic } from "/common.js";
+import { $, esc, short, usd, note, DEMO, getJ, post, sol, kit, conn, rpc1, b58, pic } from "/common.js";
 import { openWallet } from "/wallet.js";
 
 // ---------------- languages (the static page: data-i18n keys; the code: t(key, fallback) — the dictionary is /i18n.js)
@@ -153,7 +153,7 @@ export async function paintWallets(CFG) {
   const el = $("walletsbox"); if (!el) return;
   const list = [[t("wVault", "THE VAULT"), CFG.vault, t("wVaultP", "30 % of the creator fees of every coin launched on the platform — the city fund.")], [t("wBuyer", "Buys the main coin"), CFG.buyer, t("wBuyerP", "10 % of the creator fees of every coin launched on the platform — it buys the main coin.")], [t("wAgent", "The agent"), CFG.agent, t("wAgentP", "Drops a coin every hour. Keeps 0.5 SOL for launches; the rest goes to THE VAULT.")]].filter((x) => x[1]);
   let bal = {};
-  if (!DEMO) try { const K = await kit(), c = await conn(); const r = await c.getMultipleAccountsInfo(list.map((x) => new K.PublicKey(x[1]))); list.forEach((x, i) => (bal[x[1]] = r[i] ? r[i].lamports / 1e9 : 0)); } catch {}
+  if (!DEMO) try { const r = (await rpc1("getMultipleAccounts", [list.map((x) => x[1]), { encoding: "base64", dataSlice: { offset: 0, length: 0 }, commitment: "confirmed" }])).value; list.forEach((x, i) => (bal[x[1]] = r[i] ? r[i].lamports / 1e9 : 0)); } catch {}
   el.innerHTML = list.map(([k, w, p]) => `<div class="wl"><span class="k">${esc(k)}</span><b>${bal[w] != null ? bal[w].toFixed(3) + " SOL" : "–"}</b><p>${esc(p)}</p><a href="https://solscan.io/account/${esc(w)}" target="_blank" rel="noopener">${esc(w)} ↗</a></div>`).join("");
 }
 

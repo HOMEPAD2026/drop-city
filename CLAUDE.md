@@ -54,6 +54,15 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   labels and the HUD, Barlow Condensed for reading; gold #F4C430 action buttons and active tabs, gold-outlined ghosts (↗),
   money-green numbers, square corners, white hairlines; the HUD has a UTC clock box and zero-padded cash. Their feel only —
   none of their art or words.
+- **Black · white · pink (the owner, 2026-11-25: "흑백과 핑크 위주로"):** one pink #ff2e88 (light #ff7ab8) for action
+  buttons, the chosen tab / page, kickers, stars and bars; everything else white / grey on black (ghost buttons white, money
+  numbers white, no gold / green / cyan — street.css's "BLACK · WHITE · PINK" block sets the variables). The hero's sunset
+  is graded grey with pink laid over it (CSS); the intro's paintings are graded once as they load (intro.js duo — canvas
+  blend modes, never a filter on the moving canvas: that dropped frames on phones). Card rarities: common grey, rare
+  white, epic light pink, legendary pink. The GTAFUN logo keeps its own colours.
+- **Speed (2026-11-25):** the home page never loads the 1 MB Solana kit (vendor/pump-kit.js) — balances on first paint go
+  through common.js rpc1 (one JSON-RPC call through ?solrpc); kit() loads only when a wallet action needs it. Inter is
+  gone (Barlow Condensed reads everywhere).
 - **Pages (the owner, 2026-11-20; order 2026-11-24):** the bottom bar by importance — Launch (a round key, never clipped) · NFT (#cards) · LP (#lp) · Game (/city — "the city" is called the Game everywhere a visitor reads it) · More (the desk: the rest); the top nav Launch · NFT · LP · Game · Explore · More and the nav switch pages
   (html[data-page] home / explore / desk) instead of scrolling; every old #link still lands on its page.
 - The agent's logos come from images/agent (the owner's mascot art); a drop's name is picked from those subjects.

@@ -17,10 +17,10 @@ export const SEASON = {
 // lamports a single card (3 make the 0.1 SOL pack: 33,333,334 × 3 = 100,000,002 ≈ 0.1 SOL)
 export const CARD_LAMPORTS = Math.ceil((SEASON.packSol * 1e9) / SEASON.pack);
 export const RARITY = {
-  common: { label: "Common", each: 200, color: "#c9c4bd" },
-  rare: { label: "Rare", each: 150, color: "#7fb6ff" },
-  epic: { label: "Epic", each: 85, color: "#c08bff" },
-  legendary: { label: "Legendary", each: 30, color: "#f2c46b" },
+  common: { label: "Common", each: 200, color: "#8d8d93" },
+  rare: { label: "Rare", each: 150, color: "#ffffff" },
+  epic: { label: "Epic", each: 85, color: "#ff7ab8" },
+  legendary: { label: "Legendary", each: 30, color: "#ff2e88" },
 };
 // [id, name, picture (images/agent), rarity, the line on the card]
 export const CARDS = [

@@ -1,6 +1,6 @@
 // site.js — the website: the hour, the numbers, EXPLORE (every drop as a card), the desk (this hour, ranks, the launch,
 // FEES, wallets, the CA check, the creators' space, about) and the deep links into it. The drop itself is launch.js.
-import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, dropState, poke, getJ } from "/common.js";
+import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, rpc1, dropState, poke, getJ } from "/common.js";
 import { walletButton } from "/wallet.js";
 import { openDrop, finishSplit, why, logsBox } from "/launch.js";
 import { feeBox, wireFees } from "/fees.js";
@@ -97,7 +97,7 @@ function paintHour() {
 const lastDig = {};
 function digits(str) { ["d-m1", "d-m2", "d-s1", "d-s2"].forEach((id, i) => { const el = $(id); if (!el || lastDig[id] === str[i]) return; lastDig[id] = str[i]; el.textContent = str[i]; el.classList.remove("tick"); void el.offsetWidth; el.classList.add("tick"); }); }
 let vaultSol = null;
-async function readVault() { if (!CFG.vault) return; try { const K = await kit(), c = await conn(); vaultSol = (await c.getBalance(new K.PublicKey(CFG.vault))) / 1e9; paintStats(); } catch {} }
+async function readVault() { if (!CFG.vault) return; try { vaultSol = (await rpc1("getBalance", [CFG.vault, { commitment: "confirmed" }])).value / 1e9; paintStats(); } catch {} }
 /// one quiet line of numbers under the hero's text
 /// the hourly drops are off (the owner, 2026-11-24): the countdown, the vote, today's 24 and the drop lines go; the first
 /// lane speaks of the supported coins instead, and the desk's first tab is the live trades

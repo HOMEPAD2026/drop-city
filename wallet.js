@@ -1,7 +1,7 @@
 // wallet.js — the wallet window: the wallets this browser has (Phantom, Solflare, Backpack, Wallet Standard ones),
 // phones without one open the page inside a wallet's browser, and once connected: the address, balance, copy, explorer,
 // disconnect. openWallet() resolves when the window closes; walletButton(el) keeps a button in step.
-import { esc, short, note, sol, kit, conn } from "/common.js";
+import { esc, short, note, sol, kit, conn, rpc1 } from "/common.js";
 
 const COLORS = { phantom: "#ab9ff2", solflare: "#fc7d22", backpack: "#e33e3f", metamask: "#f6851b" };
 const badge = (w) => (w.icon ? `<img src="${esc(w.icon)}" alt="">` : `<span style="background:${COLORS[w.name.toLowerCase()] || "#ff2e88"}">${esc(w.name[0])}</span>`);
@@ -26,7 +26,7 @@ export async function openWallet() {
         const el = shell(`<h3>Your wallet</h3><div class="wm-acct">${badge({ name: S.name || "Wallet" })}<div><b>${esc(short(S.key))}</b><small>${esc(S.name || "")} · <span data-bal>…</span></small></div></div>
           <div class="wm-acts"><button type="button" data-a="copy">Copy address</button><a href="https://solscan.io/account/${esc(S.key)}" target="_blank" rel="noopener">Solscan ↗</a><button type="button" data-a="off" class="danger">Disconnect</button></div>`);
         wire(el);
-        try { const K = await kit(), c = await conn(); const b = await c.getBalance(new K.PublicKey(S.key)); const s = el.querySelector("[data-bal]"); if (s) s.textContent = (b / 1e9).toFixed(3) + " SOL"; } catch {}
+        try { const b = (await rpc1("getBalance", [S.key, { commitment: "confirmed" }])).value; const s = el.querySelector("[data-bal]"); if (s) s.textContent = (b / 1e9).toFixed(3) + " SOL"; } catch {}
         return;
       }
       const list = S.providers();

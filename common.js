@@ -47,6 +47,8 @@ let solP = null;
 export const sol = () => (window.arcSol ? Promise.resolve(window.arcSol) : (solP = solP || new Promise((r) => { const t = setInterval(() => { if (window.arcSol) { clearInterval(t); r(window.arcSol); } }, 100); setTimeout(() => r(null), 6000); })));
 let kitP = null, connP = null;
 export const kit = () => (kitP = kitP || new Promise((ok, no) => { if (window.ArcPumpKit) return ok(window.ArcPumpKit); const s = document.createElement("script"); s.src = "/vendor/pump-kit.js?v=64d3c38c42"; s.onload = () => ok(window.ArcPumpKit); s.onerror = () => no(new Error("the Solana kit didn't load")); document.head.appendChild(s); }));
+/// one plain JSON-RPC call through the relay — for a balance on first paint without loading the 1 MB Solana kit
+export async function rpc1(method, params) { const r = await fetch(API + "?solrpc=1", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }) }); const j = await r.json(); if (j.error) throw new Error(j.error.message || "rpc"); return j.result; }
 export const conn = () => (connP = connP || kit().then((K) => new K.Connection(new URL(API + "?solrpc=1", location.origin).href, { commitment: "confirmed", disableRetryOnRateLimit: true })));
 
 

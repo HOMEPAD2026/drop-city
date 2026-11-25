@@ -98,7 +98,14 @@ async function start() {
 
   // ---- the paintings: load while the little star twinkles (the video opens like that too)
   const sz = phone ? 960 : 1600;
-  const loads = Promise.all(SCENES.map(async (s) => ({ ...s, back: await img(`/images/intro/${s.b}-${sz}.webp`), front: await img(`/images/intro/${s.f}.webp`) })));
+  // black · white · pink (the owner, 2026-11-25): each painting graded once, here (grey, then pink laid over it with the
+  // canvas's own blend modes — no pixel loop), so the flight costs nothing more (a CSS filter on the moving canvas dropped frames)
+  const duo = (im) => { try { const c = document.createElement("canvas"); c.width = im.naturalWidth || im.width; c.height = im.naturalHeight || im.height; const x = c.getContext("2d");
+    x.drawImage(im, 0, 0); x.globalCompositeOperation = "saturation"; x.fillStyle = "#808080"; x.fillRect(0, 0, c.width, c.height); // grey (keeps the light)
+    x.globalCompositeOperation = "color"; x.fillStyle = "rgb(255, 46, 136)"; x.globalAlpha = 0.4; x.fillRect(0, 0, c.width, c.height); // the pink over it
+    x.globalAlpha = 1; x.globalCompositeOperation = "destination-in"; x.drawImage(im, 0, 0); return c; } catch { return im; } }; // the cut-outs keep their edges
+  const g = (im) => (im ? duo(im) : im); // graded as each one arrives, while the star is up — never all at once
+  const loads = Promise.all(SCENES.map(async (s) => ({ ...s, back: g(await img(`/images/intro/${s.b}-${sz}.webp`)), front: g(await img(`/images/intro/${s.f}.webp`)) })));
   let T0 = performance.now(), ready = null;
   loads.then((r) => { ready = r; });
   await new Promise((res) => {
