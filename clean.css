@@ -282,3 +282,13 @@ body *:not(code):not(.mono) { letter-spacing: 0 !important; }
 .mainc .mc-n b, .count .c-top b { color: var(--cl-ink) !important; font-weight: 800 !important; }
 /* coin cards on a computer: the actions sit on the card's floor, so a row lines up even when one card says more */
 @media (min-width: 761px) { .cc { display: flex !important; flex-direction: column; } .cc .body { flex: 1; display: flex; flex-direction: column; } .cc .acts { margin-top: auto !important; padding-top: 10px; } }
+/* ===== no flicker on arrival (the owner, 2026-11-25: "처음 들어가면 깜빡거리던데 … 새로고침 하는듯이 그런것도 없애줘") ===== */
+/* the headline is just there: no slam-in, no neon flicker every 6 s */
+.hero h1 .w1, .hero h1 span, .hero h1 .flick, .hero:not(.go) h1 .w1, .hero:not(.go) h1 span { animation: none !important; opacity: 1 !important; filter: none !important; transform: none !important; font-style: normal !important; }
+/* the sky's stand-in before the drawn coast arrives is the coast's own dark tones (it was a bright pink gradient that then went dark) */
+.hero-bg { background: radial-gradient(90% 55% at 70% 72%, rgba(255, 46, 136, 0.22), transparent 70%), linear-gradient(180deg, #0b0a0e 0%, #140d14 52%, #1d0e19 70%, #08080b 100%) !important; filter: none !important; animation: none !important; }
+.coast { transition: opacity 0.5s ease !important; }
+/* no staggered pop-in of cards and rows on every paint */
+.cc, .grid > *, .tr, .cb-last a, .lp-coin { animation: none !important; }
+/* the cashback line's dot holds still: its pulsing shadow repainted the hero every frame (desktop fell to 30 fps with it) */
+.cbchip i { animation: none !important; box-shadow: 0 0 0 4px rgba(255, 46, 136, 0.22) !important; }

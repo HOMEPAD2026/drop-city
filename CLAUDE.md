@@ -76,6 +76,15 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   wallet, fee, coin and launch windows read in ko / zh / tr (t() in wallet.js, fees.js, launch.js, site.js openCoin).
   The screenshot walk (every page + window, phone in Korean, desktop in English, listing any English left on the Korean
   screens) is the check after a design change.
+- **No flicker on arrival + the loading scene (the owner, 2026-11-25: "처음 들어가면 깜빡거리던데 … 새로고침 하는듯이 그런것도
+  없애줘", "로딩 장면도 수정해봐"):** Pretendard is SELF-HOSTED (fonts/pretendard: the npm package's 92-file dynamic subset,
+  OFL — the CDN copy arrived after first paint and every line swapped face); subsets 90 + 91 (Latin + common Hangul) are
+  preloaded, and a font gate in index.html's head keeps the page at opacity 0 until the face is loaded (≤ 0.9 s);
+  numbers no longer count up from 0 (site-x.js roll sets them); the headline has no slam-in / neon flicker; the hero's
+  stand-in sky is the coast's own dark tones (it was a bright pink gradient that turned dark); cards don't pop in on
+  every paint; no repainting animation over the hero (the cashback dot's pulse cost desktop 30 fps). The intro: black
+  throughout (BG #000), the burst is light only (glow + rays, no cartoon star body, pink / white, no orange), the end
+  card = logo + the tag in Pretendard + a pink loading line, a readable skip button.
 - **Translations (2026-11-25):** i18n.js — each language's lines go into ITS OWN block (MORE.ko / .zh / .tr); on
   2026-11-24 the zh and tr lines of 84 keys were pasted into the ko block and Korean readers saw Turkish.
   tests/i18n.test.mjs fails on a key twice in a block, a key missing from a language, or a line in the wrong script.

@@ -35,3 +35,16 @@
 #intro .zi-name { display: none; }
 /* black · white · pink (the owner, 2026-11-25): the paintings are graded once as they load (intro.js duo) */
 #intro { background: #000; }
+/* the clean look (the owner, 2026-11-25: "로딩 장면도 수정해봐"): black all through, Pretendard, a readable tag and skip, a
+   slim loading line under the logo that fills while the page gets ready behind it */
+#intro, #intro * { font-family: "Pretendard Variable", Pretendard, -apple-system, "Apple SD Gothic Neo", "Noto Sans KR", sans-serif !important; letter-spacing: 0 !important; }
+#intro .zi-end { gap: 18px; }
+#intro .zi-tag { font-size: clamp(14px, 1.5vw, 17px) !important; font-weight: 700 !important; letter-spacing: 0.02em !important; padding: 0 !important; color: rgba(255, 255, 255, 0.86); text-transform: none; }
+#intro .zi-bar { width: min(200px, 46vw); height: 3px; border-radius: 3px; background: rgba(255, 255, 255, 0.12); overflow: hidden; opacity: 0; }
+#intro .zi-bar i { display: block; width: 100%; height: 100%; background: #ff2e88; transform: scaleX(0); transform-origin: left; }
+#intro.end .zi-bar { animation: zitag 0.4s ease 0.7s both; }
+#intro.end .zi-bar i { animation: zibar 1.5s cubic-bezier(0.4, 0, 0.2, 1) 0.8s both; }
+@keyframes zibar { to { transform: scaleX(1); } }
+#intro .zi-skip { font-size: 13px !important; font-weight: 700 !important; padding: 9px 16px !important; background: rgba(255, 255, 255, 0.1) !important; border: 1px solid rgba(255, 255, 255, 0.22) !important; color: #fff !important; backdrop-filter: none; }
+#intro .zi-fan { font-size: 11.5px !important; font-weight: 500 !important; color: rgba(255, 255, 255, 0.6) !important; }
+@media (prefers-reduced-motion: reduce) { #intro.end .zi-bar { animation: none; opacity: 1; } #intro.end .zi-bar i { animation: none; transform: none; } }

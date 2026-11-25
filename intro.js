@@ -12,7 +12,7 @@ import { t } from "/i18n.js";
 const root = document.getElementById("intro");
 const html = document.documentElement;
 const FORCE = /[?&]intro=1\b/.test(location.search);
-const BG = "#1d1930";
+const BG = "#000"; // black · white · pink: the same black as the page and the end card (was a purple-black)
 // the tableaux: back painting + the piece that rushes past in front of it ([x, y] = its middle as a share of the painting
 // from the centre, w = its width as a share of the painting's, side: which way it leaves)
 const SCENES = [
@@ -44,7 +44,7 @@ async function start() {
   ss("dc.intro", "1"); ls("dc.intro.seen", "1");
   html.style.overflow = "hidden";
   root.className = "zi" + (short ? " short" : "");
-  root.innerHTML = `<canvas class="zi-cv"></canvas><div class="zi-end"><img class="zi-badge" alt="" src="/images/logo-500.webp"><div class="zi-name"></div><div class="zi-tag"></div></div><button class="zi-skip" type="button"></button><p class="zi-fan"></p>`;
+  root.innerHTML = `<canvas class="zi-cv"></canvas><div class="zi-end"><img class="zi-badge" alt="" src="/images/logo-500.webp"><div class="zi-name"></div><div class="zi-tag"></div><div class="zi-bar"><i></i></div></div><button class="zi-skip" type="button"></button><p class="zi-fan"></p>`;
   const $ = (s) => root.querySelector(s);
   $(".zi-skip").textContent = t("ixSkip", "SKIP ›");
   $(".zi-fan").textContent = t("ixFan", "Fan-made · not affiliated with or endorsed by Rockstar Games or Take-Two Interactive.");
@@ -76,15 +76,16 @@ async function start() {
   const star = (x, y, r, a, glow) => {
     if (a <= 0) return;
     ctx.save(); ctx.translate(x, y); ctx.globalAlpha = a; ctx.globalCompositeOperation = "lighter";
-    if (glow > 0) { const R = r * glow, g = ctx.createRadialGradient(0, 0, 0, 0, 0, R); g.addColorStop(0, "rgba(255,200,235,0.85)"); g.addColorStop(0.18, "rgba(255,90,180,0.55)"); g.addColorStop(0.45, "rgba(255,130,60,0.22)"); g.addColorStop(1, "rgba(120,60,255,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill(); }
+    if (glow > 0) { const R = r * glow, g = ctx.createRadialGradient(0, 0, 0, 0, 0, R); g.addColorStop(0, "rgba(255,200,235,0.85)"); g.addColorStop(0.18, "rgba(255,90,180,0.55)"); g.addColorStop(0.45, "rgba(255,46,136,0.18)"); g.addColorStop(1, "rgba(255,46,136,0)"); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill(); }
     for (const [an, L, wd] of [[0, 7, 0.07], [Math.PI / 2, 5, 0.06], [Math.PI / 4, 3.2, 0.035], [-Math.PI / 4, 3.2, 0.035]]) {
       ctx.save(); ctx.rotate(an); const len = r * L, g = ctx.createLinearGradient(-len, 0, len, 0);
-      g.addColorStop(0, "rgba(255,80,170,0)"); g.addColorStop(0.5, "rgba(255,235,245,0.9)"); g.addColorStop(1, "rgba(255,140,60,0)");
+      g.addColorStop(0, "rgba(255,80,170,0)"); g.addColorStop(0.5, "rgba(255,235,245,0.9)"); g.addColorStop(1, "rgba(255,80,170,0)");
       ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(0, 0, len, Math.max(1, r * wd), 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
     }
     ctx.globalCompositeOperation = "source-over";
     const path = () => { ctx.beginPath(); for (let i = 0; i < 10; i++) { const rr = i % 2 ? r * 0.45 : r, an = -Math.PI / 2 + (i * Math.PI) / 5; ctx.lineTo(Math.cos(an) * rr, Math.sin(an) * rr); } ctx.closePath(); };
-    const f = ctx.createRadialGradient(0, 0, 0, 0, 0, r); f.addColorStop(0, "#fff"); f.addColorStop(0.35, "#ffe0f0"); f.addColorStop(0.8, "#ff5fb4"); f.addColorStop(1, "#ff8a3d");
+    const f = ctx.createRadialGradient(0, 0, 0, 0, 0, r); f.addColorStop(0, "#fff"); f.addColorStop(0.35, "#ffe0f0"); f.addColorStop(0.8, "#ff5fb4"); f.addColorStop(1, "#ff2e88");
+    if (r > 28) { ctx.restore(); return; } // grown big it is light only — glow and rays, no cartoon star shape
     path(); ctx.shadowColor = "#ff4fae"; ctx.shadowBlur = Math.min(60, r * 0.9); ctx.fillStyle = f; ctx.fill(); ctx.restore();
   };
   const endCard = async () => { root.classList.add("end"); await sleep(still ? 1600 : 2300); leave(); };
@@ -152,9 +153,9 @@ async function start() {
     const el = performance.now() - T0;
     ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H);
     if (el < BURST) { // the star swells and floods the screen in pink and orange, the first painting behind it
-      const k = el / BURST, r = 6 + Math.pow(k, 3) * Math.hypot(W, H) * 0.9;
+      const k = el / BURST, r = 6 + Math.pow(k, 3) * Math.hypot(W, H) * 0.45;
       if (k > 0.55) drawAt(scenes[0], 0.6 + 0.4 * ease((k - 0.55) / 0.45), false, clamp((k - 0.55) / 0.3), 0, 0);
-      star(W / 2, H / 2, r, 1 - clamp((k - 0.75) / 0.25), 2.6);
+      star(W / 2, H / 2, r, (1 - clamp((k - 0.6) / 0.35)) * 0.85, 2.2);
       raf = requestAnimationFrame(frame); return;
     }
     const tf = el - BURST, flyEnd = PER * (n - 1 + TAIL);
@@ -176,9 +177,9 @@ async function start() {
     if (to < OUT) { // the rush out: zoom-blur copies of the last painting going pink, collapsing to a star
       const k = to / OUT, last = scenes[n - 1], sc = Math.pow(K, TAIL) * (1 + 2.5 * ease(k));
       for (let c = 0; c < 6; c++) drawAt(last, sc * (1 + c * 0.06 * (1 - k)), false, (1 - k) * (c ? 0.25 : 0.9), 0, 0);
-      ctx.globalCompositeOperation = "source-atop"; ctx.fillStyle = `rgba(255,70,170,${0.25 + 0.6 * k})`; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = "source-over";
-      ctx.fillStyle = `rgba(29,25,48,${clamp((k - 0.45) / 0.4)})`; ctx.fillRect(0, 0, W, H);
-      star(W / 2, H / 2, Math.max(6, (1 - ease(k)) * Math.hypot(W, H) * 0.5), clamp(k * 3), 2.4);
+      ctx.globalCompositeOperation = "source-atop"; ctx.fillStyle = `rgba(255,46,136,${0.15 + 0.35 * k})`; ctx.fillRect(0, 0, W, H); ctx.globalCompositeOperation = "source-over";
+      ctx.fillStyle = `rgba(0,0,0,${clamp((k - 0.35) / 0.4)})`; ctx.fillRect(0, 0, W, H);
+      star(W / 2, H / 2, Math.max(6, (1 - ease(k)) * Math.min(W, H) * 0.2), clamp(k * 2) * 0.6, 1.6); // a small star, not a screen-filling flash
       raf = requestAnimationFrame(frame); return;
     }
     ctx.fillStyle = BG; ctx.fillRect(0, 0, W, H);

@@ -48,7 +48,8 @@ export function initSound() {
 const shown = new WeakMap();
 export function roll(el, to, fmt) {
   const from = shown.has(el) ? shown.get(el) : 0; shown.set(el, to);
-  if (matchMedia("(prefers-reduced-motion: reduce)").matches || from === to) { el.textContent = fmt(to); return; }
+  // no counting up (the owner, 2026-11-25: the numbers rolling from 0 on every visit looked like the page reloading its data)
+  if (true || matchMedia("(prefers-reduced-motion: reduce)").matches || from === to) { el.textContent = fmt(to); return; }
   const t0 = performance.now(), d = 900;
   const step = (n) => { const k = Math.min(1, (n - t0) / d), e = 1 - Math.pow(1 - k, 3); el.textContent = fmt(from + (to - from) * e); if (k < 1) requestAnimationFrame(step); };
   requestAnimationFrame(step);
