@@ -25,7 +25,8 @@ export async function paintLp(box, { coins, CFG }) {
   const cell = (c, kind) => {
     const p = pool(c.mint, kind), pair = kind === "sol" ? "SOL" : "$" + mainSym;
     if (!p) return `<div class="lp-cell none"><b>$${esc(c.symbol)} / ${esc(pair)}</b><i class="lp-drop" aria-hidden="true"></i><small>${esc(t("lpNone", "No pool yet"))}</small><p class="lp-first">${esc(tfill(t("lpFirst", "Be the first: create the pool on Raydium. From {m} of liquidity it earns a share of the day's rewards."), { m: usd(V.minPoolUsd || 1000) }))}</p><a class="btn ghost" href="${RAY_NEW}" target="_blank" rel="noopener">${esc(t("lpCreate", "Create on Raydium"))} ↗</a></div>`;
-    return `<div class="lp-cell${kind === "main" ? " boost" : ""}"><b>$${esc(c.symbol)} / ${esc(pair)}</b>${kind === "main" ? `<i class="lp-x">×${V.boostMain}</i>` : ""}
+    const sh = V.daily ? Math.max(6, Math.min(100, (p.perDay / V.daily) * 100)) : 0;
+    return `<div class="lp-cell${kind === "main" ? " boost" : ""}"><i class="lp-drop on" style="--f:${sh.toFixed(0)}%" title="${sh.toFixed(0)}%" aria-hidden="true"><b></b></i><b>$${esc(c.symbol)} / ${esc(pair)}</b>${kind === "main" ? `<i class="lp-x">×${V.boostMain}</i>` : ""}
       <div class="lp-kv"><span>${esc(t("lpTvl", "Liquidity"))}</span><b>${usd(p.tvl)}</b></div>
       <div class="lp-kv"><span>${esc(t("lpDay", "Reward / day"))}</span><b>${fmt(p.perDay)} $${esc(mainSym)}</b></div>
       <div class="lp-kv"><span>APR</span><b>${p.apr != null ? (p.apr * 100).toFixed(p.apr >= 1 ? 0 : 1) + "%" : "–"}</b></div>
@@ -47,6 +48,8 @@ export async function paintLp(box, { coins, CFG }) {
       <li>${esc(t("lpHow4", "Rewards are paid in the main coin from the rewards wallet; every payout is a public transaction."))}</li></ol></details>
     ${V.last && V.last.length ? `<div class="lp-paid"><h4>${esc(t("lpLast", "Latest payouts"))}</h4>${V.last.map((x) => `<a href="https://solscan.io/tx/${esc(x.sig)}" target="_blank" rel="noopener"><span>${new Date(x.at).toISOString().slice(5, 16).replace("T", " ")}</span><b>${fmt(x.amount)} $${esc(mainSym)}</b><small>${x.n} ${esc(t("lpWallets", "wallets"))}</small></a>`).join("")}</div>` : ""}
     <div class="lp-admin" hidden></div>`;
+  // cashback that grew since this wallet last looked rises over its number once
+  try { if (CB && CB.me) { const k = "dc.cbSeen", was = Number(localStorage.getItem(k) || 0), now = CB.me.earned || 0; localStorage.setItem(k, String(now)); const hi = box.querySelector(".cb-stats .hi"); if (hi && was > 0 && now > was) { const f = document.createElement("span"); f.className = "cb-up"; f.textContent = "+" + fmt(now - was); hi.appendChild(f); setTimeout(() => f.remove(), 2600); } } } catch {}
   const cb = box.querySelector('[data-lp="conn"]'); if (cb) cb.onclick = async () => { await openWallet(); paintLp(box, { coins, CFG }); };
   // the rewards wallet sees the payout desk
   const W = await sol().catch(() => null);

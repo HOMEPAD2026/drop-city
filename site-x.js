@@ -97,8 +97,9 @@ export async function paintLive(coins, onTrade) {
   lastItems = items;
   const fresh = items.filter((x) => !seenTr.has(x.sig)); fresh.forEach((x) => seenTr.add(x.sig));
   if (!firstTr) fresh.slice(0, 4).forEach((x) => { tone(x.side === "buy" ? "buy" : "sell"); onTrade && onTrade(x); });
+  const isNew = new Set(firstTr ? [] : fresh.map((x) => x.sig));
   firstTr = false;
-  el.innerHTML = items.length ? items.slice(0, 18).map((x) => `<div class="tr ${x.side}${x.sol >= 1 ? " big" : ""}" data-m="${esc(x.mint)}"><span class="sd">${x.side.toUpperCase()}</span><span><b>$${esc(x.symbol)}</b> <small>${x.sol.toFixed(3)} SOL${x.usd ? " · $" + x.usd.toFixed(0) : ""}</small></span><small class="who">${esc(short(x.who))}</small><small>${ago(x.at)}</small></div>`).join("") : `<div class="live-empty">${t("noTrades", "No trades yet — the first one shows up here.")}</div>`;
+  el.innerHTML = items.length ? items.slice(0, 18).map((x) => `<div class="tr ${x.side}${x.sol >= 1 ? " big" : ""}${isNew.has(x.sig) ? " new" : ""}" data-m="${esc(x.mint)}"><span class="sd">${x.side.toUpperCase()}</span><span><b>$${esc(x.symbol)}</b> <small>${x.sol.toFixed(3)} SOL${x.usd ? " · $" + x.usd.toFixed(0) : ""}</small></span><small class="who">${esc(short(x.who))}</small><small>${ago(x.at)}</small></div>`).join("") : `<div class="live-empty">${t("noTrades", "No trades yet — the first one shows up here.")}</div>`;
 }
 const ago = (ms) => { const s = Math.max(0, Math.round((Date.now() - ms) / 1000)); return s < 60 ? s + "s" : s < 3600 ? Math.floor(s / 60) + "m" : Math.floor(s / 3600) + "h"; };
 

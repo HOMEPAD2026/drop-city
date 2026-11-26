@@ -1,0 +1,85 @@
+/* motion.css — movement and small finishing touches over clean.css (the owner, 2026-11-26: "응 다 진행하자").
+   Everything here is transform / opacity / short-lived, nothing repaints the moving hero sky, and all of it stops for
+   prefers-reduced-motion. */
+
+/* the NFT and LP pages come in like the others */
+html.js[data-page="nft"] #pg-nft, html.js[data-page="lp"] #pg-lp { animation: pgin 0.32s ease both; }
+
+/* the phone's dock: a pink pill slides under the chosen page (fx.js places it) */
+.bbar .bb-pill { position: absolute; left: 0; top: 6px; height: 56px; width: 0; border-radius: 16px; background: rgba(255, 46, 136, 0.18); box-shadow: inset 0 0 0 1px rgba(255, 46, 136, 0.35); opacity: 0; pointer-events: none; z-index: 0;
+  transition: transform 0.38s cubic-bezier(0.2, 0.9, 0.2, 1), width 0.38s cubic-bezier(0.2, 0.9, 0.2, 1), opacity 0.2s; }
+.bbar a, .bbar button { position: relative; z-index: 1; }
+html.fx-pill .bbar a.on { background: transparent !important; }
+.bbar a.on svg { animation: bbpop 0.36s cubic-bezier(0.2, 0.9, 0.2, 1.4); }
+@keyframes bbpop { 40% { transform: translateY(-3px) scale(1.12); } }
+
+/* a new trade slides in at the top of the live feed; a buy flashes pink */
+.tr.new { animation: trin 0.5s cubic-bezier(0.2, 0.9, 0.2, 1) both; }
+.tr.new.buy { animation: trin 0.5s cubic-bezier(0.2, 0.9, 0.2, 1) both, trflash 1.4s ease-out; }
+@keyframes trin { from { opacity: 0; transform: translateY(-12px); } }
+@keyframes trflash { 0% { background-color: rgba(255, 46, 136, 0.32); } 100% { background-color: transparent; } }
+
+/* a market cap that moved since the last read: up flashes pink, down grey, once */
+.mcv { display: inline-block; }
+.mcv.up { animation: mcup 1.6s ease-out; }
+.mcv.dn { animation: mcdn 1.6s ease-out; }
+@keyframes mcup { 0% { color: #ff2e88; transform: translateY(-2px); text-shadow: 0 0 14px rgba(255, 46, 136, 0.6); } 100% { color: inherit; transform: none; text-shadow: none; } }
+@keyframes mcdn { 0% { color: #8d8d93; transform: translateY(2px); } 100% { color: inherit; transform: none; } }
+
+/* a supported coin's card: a pink sheen crosses it on hover */
+.cc.sup::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; z-index: 3;
+  background: linear-gradient(115deg, transparent 38%, rgba(255, 122, 184, 0.2) 50%, transparent 62%); transform: translateX(-120%); }
+@media (hover: hover) { .cc.sup:hover::after { animation: supshine 1s ease; } }
+@keyframes supshine { to { transform: translateX(120%); } }
+
+/* skeletons while the data arrives (replaced by the first paint) */
+.sk { position: relative; overflow: hidden; border-radius: 20px; background: #111116; border: 1px solid rgba(255, 255, 255, 0.06); padding: 16px; display: grid; align-content: start; gap: 10px; }
+.sk i { display: block; height: 12px; border-radius: 6px; background: rgba(255, 255, 255, 0.06); }
+.sk i:nth-child(1) { width: 52px; height: 52px; border-radius: 50%; } .sk i:nth-child(2) { width: 62%; height: 16px; } .sk i:nth-child(3) { width: 40%; }
+.sk::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, 0.05) 50%, transparent 70%); transform: translateX(-100%); animation: skmove 1.3s ease-in-out infinite; }
+@keyframes skmove { to { transform: translateX(100%); } }
+.sk-cc { min-height: 210px; }
+.sk-wrap { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.sk-hero, .sk-pool { grid-column: 1 / -1; min-height: 220px; } .sk-pool { min-height: 150px; }
+.sk-card { min-height: 220px; } .sk-stat { min-height: 84px; }
+@media (max-width: 760px) { .sk-cc { min-height: 150px; } .sk-wrap { grid-template-columns: 1fr 1fr; } }
+
+/* NFT: the pack is a fan of three real cards that opens a little on hover */
+.cd-fan { position: relative; aspect-ratio: 3 / 3.6; max-width: 360px; margin: 0 auto; }
+.cd-fan img:not(.cd-fl img) { position: absolute; top: 4%; left: 24%; width: 52%; border-radius: 12px; box-shadow: 0 24px 50px rgba(0, 0, 0, 0.6); transition: transform 0.5s cubic-bezier(0.2, 0.9, 0.2, 1); }
+.cd-fan .f1 { transform: rotate(-13deg) translateX(-34%) translateY(6%); }
+.cd-fan .f3 { transform: rotate(13deg) translateX(34%) translateY(6%); }
+.cd-fan .f2 { z-index: 2; animation: fanfloat 4.5s ease-in-out infinite; box-shadow: 0 0 0 2px rgba(255, 46, 136, 0.7), 0 0 50px rgba(255, 46, 136, 0.35), 0 30px 60px rgba(0, 0, 0, 0.7) !important; }
+@media (hover: hover) { .cd-pack:hover .f1 { transform: rotate(-19deg) translateX(-50%) translateY(4%); } .cd-pack:hover .f3 { transform: rotate(19deg) translateX(50%) translateY(4%); } }
+@keyframes fanfloat { 50% { transform: translateY(-8px); } }
+.cd-fl { position: absolute; left: 50%; bottom: 0; transform: translateX(-50%); z-index: 3; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; padding: 7px 14px 7px 8px; border-radius: 999px; background: rgba(10, 10, 12, 0.88); border: 1px solid rgba(255, 255, 255, 0.12); font-size: 12px; font-weight: 800; color: #fff; }
+.cd-fl img { width: 34px; height: auto; }
+
+/* the reveal: the rarity's name pops under each card; a legendary flashes the screen pink and shakes the row */
+.cd-f { position: relative; }
+.cd-f.up::after { content: attr(data-rar); position: absolute; left: 50%; bottom: -30px; transform: translateX(-50%); white-space: nowrap; font-size: 13px; font-weight: 800; color: var(--r); animation: rarpop 0.5s 0.35s cubic-bezier(0.2, 0.9, 0.2, 1.4) both; }
+@keyframes rarpop { from { opacity: 0; transform: translateX(-50%) translateY(8px) scale(0.8); } }
+.cd-rev.legend { background: radial-gradient(60% 50% at 50% 50%, rgba(255, 46, 136, 0.3), rgba(6, 5, 10, 0.94)) !important; }
+.cd-rev.flash::after { content: ""; position: fixed; inset: 0; pointer-events: none; background: radial-gradient(circle at 50% 50%, rgba(255, 122, 184, 0.75), rgba(255, 46, 136, 0.2) 45%, transparent 70%); animation: lflash 1.1s ease-out forwards; }
+.cd-rev.flash .cd-row { animation: lshake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+@keyframes lflash { from { opacity: 1; } to { opacity: 0; } }
+@keyframes lshake { 10%, 90% { transform: translateX(-2px); } 20%, 80% { transform: translateX(4px); } 30%, 50%, 70% { transform: translateX(-7px); } 40%, 60% { transform: translateX(7px); } }
+
+/* LP: each pool's drop fills to its share of the day's reward */
+.lp-cell .lp-drop { position: absolute; top: 12px; right: 12px; width: 18px; height: 22px; overflow: hidden; background: rgba(255, 255, 255, 0.1); clip-path: path("M9 0C13 6 18 11 18 15a9 9 0 0 1-18 0C0 11 5 6 9 0Z"); }
+.lp-cell.boost .lp-drop { right: 54px; }
+.lp-cell.none .lp-drop { background: rgba(255, 46, 136, 0.18); }
+.lp-drop b { position: absolute; left: 0; right: 0; bottom: 0; height: var(--f, 0%); background: #ff2e88; animation: dropfill 1.3s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes dropfill { from { height: 0; } }
+/* cashback that grew since the last visit floats up over its number */
+.cb-stats .hi { position: relative; }
+.cb-up { position: absolute; right: 12px; top: 8px; font-size: 14px; font-weight: 800; color: #ff2e88; animation: cbup 2.4s ease-out forwards; pointer-events: none; }
+@keyframes cbup { 0% { opacity: 0; transform: translateY(8px); } 15% { opacity: 1; transform: none; } 100% { opacity: 0; transform: translateY(-26px); } }
+
+/* LP page heading: a drop beside it */
+#pg-lp .sec-h h2::after { content: ""; display: inline-block; width: 22px; height: 28px; margin-left: 12px; vertical-align: -2px; background: linear-gradient(180deg, #ff7ab8, #ff2e88); clip-path: path("M11 0C16 8 22 13 22 19a11 11 0 0 1-22 0C0 13 6 8 11 0Z"); }
+
+@media (prefers-reduced-motion: reduce) {
+  .tr.new, .mcv.up, .mcv.dn, .cd-fan .f2, .cd-f.up::after, .cd-rev.flash::after, .cd-rev.flash .cd-row, .lp-drop b, .cb-up, .sk::after, .bbar a.on svg, html.js[data-page] #pg-nft, html.js[data-page] #pg-lp { animation: none !important; }
+  .bbar .bb-pill, .cd-fan img { transition: none !important; }
+}

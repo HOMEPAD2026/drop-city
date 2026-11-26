@@ -14,6 +14,7 @@ const isSup = (c) => !!c && c.kind === "partner", isMade = (c) => !!c && !!c.gra
 const UI = { all: false, mcOpen: false, cap: 0 };
 try { UI.all = sessionStorage.getItem("dc.all") === "1"; } catch {}
 const tiers = new Map(); // a coin's wanted stars last time, to flash a new one
+const prevMc = new Map(); // a coin's market cap last time: a move flashes once (pink up, grey down)
 const html = document.documentElement;
 const phoneQ = matchMedia("(max-width: 760px)"), stripQ = matchMedia("(max-width: 1100px)");
 const finePtr = matchMedia("(hover: hover) and (pointer: fine)").matches;
@@ -168,13 +169,14 @@ function paintGrid() {
 }
 let capT = 0;
 addEventListener("resize", () => { clearTimeout(capT); capT = setTimeout(() => { if (capNow() !== UI.cap) paintGrid(); }, 150); });
+function mcMove(c) { const pm = prevMc.get(c.mint), v = c.mcapUsd || 0; prevMc.set(c.mint, v); return pm == null || !pm || !v ? "" : v > pm * 1.002 ? " up" : v < pm * 0.998 ? " dn" : ""; }
 function card(c, i) {
   const fresh = c.launchedAt && Date.now() / 1000 - c.launchedAt < 3600;
   const st = stars(c), was = tiers.get(c.mint), up = was != null && was !== st && st.indexOf("☆") > was.indexOf("☆"); tiers.set(c.mint, st);
   const when = c.hour ? t("cDropped", "dropped") + " " + esc(c.hour.slice(5, 10).replace("-", "/")) + " " + esc(c.hour.slice(11, 13)) + ":00" : c.launchedAt ? t("cLaunched", "launched") + " " + esc(new Date(c.launchedAt * 1000).toISOString().slice(5, 16).replace("-", "/").replace("T", " ")) : "";
   return `<article class="cc${isMade(c) ? " made" : ""}${c.mint === CFG.main ? " main" : ""}${c.kind === "partner" ? " sup" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">${esc(c.mint === CFG.main ? t("mcTag", "THE MAIN COIN") : c.kind === "partner" ? t("tagSup", "SUPPORTED") : c.kind === "drop" ? t("tagDrop", "HOURLY DROP") : t("tagUser", "WANTED"))}</span>${isMade(c) ? `<span class="badge">${esc(t("lMade", "MADE"))}</span>` : fresh ? `<span class="badge new">${esc(t("bNew", "NEW"))}</span>` : ""}${pic(c)}<span class="bounty">${esc(t("bounty", "BOUNTY"))} ${usd(c.mcapUsd)}</span></div>
     <div class="body"><h3>${esc(c.name)}</h3><span class="sym">$${esc(c.symbol)}</span>${c.quote ? `<span class="qtag">${esc(c.quote.id)} ${esc(t("pair", "PAIR"))}</span>` : ""}${gradeChip(c.grade)} <span class="stars${up ? " up" : ""}">${st}</span>
-      <div class="row"><b>${usd(c.mcapUsd)}</b><small>${when}</small></div>
+      <div class="row"><b class="mcv${mcMove(c)}">${usd(c.mcapUsd)}</b><small>${when}</small></div>
       ${isSup(c) ? `<div class="bar sup"><i style="width:100%"></i></div><small class="cv">${esc(t("cSupLine", "Supported by the city · not launched here"))}</small>` : `<div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small class="cv">${c.graduated ? esc(t("cGradTo", "graduated to PumpSwap")) : `${esc(t("cCurve", "curve"))} ${(c.progress || 0).toFixed(0)}%`}</small>`}
       ${c.kind === "partner" ? `<p class="supn">🎰 ${esc(t("supNote", "Supported coin · coming to the slot game"))}</p>` : ""}<div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cGame", "Game"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a></div></div></article>`;
 }

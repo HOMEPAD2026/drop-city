@@ -36,7 +36,7 @@ export async function paintCards(box, { CFG }) {
   const left = V.available != null ? Math.floor((V.available - V.redeemed) / SEASON.pack) : null, od = odds();
   box.innerHTML = `
     <div class="cd-hero">
-      <div class="cd-pack" aria-hidden="true"><div class="cd-pk"><img src="/images/logo-192.webp" alt=""><b>GTAFUN CARDS</b><small>SEASON 1 · ${SEASON.pack} ${esc(t("cdCardsWord", "CARDS"))}</small></div></div>
+      <div class="cd-pack" aria-hidden="true"><div class="cd-fan"><img class="f1" src="/nft/img/pepe-360.webp" alt=""><img class="f3" src="/nft/img/pengu-360.webp" alt=""><img class="f2" src="/nft/img/doge-360.webp" alt=""><span class="cd-fl"><img src="/images/logo-96.webp" alt="">SEASON 1 · ${SEASON.pack} ${esc(t("cdCardsWord", "CARDS"))}</span></div></div>
       <div class="cd-buy">
         <h3>${esc(t("cdPackH", "Open a pack"))}</h3>
         <p>${esc(tf("cdPackP", "{n} random cards from the 10 top meme characters — real NFTs in your wallet, picked on chain.", { n: SEASON.pack }))}</p>
@@ -64,10 +64,10 @@ function zoom(c, n) {
 /// the opening: three face-down cards; each flips on a tap (or by itself), the rarer the brighter
 function reveal(cards, again) {
   const el = document.createElement("div"); el.className = "cd-rev";
-  el.innerHTML = `<div class="cd-rt">${esc(t("cdTap", "Tap a card to flip it"))}</div><div class="cd-row">${cards.map((c, i) => `<div class="cd-f" data-i="${i}" style="--r:${RARITY[c.rarity].color};--d:${i * 120}ms"><div class="cd-in"><div class="cd-back"><img src="/images/logo-192.webp" alt=""><b>GTAFUN</b></div><div class="cd-front ${c.rarity}"><img src="${img(c, true)}" alt="${esc(c.name)}"></div></div></div>`).join("")}</div>
+  el.innerHTML = `<div class="cd-rt">${esc(t("cdTap", "Tap a card to flip it"))}</div><div class="cd-row">${cards.map((c, i) => `<div class="cd-f" data-i="${i}" data-rar="${esc(t("rar_" + c.rarity, RARITY[c.rarity].label))}" style="--r:${RARITY[c.rarity].color};--d:${i * 120}ms"><div class="cd-in"><div class="cd-back"><img src="/images/logo-192.webp" alt=""><b>GTAFUN</b></div><div class="cd-front ${c.rarity}"><img src="${img(c, true)}" alt="${esc(c.name)}"></div></div></div>`).join("")}</div>
     <div class="cd-ra" hidden><button type="button" class="btn ghost" data-r="done">${esc(t("cdDone", "Done"))}</button><button type="button" class="btn hot" data-r="again">${esc(t("cdAgain", "Open another"))}</button></div>`;
   document.body.appendChild(el);
-  const flip = (f) => { if (f.classList.contains("up")) return; f.classList.add("up"); const c = cards[Number(f.dataset.i)]; if (c.rarity !== "common") f.classList.add("glow"); if (c.rarity === "legendary") { el.classList.add("legend"); if (navigator.vibrate) try { navigator.vibrate([20, 40, 60]); } catch {} }
+  const flip = (f) => { if (f.classList.contains("up")) return; f.classList.add("up"); const c = cards[Number(f.dataset.i)]; if (c.rarity !== "common") f.classList.add("glow"); if (c.rarity === "legendary") { el.classList.add("legend"); el.classList.remove("flash"); void el.offsetWidth; el.classList.add("flash"); import("/site-x.js").then((m) => m.confetti && m.confetti()).catch(() => {}); if (navigator.vibrate) try { navigator.vibrate([20, 40, 60]); } catch {} } else if (c.rarity === "epic" && navigator.vibrate) try { navigator.vibrate(18); } catch {}
     if (el.querySelectorAll(".cd-f.up").length === cards.length) { el.querySelector(".cd-ra").hidden = false; el.querySelector(".cd-rt").textContent = t("cdGot", "Added to your wallet"); } };
   el.querySelectorAll(".cd-f").forEach((f) => (f.onclick = () => flip(f)));
   setTimeout(() => el.querySelectorAll(".cd-f").forEach((f, i) => setTimeout(() => flip(f), 1400 + i * 900)), 0);
