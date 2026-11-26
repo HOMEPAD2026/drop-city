@@ -191,3 +191,7 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   main-coin line (mcP3); NFT / LP teaser cards (#tease) and three quick answers (#qfaq) on home; the footer in four columns
   (main coin CA copy, socials from pad-config links / PAD_X_URL / PAD_TG_URL — Telegram is @GTAFUNbot, no X until set —,
   pages, more, language, the disclaimer).
+  J4 — home-me.js: My corner (#corner, only with a wallet: my cashback + rank from ?cb=&w=, the watchlist, my coins,
+  City Slots spins left from dc.slot, a link to /w/<me>), the leaderboard teasers (#lbt: cashback all-time top 3,
+  City Slots' week top 3 — a toy score) and the search (the top bar's 🔍, "/" or Ctrl+K: ticker / name / CA; a CA not
+  listed goes to Check a CA).

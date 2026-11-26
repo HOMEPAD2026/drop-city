@@ -5,6 +5,7 @@ import { walletButton } from "/wallet.js";
 import { extrasHtml, wireExtras, isWatched, checkAlerts, chartInto, holdersHtml } from "/coin-x.js";
 import { keepRef } from "/cb-ui.js";
 import { paintCity, notice, paintFoot } from "/home-x.js";
+import { paintCorner, paintBoards, initSearch } from "/home-me.js";
 keepRef(); // an invite link (?ref=<wallet>) is kept on this device until its wallet is linked
 import { openDrop, finishSplit, why, logsBox } from "/launch.js";
 import { feeBox, wireFees } from "/fees.js";
@@ -66,7 +67,7 @@ function flashTrade(x) {
 function paintAll() {
   dropsUi();
   paintHour(); paintMain(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker();
-  paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot(); paintCity({ coins, trades: lastTrades(30), CFG, openCoin }).catch(() => {}); notice();
+  paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot(); paintCity({ coins, trades: lastTrades(30), CFG, openCoin }).catch(() => {}); notice(); paintCorner({ coins, CFG, openCoin, openSlot }).catch(() => {}); paintBoards({ CFG, openSlot }).catch(() => {});
   const sl = $("suffixline"); if (CFG.suffix) { sl.hidden = false; sl.innerHTML = `${esc(t("caEnds", "Every coin's CA ends in"))} <b>${esc(CFG.suffix)}</b>`; const kk = document.querySelector(".hero .kicker"); if (kk) kk.dataset.sfx = "CA …" + CFG.suffix; }
 }
 
@@ -248,7 +249,7 @@ function paintFees() {
 
 // ---------------- CREATORS: your drops and their fees
 let paintWallet = async () => {};
-walletButton($("wallet"), () => { paintMe(); paintVote(CFG); }).then((f) => (paintWallet = f));
+walletButton($("wallet"), (key) => { paintMe(); paintVote(CFG); paintCorner({ key, coins, CFG, openCoin, openSlot }).catch(() => {}); }).then((f) => (paintWallet = f));
 async function paintMe() {
   const W = await sol(), el = $("me");
   if (!W || !W.key) { el.innerHTML = `<div class="me-box"><p class="me-p">${esc(t("meConnectP", "Connect the wallet you launch from to see your drops and the fees they've earned."))}</p><button type="button" class="btn hot" id="me-c">${esc(t("connect", "Connect wallet"))}</button></div>`; $("me-c").onclick = () => $("wallet").click(); return; }
@@ -436,7 +437,9 @@ async function mountCoast() {
 afterIntro(() => document.querySelector(".hero").classList.add("go"));
 mountCoast();
 // the slot game in the top bar: CITY SLOTS (2026-11-26 — a toy: points on the device only, slot.js)
-$("slotbtn").onclick = () => import("/slot.js").then((m) => m.openSlot(coins, CFG)).catch(() => note("The slots didn't load — try again."));
+function openSlot() { import("/slot.js").then((m) => m.openSlot(coins, CFG)).catch(() => note("The slots didn't load — try again.")); }
+$("slotbtn").onclick = openSlot;
+initSearch({ coins: () => coins, openCoin });
 { const dim = () => document.documentElement.style.setProperty("--gm-dim", Math.min(1, scrollY / 520).toFixed(3)); addEventListener("scroll", dim, { passive: true }); dim(); }
 
 start();
@@ -496,5 +499,5 @@ function openCoin(mint) {
   else getJ("?coin=" + encodeURIComponent(c.mint)).then(fill).catch(() => fill(null));
 }
 // a coin watched / unwatched in its window: Explore's ★ marks and the Watching filter follow
-addEventListener("watch:change", () => { try { paintGrid(); } catch {} });
+addEventListener("watch:change", () => { try { paintGrid(); paintCorner({ coins, CFG, openCoin, openSlot }).catch(() => {}); } catch {} });
 addEventListener("dc:refresh", () => { refresh().catch(() => {}); });
