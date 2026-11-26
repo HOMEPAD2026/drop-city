@@ -156,3 +156,38 @@ html.fx-pill .bbar a.on { background: transparent !important; }
 .inst { border: 1px solid rgba(255, 46, 136, 0.55); background: rgba(255, 46, 136, 0.12); color: #fff; border-radius: 999px; padding: 10px 16px; font: 700 14px "Pretendard Variable", Pretendard, system-ui, sans-serif; cursor: pointer; }
 .sitefoot .inst { margin-top: 10px; }
 @media (max-width: 760px) { .fl-r { grid-template-columns: 80px minmax(0, 1fr) auto !important; } .fl-r .fl-w { grid-column: 2 / 4; } .fl-r small:nth-of-type(1) { grid-column: 2; grid-row: 2; } .fl-r small:nth-of-type(2) { grid-column: 3; grid-row: 2; } .fl-r .fl-k { grid-row: 1 / 3; align-self: center; } }
+
+/* CITY SLOTS (slot.js) */
+.sl-wrap { position: fixed; inset: 0; z-index: 80; display: grid; place-items: center; padding: 16px; background: rgba(4, 4, 6, 0.86); animation: pgin 0.2s ease both; }
+.sl-card { position: relative; width: min(420px, 100%); max-height: calc(100dvh - 32px); overflow: auto; padding: 22px 20px 18px; border-radius: 26px; background: radial-gradient(120% 70% at 50% 0%, rgba(255, 46, 136, 0.22), transparent 60%), #0e0e12; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 40px 120px rgba(0, 0, 0, 0.7); display: grid; gap: 14px; text-align: center; }
+.sl-x { position: absolute; top: 12px; right: 12px; }
+.sl-k { font-size: 12px; font-weight: 800; color: #ff2e88; } .sl-h { display: block; margin-top: 4px; font-size: 24px; font-weight: 800; color: #fff; }
+.sl-hud { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sl-hud div { padding: 10px 6px; border-radius: 14px; background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255, 255, 255, 0.08); } .sl-hud b { display: block; font-size: 18px; font-weight: 800; color: #fff; } .sl-hud small { font-size: 11.5px; color: #8d8d93; }
+.sl-machine { position: relative; padding: 12px; border-radius: 22px; background: linear-gradient(180deg, #1a1a20, #0a0a0c); border: 1px solid rgba(255, 46, 136, 0.4); box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.7), 0 0 40px rgba(255, 46, 136, 0.15); }
+.sl-reels { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sl-reel { height: 288px; overflow: hidden; border-radius: 14px; background: #f4f1ee; position: relative; }
+.sl-reel::before, .sl-reel::after { content: ""; position: absolute; left: 0; right: 0; height: 70px; z-index: 2; pointer-events: none; }
+.sl-reel::before { top: 0; background: linear-gradient(180deg, rgba(10, 10, 12, 0.75), transparent); } .sl-reel::after { bottom: 0; background: linear-gradient(0deg, rgba(10, 10, 12, 0.75), transparent); }
+.sl-strip { will-change: transform; }
+.sl-c { height: 96px; display: grid; place-items: center; }
+.sl-c img { width: 66px; height: 66px; border-radius: 50%; object-fit: cover; box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3); }
+.sl-c b { width: 66px; height: 66px; border-radius: 50%; display: grid; place-items: center; font-size: 20px; font-weight: 900; color: #fff; background: radial-gradient(70% 70% at 30% 25%, #ff5fa6, #b3125f); }
+.sl-c b.sv { background: none; color: #ff2e88; font-size: 54px; text-shadow: 0 3px 0 #b3125f; } .sl-c b.st { background: none; color: #ff2e88; font-size: 50px; }
+.sl-reel.stop { animation: slstop 0.28s cubic-bezier(0.2, 0.9, 0.2, 1.4); } @keyframes slstop { 40% { transform: translateY(5px); } }
+.sl-line { position: absolute; left: 6px; right: 6px; top: 50%; height: 100px; transform: translateY(-50%); border-radius: 16px; border: 2px solid rgba(255, 46, 136, 0.55); pointer-events: none; }
+.sl-wrap.win .sl-line { border-color: #ff2e88; box-shadow: 0 0 0 4px rgba(255, 46, 136, 0.25), 0 0 30px rgba(255, 46, 136, 0.6); animation: slwin 0.9s ease 2; }
+@keyframes slwin { 50% { box-shadow: 0 0 0 8px rgba(255, 46, 136, 0.1), 0 0 50px rgba(255, 46, 136, 0.9); } }
+.sl-wrap.big .sl-machine { animation: lshake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97); }
+.sl-msg { min-height: 22px; font-size: 15px; color: #a1a1aa; } .sl-msg b { color: #ff2e88; font-size: 20px; font-weight: 900; }
+.sl-go { width: 100%; font-size: 18px !important; }
+.sl-pay { text-align: left; font-size: 13.5px; color: #a1a1aa; } .sl-pay summary { cursor: pointer; color: #fff; font-weight: 700; }
+.sl-pay ul { list-style: none; margin: 10px 0; padding: 0; display: grid; gap: 4px; } .sl-pay li { display: flex; justify-content: space-between; padding: 6px 10px; border-radius: 10px; background: rgba(255, 255, 255, 0.04); } .sl-pay li b { color: #fff; }
+.sl-pay p { margin: 6px 0 0; font-size: 12.5px; line-height: 1.5; }
+@media (max-height: 720px) { .sl-reel { height: 240px; } }
+.gm-slot .gs-new { background: #ff2e88 !important; color: #fff !important; }
+/* NFT: the set's progress and its completion */
+.cd-h .cd-prog { display: inline-block; vertical-align: middle; width: 90px; height: 6px; margin-left: 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); overflow: hidden; } .cd-h .cd-prog i { display: block; height: 100%; background: #ff2e88; border-radius: 999px; }
+.cd-h .cd-done { margin-left: 10px; padding: 4px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; color: #fff; background: linear-gradient(90deg, #ff2e88, #ff7ab8); box-shadow: 0 0 20px rgba(255, 46, 136, 0.5); animation: rarpop 0.6s cubic-bezier(0.2, 0.9, 0.2, 1.4) both; }
+@media (prefers-reduced-motion: reduce) { .sl-reel.stop, .sl-wrap.win .sl-line, .sl-wrap.big .sl-machine { animation: none !important; } }
+.sl-go { display: flex !important; justify-content: center !important; text-align: center; }

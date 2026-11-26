@@ -182,7 +182,7 @@ function card(c, i) {
     <div class="body"><h3>${esc(c.name)}</h3><span class="sym">$${esc(c.symbol)}</span>${c.quote ? `<span class="qtag">${esc(c.quote.id)} ${esc(t("pair", "PAIR"))}</span>` : ""}${gradeChip(c.grade)} <span class="stars${up ? " up" : ""}">${st}</span>
       <div class="row"><b class="mcv${mcMove(c)}">${usd(c.mcapUsd)}</b><small>${when}</small></div>
       ${isSup(c) ? `<div class="bar sup"><i style="width:100%"></i></div><small class="cv">${esc(t("cSupLine", "Supported by the city · not launched here"))}</small>` : `<div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small class="cv">${c.graduated ? esc(t("cGradTo", "graduated to PumpSwap")) : `${esc(t("cCurve", "curve"))} ${(c.progress || 0).toFixed(0)}%`}</small>`}
-      ${c.kind === "partner" ? `<p class="supn">🎰 ${esc(t("supNote", "Supported coin · coming to the slot game"))}</p>` : ""}<div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cGame", "Game"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a></div></div></article>`;
+      ${c.kind === "partner" ? `<p class="supn">🎰 ${esc(t("supNote2", "Supported coin · on the slot game's reels"))}</p>` : ""}<div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cGame", "Game"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a></div></div></article>`;
 }
 
 // ---------------- TODAY'S 24 (a swipe row on phones: brought to the current hour on first paint and when the tab opens)
@@ -397,14 +397,8 @@ async function mountCoast() {
 // the H1 slams in once the page is in view (after the intro, or at once), with or without the scene
 afterIntro(() => document.querySelector(".hero").classList.add("go"));
 mountCoast();
-// the slot game in the top bar: coming soon (the owner, 2026-11-20 — built later)
-$("slotbtn").onclick = () => {
-  let m = document.querySelector(".soon-card"); if (m) return m.remove();
-  m = document.createElement("div"); m.className = "soon-card"; m.setAttribute("role", "dialog"); m.setAttribute("aria-label", t("slotT", "GAME"));
-  m.innerHTML = `<div class="sc-in"><div class="sc-ic">${$("slotbtn").querySelector("svg").outerHTML}</div><b>${esc(t("slotH", "SLOTS — COMING SOON"))}</b><p>${esc(t("slotP", "A slot mini-game is on the way — with the city's coins on the reels, starting with $DCTY."))}</p><button type="button" class="btn hot">${esc(t("ok", "OK"))}</button></div>`;
-  m.onclick = (e) => { if (e.target === m || e.target.closest("button")) m.remove(); };
-  document.body.appendChild(m); tone("tick");
-};
+// the slot game in the top bar: CITY SLOTS (2026-11-26 — a toy: points on the device only, slot.js)
+$("slotbtn").onclick = () => import("/slot.js").then((m) => m.openSlot(coins, CFG)).catch(() => note("The slots didn't load — try again."));
 { const dim = () => document.documentElement.style.setProperty("--gm-dim", Math.min(1, scrollY / 520).toFixed(3)); addEventListener("scroll", dim, { passive: true }); dim(); }
 
 start();

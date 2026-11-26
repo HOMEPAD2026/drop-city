@@ -52,7 +52,10 @@ The owner's standing facts — keep every page, bot message, post and tweet true
 - **Supported coins (the owner, 2026-11-20):** pad-config.js `supported` — coins the city supports without launching them
   ($DCTY 9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump first; 2026-11-24: + DKYcjob…pump, 2xCd5q…cJjX, 6MKD1N…pump, 9jhs5q…pump; a token without Metaplex metadata gets its card from Dexscreener, a partner off the pump.fun curve is priced there). The list carries them as kind "partner" (no creator, no
   fees, never in creator ranks), EXPLORE pins them after the main coin with a gold SUPPORTED tag, and they'll be on the
-  slot mini-game's reels. The slot game itself is "coming soon" (the 🎰 GAME button in the top bar) — not built yet.
+  slot mini-game's reels. **CITY SLOTS is built (2026-11-26):** the 🎰 GAME button opens slot.js (rules in slot-data.js,
+  tests/slot.test.mjs): the main coin + the supported coins + 7 + ★ (wild) on three reels, the middle line pays; 10 free spins a
+  UTC day, +1 a day of streak (≤ +5), titles by streak; points live on the device only (dc.slot) — a toy, never money,
+  tokens or rewards. NFT: the set shows its progress and ★ SET COMPLETE at 10 / 10.
 - **The premium look (the owner, 2026-11-24: "too intense — premium, GTA style"):** premium.css over game.css — near-black
   glass, white type, one warm gold accent (--pm-acc) used sparingly, hairline borders, underline tabs, the main button
   warm white, no neon glows / offset shadows / scanlines. The phone's bottom bar: frosted glass, line icons over small

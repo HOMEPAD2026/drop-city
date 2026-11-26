@@ -45,7 +45,7 @@ export async function paintCards(box, { CFG }) {
         <div class="cd-odds">${Object.entries(RARITY).map(([k, r]) => `<span style="--r:${r.color}"><i></i>${esc(t("rar_" + k, r.label))} ${(od[k] * 100).toFixed(od[k] < 0.02 ? 1 : 0)}%</span>`).join("")}</div>
       </div>
     </div>
-    <h4 class="cd-h">${esc(t("cdSet", "The set"))} <small>${Object.keys(own).length} / ${CARDS.length}</small></h4>
+    <h4 class="cd-h">${esc(t("cdSet", "The set"))} <small>${Object.keys(own).length} / ${CARDS.length}</small>${Object.keys(own).length >= CARDS.length ? `<span class="cd-done">★ ${esc(t("cdComplete", "SET COMPLETE"))}</span>` : Object.keys(own).length ? `<span class="cd-prog"><i style="width:${Math.round((Object.keys(own).length / CARDS.length) * 100)}%"></i></span>` : ""}</h4>
     <div class="cd-grid">${CARDS.map((c) => `<button type="button" class="cd-c${own[c.id] ? " own" : ""}" data-card="${c.id}" style="--r:${RARITY[c.rarity].color}"><img src="${img(c)}" alt="${esc(c.name)}" loading="lazy">${own[c.id] ? `<i>×${own[c.id]}</i>` : ""}</button>`).join("")}</div>
     ${V.board && V.board.pulls && V.board.pulls.length ? `<h4 class="cd-h">${esc(t("cdPulls", "Latest pulls"))}</h4><div class="cd-pulls">${V.board.pulls.slice(0, 12).map((p) => { const c = cardById(p.card); return c ? `<span style="--r:${RARITY[c.rarity].color}"><img src="${img(c)}" alt=""><b>${esc(c.name)}</b><small>${esc(short(p.owner))}</small></span>` : ""; }).join("")}</div>` : ""}
     ${!W || !W.key ? `<p class="cd-note">${esc(t("cdConn", "Connect your wallet to see your cards."))}</p>` : ""}
