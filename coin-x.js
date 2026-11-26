@@ -2,8 +2,8 @@
 // a move of 20 % since the last alert → a toast (and a browser notification while the tab is hidden), the price chart
 // (Dexscreener's embed, loaded on a tap) and Buy here (Jupiter's plugin in a modal, the visitor's own wallet; if the
 // plugin can't load, jup.ag's swap page opens with the coin already picked).
-import { esc, note, usd } from "/common.js";
-import { t } from "/i18n.js";
+import { esc, note, usd, getJ, sol } from "/common.js";
+import { t, tf } from "/i18n.js";
 import { ic } from "/icons.js";
 
 const KEY = "dc.watch", STEP = 0.2, SOL = "So11111111111111111111111111111111111111112";
@@ -34,11 +34,12 @@ export function checkAlerts(coins) {
 }
 
 /// the window's extra row: watch · chart · buy here
-export function extrasHtml(c) {
-  const on = isWatched(c.mint);
+export function extrasHtml(c, CFG = {}) {
+  const on = isWatched(c.mint), tg = CFG.links && CFG.links.tg, earns = c.kind !== "partner";
   return `<div class="cx-row two"><button type="button" class="cx-w${on ? " on" : ""}" data-cx="watch" aria-pressed="${on}"><span class="cx-star">${ic("star")}</span><span>${esc(on ? t("cxWatching", "Watching") : t("cxWatch", "Watch"))}</span></button>
     <button type="button" class="cx-buy" data-cx="buy">${esc(t("cxBuy", "Buy here"))}</button></div>
-    <p class="cx-note">${esc(t("cxWatchN", "Watching tells you when it moves 20% — while this page is open."))}</p>`;
+    ${earns ? `<p class="cx-cb">${ic("cash")} ${esc(tf("cxCb", "0.3% of every trade of this coin comes back to you in {s}", { s: "$" + (CFG.ticker || "GTAFUN") }))}</p>` : ""}
+    <p class="cx-note">${esc(t("cxWatchN", "Watching tells you when it moves 20% — while this page is open."))}${tg ? ` <a class="cx-tg" href="${esc(tg)}?start=w_${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cxTg", "Get its alerts on Telegram ›"))}</a>` : ""}</p>`;
 }
 /// the chart tab: Dexscreener's embed, made when the tab first opens
 export function chartInto(box, c) { if (!box || box.firstChild) return; box.innerHTML = `<iframe title="Chart" loading="lazy" src="https://dexscreener.com/solana/${encodeURIComponent(c.mint)}?embed=1&loadChartSettings=0&trades=0&tabs=0&info=0&chartLeftToolbar=0&chartTheme=dark&theme=dark&chartStyle=1&chartType=usd&interval=15"></iframe>`; }
@@ -56,7 +57,22 @@ export function wireExtras(el, c) {
     const k = b.dataset.cx;
     if (k === "watch") { const on = toggleWatch(c); b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); b.querySelector("span:last-child").textContent = on ? t("cxWatching", "Watching") : t("cxWatch", "Watch"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); note(on ? t("cxAdded", "Added to your watchlist.") : t("cxRemoved", "Removed from your watchlist.")); }
     if (k === "buy") buyHere(c);
+    if (k === "sell") sellHere(c);
   };
+  // you hold it: how much, what it's worth, and a Sell button (the server reads the wallet: ?bag=)
+  sol().then((S) => S && S.key && myBag(S.key)).then((b) => {
+    const h = b && b.items.find((x) => x.mint === c.mint); if (!h || !el.isConnected) return;
+    const p = document.createElement("p"); p.className = "cx-hold";
+    p.innerHTML = `<span>${esc(t("cxHold", "You hold"))} <b>${esc(amtFmt(h.amt))}</b>${h.usd != null ? ` · ${usd(h.usd)}` : ""}</span><button type="button" data-cx="sell">${esc(t("cxSell", "Sell here"))}</button>`;
+    row.after(p); p.onclick = (e) => { if (e.target.closest('[data-cx="sell"]')) { e.stopPropagation(); sellHere(c); } };
+  }).catch(() => {});
+}
+const amtFmt = (x) => (x >= 1e9 ? (x / 1e9).toFixed(2) + "B" : x >= 1e6 ? (x / 1e6).toFixed(2) + "M" : x >= 1e3 ? (x / 1e3).toFixed(1) + "K" : x.toFixed(x < 1 ? 4 : 2));
+/// the city's coins a wallet holds (?bag=), a minute on this page
+let BAGM = { k: "", at: 0, v: null };
+export async function myBag(key, fresh) {
+  if (!fresh && BAGM.k === key && Date.now() - BAGM.at < 60e3) return BAGM.v;
+  const v = await getJ("?bag=" + encodeURIComponent(key)).catch(() => null); if (v && v.items) BAGM = { k: key, at: Date.now(), v }; return v;
 }
 
 let jupP = null;
@@ -69,6 +85,15 @@ const jup = () => (jupP = jupP || new Promise((ok, no) => {
   document.head.appendChild(s);
 }));
 const jupPage = (c) => window.open(`https://jup.ag/swap/SOL-${encodeURIComponent(c.mint)}`, "_blank", "noopener");
+/// the same swap, the other way: the coin in, SOL out
+export async function sellHere(c) {
+  note(t("cxBuyOpen", "Opening the swap…"), 2000);
+  try {
+    const J = await jup();
+    J.init({ displayMode: "modal", formProps: { initialInputMint: c.mint, initialOutputMint: SOL, fixedMint: c.mint, swapMode: "ExactIn" }, branding: { name: "GTAFUN", logoUri: location.origin + "/images/logo-192.webp" } });
+    if (typeof J.resume === "function") try { J.resume(); } catch {}
+  } catch { window.open(`https://jup.ag/swap/${encodeURIComponent(c.mint)}-SOL`, "_blank", "noopener"); }
+}
 export async function buyHere(c) {
   note(t("cxBuyOpen", "Opening the swap…"), 2000);
   try {

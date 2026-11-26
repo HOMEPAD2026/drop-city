@@ -98,4 +98,21 @@ ok(h.includes('oauth_signature="hCtSmYh%2BiHYCEqBWrE7C7hYmtUk%3D"'), "the OAuth 
   ok(tr.items.some((t) => t.sig === NEW && t.side === "buy" && t.sol === 1), "a fresh instance keeps a trade newer than the last saved one");
   ok(tr.scan && tr.scan.ok >= 1 && tr.scan.err === 0, "the feed says how its read went");
 }
+// ---------------- coin of the day: five candidates by the day's trading, one signed vote a wallet a day, yesterday's winner
+{ const docs2 = new Map(), st = { get: async (k) => (docs2.has(k) ? JSON.parse(JSON.stringify(docs2.get(k))) : null), put: async (k, v, o = {}) => { if (o.create && docs2.has(k)) throw new Error("exists"); docs2.set(k, JSON.parse(JSON.stringify(v))); }, list: async (p) => [...docs2.keys()].filter((k) => k.startsWith(p)) };
+  const coins = Array.from({ length: 7 }, (_, i) => ({ mint: kp().pub, symbol: "C" + i, kind: i === 6 ? "partner" : "user", mcapUsd: 1000 * (i + 1) }));
+  let t2 = Date.UTC(2026, 10, 26, 10);
+  const fake = { store: st, list: async () => ({ items: coins }) };
+  const X4 = makeExtra({ pad: fake, now: () => t2 });
+  docs2.set("trades.json", { items: [{ mint: coins[0].mint, sol: 9, at: t2 - 1000 }, { mint: coins[1].mint, sol: 4, at: t2 - 1000 }] });
+  const v = await X4.cotdView("");
+  ok(v.mints.length === 5 && v.mints[0] === coins[0].mint && v.mints[1] === coins[1].mint && !v.mints.includes(coins[6].mint), "the busiest launched coins are today's candidates (supported coins aren't)");
+  const sv = (w, mint, day = v.day) => { const issued = new Date(t2).toISOString(); return { wallet: w.pub, mint, day, issued, sig: C.b58enc(ed25519.sign(new TextEncoder().encode(X4.cotdMessage(w.pub, day, mint, issued)), w.sk)) }; };
+  ok((await X4.cotdVote({ ...sv(W1, v.mints[1]), sig: "1111" })).status === 403, "a bad signature can't vote");
+  ok((await X4.cotdVote(sv(W1, v.mints[1]))).status === 200 && (await X4.cotdVote(sv(W1, v.mints[2]))).status === 409, "one vote a wallet a day");
+  ok((await X4.cotdVote(sv(W2, coins[6].mint))).status === 400, "only a candidate can be voted for");
+  await X4.cotdVote(sv(W2, v.mints[1]));
+  ok((await X4.cotdView(W1.pub)).mine === 1, "the view knows my vote");
+  t2 += 86400e3; const v2 = await X4.cotdView("");
+  ok(v2.winner && v2.winner.mint === v.mints[1] && v2.winner.votes === 2, "yesterday's winner is the coin of the day"); }
 console.log(`extra: ${pass} passed, ${fail} failed`); if (fail) process.exit(1);

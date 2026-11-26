@@ -13,7 +13,16 @@ const B58 = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/;
 export function keepRef() { try { const r = new URLSearchParams(location.search).get("ref"); if (r && B58.test(r) && !localStorage.getItem("dc.refDone")) localStorage.setItem("dc.ref", r); } catch {} }
 const refMessage = (wallet, ref, issued) => `GTAFUN referral\nWallet: ${wallet}\nInvited by: ${ref}\nIssued: ${issued}`;
 
-export function dashHtml(CB, V, mainSym, me) {
+/// link the inviter kept on this device to the connected wallet: one signed message (nothing on chain); true when done
+export async function linkInviter(S, inv) {
+  try {
+    const issued = new Date().toISOString(), sig = await S.signMessage(new TextEncoder().encode(refMessage(S.key, inv, issued)));
+    const r = await post({ action: "cb-ref", wallet: S.key, ref: inv, issued, sig: b58(sig) });
+    if (r.ok || r.status === 409) { try { localStorage.setItem("dc.refDone", "1"); localStorage.removeItem("dc.ref"); } catch {} note(r.ok ? t("cbInvDone", "Linked — your inviter now earns a bonus on your cashback.") : (r.j && r.j.error) || "Already linked."); return true; }
+    note((r.j && r.j.error) || "Couldn't link it.", 4000); return false;
+  } catch (e) { note(/reject|denied|cancel/i.test(String(e && e.message)) ? t("cbCancel", "Cancelled in your wallet.") : String((e && e.message) || e).slice(0, 120), 4000); return false; }
+}
+export function dashHtml(CB, V, mainSym, me, tg = "") {
   if (!CB || !CB.on) return "";
   const S = "$" + mainSym, m = CB.me, pend = V && V.me ? V.me.pending : null, pct = (CB.refBps || 0) / 100;
   let inv = ""; try { inv = localStorage.getItem("dc.ref") || ""; } catch {}
@@ -28,7 +37,7 @@ export function dashHtml(CB, V, mainSym, me) {
       <div class="cbd-inv"><h4>${esc(t("cbInvH", "Invite traders"))}</h4>
         <p>${esc(fill(t("cbInvP", "Share your link. Every trader who links you as their inviter earns you {p}% of their cashback on top — it never comes out of theirs."), { p: pct }))}</p>
         ${me ? `<div class="cbd-link"><code>${esc(link)}</code><button type="button" class="btn ghost" data-cbd="copy">${esc(t("copy", "Copy"))}</button><a class="btn ghost" target="_blank" rel="noopener" href="https://x.com/intent/post?text=${encodeURIComponent(fill(t("cbInvTw", "Trade on GTAFUN and get {p}% back on every trade, paid in {s}.\n"), { p: CB.bps / 100, s: S }))}&url=${encodeURIComponent(link)}">X ↗</a></div>
-          <div class="cbd-kv"><span>${esc(t("cbInvited", "Traders you invited"))}</span><b>${m ? m.invited : 0}</b><span>${esc(t("cbBonus", "Invite bonus earned"))}</span><b>${m ? fmt(m.refEarned) : 0} ${esc(S)}</b></div>`
+          ${me && tg ? `<p class="cbd-tg"><a href="${esc(tg)}?start=cb_${esc(me)}" target="_blank" rel="noopener">${esc(t("cbTg", "Get your cashback in Telegram — /cashback any time ›"))}</a></p>` : ""}<div class="cbd-kv"><span>${esc(t("cbInvited", "Traders you invited"))}</span><b>${m ? m.invited : 0}</b><span>${esc(t("cbBonus", "Invite bonus earned"))}</span><b>${m ? fmt(m.refEarned) : 0} ${esc(S)}</b></div>`
           : `<p class="fine">${esc(t("cbInvConn", "Connect your wallet to get your invite link."))}</p>`}
         ${m && m.ref ? `<p class="cbd-by">${esc(t("cbInvBy", "Invited by"))} ${esc(short(m.ref))} ✓</p>` : inv && me && inv !== me ? `<div class="cbd-claim"><p>${esc(fill(t("cbInvLink", "You came through {w}'s invite. Link it — one free signature, no transaction."), { w: short(inv) }))}</p><button type="button" class="btn hot" data-cbd="link">${esc(t("cbInvBtn", "Link my inviter"))}</button></div>` : ""}
       </div>
@@ -45,13 +54,7 @@ export function wireDash(box, again) {
       const S = await sol(); if (!S || !S.key) { await openWallet(); return again(); }
       let inv = ""; try { inv = localStorage.getItem("dc.ref") || ""; } catch {}
       if (!B58.test(inv) || inv === S.key) return;
-      b.disabled = true;
-      try {
-        const issued = new Date().toISOString(), sig = await S.signMessage(new TextEncoder().encode(refMessage(S.key, inv, issued)));
-        const r = await post({ action: "cb-ref", wallet: S.key, ref: inv, issued, sig: b58(sig) });
-        if (r.ok || r.status === 409) { try { localStorage.setItem("dc.refDone", "1"); localStorage.removeItem("dc.ref"); } catch {} note(r.ok ? t("cbInvDone", "Linked — your inviter now earns a bonus on your cashback.") : (r.j && r.j.error) || "Already linked."); again(); }
-        else { note((r.j && r.j.error) || "Couldn't link it.", 4000); b.disabled = false; }
-      } catch (e) { note(/reject|denied|cancel/i.test(String(e && e.message)) ? "Cancelled in your wallet." : String((e && e.message) || e).slice(0, 120), 4000); b.disabled = false; }
+      b.disabled = true; if (await linkInviter(S, inv)) again(); else b.disabled = false;
     }
   }));
 }

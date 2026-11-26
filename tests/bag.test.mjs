@@ -1,0 +1,15 @@
+import { makeBag } from "../lib/_bag.mjs";
+let pass = 0, fail = 0; const ok = (c, m) => (c ? pass++ : (fail++, console.log("FAIL", m)));
+const W = "4SDLpVR21WHY44qAvCjjqrExcW3BCyMw8nL8bTgUvzqV", A = "So11111111111111111111111111111111111111112", B = "8MU9UNSTvFxfxttvmaQoVR2DDs9F9kKNbdXMd6hQRGTA";
+const acct = (mint, ui) => ({ account: { data: { parsed: { info: { mint, tokenAmount: { uiAmountString: String(ui) } } } } } });
+let calls = 0;
+const rpc = async (m, p) => { calls++; return { value: p[1].programId.startsWith("Tokenkeg") ? [acct(A, 2), acct("Other1111111111111111111111111111111111111", 9), acct(B, 0)] : [acct(B, 1000)] }; };
+const list = async () => ({ items: [{ mint: A, symbol: "AAA", priceUsd: 0.5 }, { mint: B, symbol: "BBB", priceUsd: 0.002 }] });
+let t = 0; const bag = makeBag({ rpc, list, now: () => t });
+const r = await bag.view(W);
+ok(r.status === 200 && r.body.items.length === 2, "only the city's coins, both token programs, zero balances skipped");
+ok(r.body.items[0].symbol === "BBB" && Math.abs(r.body.items[0].usd - 2) < 1e-9 && Math.abs(r.body.usd - 3) < 1e-9, "valued and sorted by value");
+await bag.view(W); ok(calls === 2, "a minute per wallet in memory");
+t += 61e3; await bag.view(W); ok(calls === 4, "read again after a minute");
+ok((await bag.view("nope")).status === 400, "a bad wallet is refused");
+console.log(`bag: ${pass} passed, ${fail} failed`); if (fail) process.exit(1);

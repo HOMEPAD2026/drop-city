@@ -71,10 +71,11 @@ html.win-open body { overflow: hidden !important; }
 .cm-card, .wm-card, .sheet > div, .sl-card { overscroll-behavior: contain; }
 .cmodal, .wmodal, .sheet, .cd-zoom, .cd-rev { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 .cmodal, .wmodal, .sheet { background: rgba(8, 5, 18, 0.82) !important; }
+.cmodal[hidden], .wmodal[hidden], .sheet[hidden] { display: none !important; }
 .cmodal > .cm-card { animation: winin 0.24s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
 @keyframes winin { from { opacity: 0; transform: translateY(14px) scale(0.97); } }
 @media (max-width: 760px) {
-  .cmodal, .wmodal { display: flex !important; align-items: flex-end !important; justify-content: center !important; padding: 0 !important; }
+  .cmodal:not([hidden]), .wmodal:not([hidden]) { display: flex !important; align-items: flex-end !important; justify-content: center !important; padding: 0 !important; }
   .cmodal > .cm-card, .wmodal > .wm-card { width: 100% !important; max-width: none !important; margin: 0 !important; border-radius: 24px 24px 0 0 !important;
     max-height: 92dvh !important; overflow-y: auto; padding-bottom: env(safe-area-inset-bottom, 0px); border-bottom: 0 !important; animation: sheetup 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
   .wmodal > .wm-card { padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px)) !important; }
@@ -85,3 +86,35 @@ html.win-open body { overflow: hidden !important; }
 
 /* ---- the home rows: the slide-in plays on the first fill only ---- */
 .hot-list.seen .hc { animation: none !important; }
+
+/* ---- round K3: coin window extras, invite strip + prompt, My bag, coin of the day ---- */
+.cx-cb { display: flex; align-items: center; gap: 6px; margin: 8px 0 0; font-size: 13px; color: #ffd9e8; }
+.cx-cb .gi { color: #7dffb4; }
+.cx-tg { color: var(--v-pink2, #ff7ab8); font-weight: 700; white-space: nowrap; }
+.cx-hold { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 10px 0 0; padding: 10px 12px; border-radius: 14px; background: rgba(125, 255, 180, 0.07); border: 1px solid rgba(125, 255, 180, 0.22); font-size: 13.5px; }
+.cx-hold button { border: 1px solid rgba(255, 255, 255, 0.25); background: transparent; color: #fff; border-radius: 999px; padding: 7px 14px; font: inherit; font-weight: 700; cursor: pointer; }
+.inv-strip { display: flex; align-items: center; gap: 10px; margin: 8px auto 0; max-width: 1180px; width: calc(100% - 32px); padding: 10px 14px; border-radius: 14px; background: linear-gradient(135deg, rgba(150, 90, 255, 0.18), rgba(255, 61, 139, 0.12)); border: 1px solid rgba(190, 150, 255, 0.35); font-size: 13.5px; }
+.inv-strip span { flex: 1; min-width: 0; } .inv-strip a { color: #fff; font-weight: 700; white-space: nowrap; }
+.inv-strip .gt { margin-right: 0; }
+.inv-pop .wm-card { text-align: center; } .inv-pop .wm-card > .gt { width: 52px; height: 52px; border-radius: 16px; margin: 4px auto 10px; }
+.inv-pop .wm-card > .gt .gi { width: 28px; height: 28px; }
+.inv-a { display: grid; grid-template-columns: 1fr 1.4fr; gap: 8px; margin-top: 16px; }
+.cotdsec .sec-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.ct-cd { color: var(--v-dim, #b9b0cc); font-size: 12.5px; }
+.ct-g { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 14px; margin-top: 12px; }
+.ct-win { position: relative; display: grid; justify-items: center; align-content: center; gap: 6px; padding: 22px 16px; border-radius: 20px; border: 1px solid rgba(255, 200, 120, 0.45); background: radial-gradient(120% 90% at 50% 0%, rgba(255, 190, 90, 0.22), rgba(255, 61, 139, 0.1) 55%, var(--v-surf, rgba(255, 255, 255, 0.04))); color: #fff; font: inherit; cursor: pointer; text-align: center; }
+.ct-win img, .ct-win .ini { width: 76px; height: 76px; border-radius: 50%; box-shadow: 0 0 0 3px rgba(255, 210, 122, 0.8), 0 10px 30px rgba(255, 160, 80, 0.35); }
+.ct-win b { font-size: 22px; font-weight: 800; } .ct-win small { color: var(--v-dim, #b9b0cc); } .ct-win em { font-style: normal; color: #ffd27a; font-weight: 700; font-size: 13px; }
+.ct-win.empty { cursor: default; } .ct-win.empty p { color: var(--v-dim, #b9b0cc); margin: 6px 0 0; }
+.ct-k { font-size: 11.5px; font-weight: 800; color: #ffd27a; }
+.ct-list { display: grid; gap: 8px; align-content: start; } .ct-q { margin: 0 0 2px; color: var(--v-dim, #b9b0cc); font-size: 13px; }
+.ct-r { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 10px; padding: 8px 8px 8px 10px; border-radius: 14px; background: var(--v-surf, rgba(255, 255, 255, 0.04)); border: 1px solid var(--v-line, rgba(255, 255, 255, 0.08)); overflow: hidden; }
+.ct-r::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); background: linear-gradient(90deg, rgba(255, 61, 139, 0.2), rgba(255, 140, 107, 0.08)); transition: width 0.6s cubic-bezier(0.2, 0.9, 0.3, 1); pointer-events: none; }
+.ct-r.mine { border-color: rgba(255, 120, 170, 0.5); }
+.ct-c { position: relative; display: flex; align-items: center; gap: 8px; min-width: 0; background: none; border: 0; color: #fff; font: inherit; cursor: pointer; text-align: left; padding: 0; }
+.ct-c img, .ct-c .ini { width: 32px; height: 32px; border-radius: 50%; flex: 0 0 32px; } .ct-c small { color: var(--v-dim, #b9b0cc); }
+.ct-n { position: relative; font-weight: 800; min-width: 22px; text-align: right; }
+.ct-v { position: relative; padding: 7px 14px !important; min-height: 0 !important; font-size: 13px !important; }
+@media (max-width: 760px) { .ct-g { grid-template-columns: 1fr; } }
+.cotd-b { position: absolute; left: 8px; bottom: 8px; z-index: 3; display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800; color: #2b1400; background: linear-gradient(135deg, #ffe08a, #ffb35c); box-shadow: 0 4px 14px rgba(255, 170, 70, 0.45); }
+.cotd-b .gi { width: 12px; height: 12px; }

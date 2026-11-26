@@ -5,6 +5,7 @@
 //   GET  ?tick          wakes the agent: drops this hour's coin if it hasn't yet (safe to call any number of times)
 //   GET  ?check=<mint>  what the chain says about a coin; lists it if it passes (a launch whose page closed early)
 //   GET  ?agent         the agent: its wallet, this hour, today's drops and transfers to THE VAULT
+//   GET  ?bag=<wallet>    the city's coins a wallet holds and their value (lib/_bag.mjs)
 //   POST ?solrpc        the browser's Solana RPC relay (only the calls a launch makes)
 //   GET  ?street        the streets: players here now + the week's street board
 //   POST {action}       register · meta · logo · here (a player's beat in the streets) · score (the street board)
@@ -18,6 +19,7 @@ import { makeLp } from "../lib/_lp.mjs";
 import { makeCashback } from "../lib/_cashback.mjs";
 import { makeFlows } from "../lib/_flows.mjs";
 import { makeProfile } from "../lib/_profile.mjs";
+import { makeBag } from "../lib/_bag.mjs";
 import { makeSlots } from "../lib/_slots.mjs";
 import { makeCards } from "../lib/_cards.mjs";
 import { makeExtra } from "../lib/_extra.mjs";
@@ -39,6 +41,7 @@ let CBX = null; const cb = () => (CBX = CBX || makeCashback({ store: pad().store
 // the platform wallets whose moves the transparency list reads (2026-11-26)
 let FLX = null; const flows = () => (FLX = FLX || makeFlows({ store: pad().store, wallets: () => { const c = publicCfg(), e = (k) => String(process.env[k] || "").trim(); return [["vault", c.vault || e("PAD_VAULT")], ["buyer", c.buyer || e("PAD_BUYER")], ["agent", c.agent], ["rewards", e("PAD_LP_WALLET")], ["cards", e("PAD_CARDS_WALLET")]].filter((x) => x[1]); } }));
 let SLX = null; const slots = () => (SLX = SLX || makeSlots({ store: pad().store, pad: pad() }));
+let BGX = null; const bag = () => (BGX = BGX || makeBag({ rpc: C.rpc, list: () => pad().list() }));
 let PFX = null; const prof = () => (PFX = PFX || makeProfile({ pad: pad(), cashback: cb(), lp: lp(), cards: cards() }));
 let LPX = null; const lp = () => (LPX = LPX || makeLp({ store: pad().store, pad: pad(), cashback: () => cb().earned() }));
 const agent = () => (AG = AG || makeAgent({ pad: pad(), extra: extra(), tg: makeTg({ pad: pad(), extra: extra() }) }));
@@ -139,6 +142,7 @@ export async function GET(req) {
     if (q.has("coin")) { if (limited("c:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); const r = await extra().detail(q.get("coin")); return json(r.status, r.body, "public, max-age=30"); }
     if (q.has("trades")) return json(200, await extra().trades(), "public, max-age=6, s-maxage=8");
     if (q.has("vote")) return json(200, await extra().voteView(q.get("wallet") || ""), "no-store");
+    if (q.has("cotd")) { if (limited("cotd:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); return json(200, await extra().cotdView(q.get("w") || ""), q.get("w") ? "no-store" : "public, max-age=20, s-maxage=30"); }
     if (q.has("page")) {
       HTML = HTML || readFileSync(join(process.cwd(), "index.html"), "utf8");
       const m = String(q.get("page") || ""), coin = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(m) ? await pad().store.get(`coins/${m}.json`).catch(() => null) : null;
@@ -155,6 +159,7 @@ export async function GET(req) {
     if (q.has("cards")) return json(200, await cards().view(String(q.get("w") || "")), "public, max-age=10"); // GTAFUN CARDS: the machine, the board, a wallet's cards
     if (q.has("spark")) { const m = String(q.get("spark") || ""); if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(m)) return json(400, { error: "bad mint" }); if (limited("sp:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); return json(200, await spark().view(m), "public, max-age=120, s-maxage=300"); } // a coin's last 24 h (home page's main card)
     if (q.has("slots")) return json(200, await slots().view(String(q.get("w") || "")), "no-store"); // CITY SLOTS' weekly board
+    if (q.has("bag")) { if (limited("bag:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); try { const r = await bag().view(String(q.get("bag") || "")); return json(r.status, r.body, r.status === 200 ? "private, max-age=30" : "no-store"); } catch { return json(502, { error: "couldn't read the wallet" }); } }
     if (q.has("profile")) { if (limited("pf:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); const r = await prof().view(String(q.get("profile") || "")); return json(r.status, r.body, "public, max-age=20"); } // a wallet's profile
     if (q.has("flows")) { if (limited("fl:" + ipOf(req), 20, 60e3)) return json(429, { error: "slow down" }); return json(200, await flows().view(), "public, max-age=60"); } // the platform wallets' latest moves
     if (q.has("cb")) return json(200, await cb().view(String(q.get("w") || "")), "public, max-age=20"); // trader cashback: the rate, the totals, the latest, a wallet's own
@@ -189,6 +194,7 @@ export async function POST(req) {
   if (b.action === "slot-start" || b.action === "slot-spin") { if (limited("sl:" + ip, b.action === "slot-spin" ? 40 : 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await (b.action === "slot-spin" ? slots().spin(b) : slots().start(b)); return json(r.status, r.body); } catch (e) { return json(500, { error: "the slots didn't answer" }); } }
   if (b.action === "cb-ref") { if (limited("cbr:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await cb().ref(b); return json(r.status, r.body); } catch (e) { return json(500, { error: "couldn't link the invite" }); } }
   if (b.action === "lp-paid") { if (limited("lpp:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await lp().paid(b); return json(r.status, r.body); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 160) }); } }
+  if (b.action === "cotd-vote") { if (limited("cotd:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await extra().cotdVote(b); return json(r.status, r.body); } catch { return json(500, { error: "couldn't count the vote" }); } }
   if (b.action === "score") { if (limited("score:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); const r = await street().score(b); return json(r.status, r.body); }
   const lim = { register: 30, meta: 20, logo: 20, vote: 10 }[b.action];
   if (!lim) return json(400, { error: "unknown action" });

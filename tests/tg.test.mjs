@@ -77,4 +77,11 @@ ok(a.length === 1 && sent.some((s) => /THE 10:00 DROP/.test(s.body.caption || ""
   const r = await T2.reply("cashback", W); ok(/1\.5K/.test(r.text) && /#2 of 9/.test(r.text) && /Invited: 3/.test(r.text), "/cashback shows the wallet's cashback, rank and invites");
   ok(/Send \/cashback/.test((await T2.reply("cashback", "nope")).text), "/cashback needs a wallet");
   const i = await T2.reply("invite", W); ok(i.text.includes("/?ref=" + W) && /10%/.test(i.text), "/invite gives the wallet's link"); }
+// deep links from the site (?start=w_ / f_) and following a creator
+{ const CH = 777, c1 = items[1] || items[0], W = c1.creator || kp();
+  sent.length = 0; await T.update({ message: { chat: { id: CH }, text: "/start w_" + c1.mint } });
+  ok(sent.length === 1 && /Watching/.test(sent[0].body.text || sent[0].body.caption || "") && docs.get("tg/watch.json")[CH][c1.mint] != null, "?start=w_<mint> watches that coin in the chat");
+  sent.length = 0; await T.update({ message: { chat: { id: CH }, text: "/start f_" + W } });
+  ok(sent.length === 1 && /Following/.test(sent[0].body.text) && docs.get("tg/follow.json")[W].includes(String(CH)), "?start=f_<wallet> follows the creator");
+  ok(/Stopped/.test((await T.reply("unfollow", W, CH)).text) && !docs.get("tg/follow.json")[W], "/unfollow stops it"); }
 console.log(`tg: ${pass} passed, ${fail} failed`); if (fail) process.exit(1);

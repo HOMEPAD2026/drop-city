@@ -41,7 +41,7 @@ export async function paintLp(box, { coins, CFG }) {
     <div class="lp-me">${me ? `<div><span>${esc(t("lpEarned", "Earned"))}</span><b>${fmt(me.earned)}</b></div>${me.cashback ? `<div><span>${esc(t("cbMine", "Cashback"))}</span><b>${fmt(me.cashback)}</b></div>` : ""}<div><span>${esc(t("lpPaid", "Paid"))}</span><b>${fmt(me.paid)}</b></div><div class="hi"><span>${esc(t("lpPending", "Pending"))}</span><b>${fmt(me.pending)} $${esc(mainSym)}</b></div>`
       : `<p>${esc(t("lpConnect", "Connect your wallet to see what your liquidity has earned."))}</p><button type="button" class="btn ghost" data-lp="conn">${esc(t("connect", "Connect wallet"))}</button>`}</div>
     <div class="lp-grid">${sup.map((c) => `<div class="lp-coin"><div class="lp-ch">${pic(c)}<b>$${esc(c.symbol)}</b><small>${esc(c.name || "")}</small></div>${cell(c, "sol")}${cell(c, "main")}</div>`).join("") || `<p class="fine">${esc(t("lpNoSup", "No supported coins yet."))}</p>`}</div>
-    ${cbCard(CB, mainSym)}${dashHtml(CB, V, mainSym, ME)}
+    ${cbCard(CB, mainSym)}${dashHtml(CB, V, mainSym, ME, CFG.links && CFG.links.tg)}
     <details class="lp-how"><summary>${esc(t("lpHowH", "How the rewards work"))}</summary><ol>
       <li>${esc(t("lpHow1", "Add liquidity to a supported coin's Raydium pool — paired with SOL, or with the main coin (those pools weigh more)."))}</li>
       <li>${esc(t("lpHow2", "Every hour the city reads who holds each pool's LP tokens and splits that hour's reward: across the pools by their liquidity, inside a pool by the LP tokens you hold."))}</li>

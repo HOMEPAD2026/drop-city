@@ -5,7 +5,7 @@ import { walletButton } from "/wallet.js";
 import { extrasHtml, wireExtras, isWatched, checkAlerts, chartInto, holdersHtml } from "/coin-x.js";
 import { keepRef } from "/cb-ui.js";
 import { paintCity, notice, paintFoot } from "/home-x.js";
-import { paintCorner, paintBoards, initSearch } from "/home-me.js";
+import { paintCorner, paintBoards, initSearch, initInvite, inviteOnConnect, paintCotd } from "/home-me.js";
 import { ic } from "/icons.js";
 import "/win.js";
 try { notice(); } catch {}
@@ -45,7 +45,7 @@ async function refresh() {
   if (was && slot && slot.state === "dropped" && slot.drop && (!was.drop || was.drop.mint !== slot.drop.mint)) { const c = coins.find((x) => x.mint === slot.drop.mint); if (c) showDrop(c); }
 }
 async function start() {
-  CFG = await loadCfg(); try { paintFoot(CFG, note); } catch {}
+  CFG = await loadCfg(); try { paintFoot(CFG, note); } catch {} try { initInvite({ CFG }); } catch {}
   document.querySelectorAll("[data-name]").forEach((e) => (e.textContent = CFG.name));
   const title = () => (document.title = `${CFG.name} — ${t("title", "the launchpad you can play")}`);
   // a coin page (/coin/<mint>) keeps the title the server gave it
@@ -72,7 +72,7 @@ function flashTrade(x) {
 function paintAll() {
   dropsUi();
   paintHour(); paintMain(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker();
-  paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot(); paintCity({ coins, trades: lastTrades(30), CFG, openCoin }).catch(() => {}); paintCorner({ coins, CFG, openCoin, openSlot }).catch(() => {}); paintBoards({ CFG, openSlot }).catch(() => {}); paintBand(coins).catch(() => {}); try { shineMain(coins.find((x) => x.mint === CFG.main)); } catch {}
+  paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot(); paintCity({ coins, trades: lastTrades(30), CFG, openCoin }).catch(() => {}); paintCorner({ coins, CFG, openCoin, openSlot }).catch(() => {}); paintBoards({ CFG, openSlot }).catch(() => {}); paintCotd({ coins, CFG, openCoin }).then(() => { if ((window.__dcCotd || "") !== (UI.cotd || "")) { UI.cotd = window.__dcCotd; paintGrid(); } }).catch(() => {}); paintBand(coins).catch(() => {}); try { shineMain(coins.find((x) => x.mint === CFG.main)); } catch {}
   const sl = $("suffixline"); if (CFG.suffix) { sl.hidden = false; sl.innerHTML = `${esc(t("caEnds", "Every coin's CA ends in"))} <b>${esc(CFG.suffix)}</b>`; const kk = document.querySelector(".hero .kicker"); if (kk) kk.dataset.sfx = "CA …" + CFG.suffix; }
 }
 
@@ -203,13 +203,17 @@ function paintGrid() {
   if (S.filt === "users") list = list.filter((c) => c.kind !== "drop");
   if (S.filt === "curve") list = list.filter((c) => !c.graduated && !isSup(c));
   if (S.filt === "made") list = list.filter(isMade);
+  if (S.filt === "near") list = list.filter((c) => !c.graduated && !isSup(c) && (c.progress || 0) >= 70);
+  if (S.filt === "fresh") list = list.filter((c) => c.launchedAt && Date.now() / 1000 - c.launchedAt < 3600);
+  if (S.filt === "grade") list = list.filter((c) => c.grade === "A" || c.grade === "B");
   if (S.filt === "watch") list = list.filter((c) => isWatched(c.mint));
   // quiet coins (a day old, under $5K) wait behind a switch so the streets stay lively
   // (only once the city is busy: with fewer than 12 lively coins every coin shows — a young city never looks empty)
   const quietOf = (c) => c.mint !== CFG.main && c.launchedAt && Date.now() / 1000 - c.launchedAt > 86400 && (c.mcapUsd || 0) < 5000 && !c.graduated;
   if (!S.quiet && !S.q) { const loud = list.filter((c) => !quietOf(c)); if (loud.length >= 12) list = loud; }
   const pin = (c) => (c.mint === CFG.main ? 2 : c.kind === "partner" ? 1 : 0);
-  const by = S.sort === "new" ? (a, b) => (b.launchedAt || 0) - (a.launchedAt || 0) || String(b.hour).localeCompare(String(a.hour)) : S.sort === "curve" ? (a, b) => (b.graduated ? 100 : b.progress || 0) - (a.graduated ? 100 : a.progress || 0) : (a, b) => (b.mcapUsd || 0) - (a.mcapUsd || 0);
+  const vol = new Map(); if (S.sort === "trend") for (const x of lastTrades(200)) vol.set(x.mint, (vol.get(x.mint) || 0) + (x.sol || 0));
+  const by = S.sort === "trend" ? (a, b) => (vol.get(b.mint) || 0) - (vol.get(a.mint) || 0) || (b.mcapUsd || 0) - (a.mcapUsd || 0) : S.sort === "new" ? (a, b) => (b.launchedAt || 0) - (a.launchedAt || 0) || String(b.hour).localeCompare(String(a.hour)) : S.sort === "curve" ? (a, b) => (b.graduated ? 100 : b.progress || 0) - (a.graduated ? 100 : a.progress || 0) : (a, b) => (b.mcapUsd || 0) - (a.mcapUsd || 0);
   list.sort((a, b) => (S.sort === "wanted" ? pin(b) - pin(a) : 0) || by(a, b));
   UI.cap = capNow();
   // a search, a filter or Quiet means the visitor is looking for something: show every match
@@ -225,8 +229,8 @@ function mcMove(c) { const pm = prevMc.get(c.mint), v = c.mcapUsd || 0; prevMc.s
 function card(c, i) {
   const fresh = c.launchedAt && Date.now() / 1000 - c.launchedAt < 3600;
   const st = stars(c), was = tiers.get(c.mint), up = was != null && was !== st && st.indexOf("☆") > was.indexOf("☆"); tiers.set(c.mint, st);
-  const when = c.hour ? t("cDropped", "dropped") + " " + esc(c.hour.slice(5, 10).replace("-", "/")) + " " + esc(c.hour.slice(11, 13)) + ":00" : c.launchedAt ? t("cLaunched", "launched") + " " + esc(new Date(c.launchedAt * 1000).toISOString().slice(5, 16).replace("-", "/").replace("T", " ")) : "";
-  return `<article class="cc${isMade(c) ? " made" : ""}${c.mint === CFG.main ? " main" : ""}${c.kind === "partner" ? " sup" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">${esc(c.mint === CFG.main ? t("mcTag", "THE MAIN COIN") : c.kind === "partner" ? t("tagSup", "SUPPORTED") : c.kind === "drop" ? t("tagDrop", "HOURLY DROP") : t("tagUser", "WANTED"))}</span>${isMade(c) ? `<span class="badge">${esc(t("lMade", "MADE"))}</span>` : fresh ? `<span class="badge new">${esc(t("bNew", "NEW"))}</span>` : ""}${isWatched(c.mint) ? `<span class="wstar" title="Watching">${ic("star")}</span>` : ""}${pic(c)}<span class="bounty">${esc(t("bounty", "BOUNTY"))} ${usd(c.mcapUsd)}</span></div>
+  const when = c.hour ? t("cDropped", "dropped") + " " + esc(c.hour.slice(5, 10).replace("-", "/")) + " " + esc(c.hour.slice(11, 13)) + ":00" : c.launchedAt ? esc(agoTxt(c.launchedAt)) : "";
+  return `<article class="cc${isMade(c) ? " made" : ""}${c.mint === CFG.main ? " main" : ""}${c.kind === "partner" ? " sup" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster">${c.mint === window.__dcCotd ? `<span class="cotd-b">${ic("crown")} ${esc(t("ctTag", "COIN OF THE DAY"))}</span>` : ""}<span class="tag">${esc(c.mint === CFG.main ? t("mcTag", "THE MAIN COIN") : c.kind === "partner" ? t("tagSup", "SUPPORTED") : c.kind === "drop" ? t("tagDrop", "HOURLY DROP") : t("tagUser", "WANTED"))}</span>${isMade(c) ? `<span class="badge">${esc(t("lMade", "MADE"))}</span>` : fresh ? `<span class="badge new">${esc(t("bNew", "NEW"))}</span>` : ""}${isWatched(c.mint) ? `<span class="wstar" title="Watching">${ic("star")}</span>` : ""}${pic(c)}<span class="bounty">${esc(t("bounty", "BOUNTY"))} ${usd(c.mcapUsd)}</span></div>
     <div class="body"><h3>${esc(c.name)}</h3><span class="sym">$${esc(c.symbol)}</span>${c.quote ? `<span class="qtag">${esc(c.quote.id)} ${esc(t("pair", "PAIR"))}</span>` : ""}${gradeChip(c.grade)} <span class="stars${up ? " up" : ""}">${st}</span>
       <div class="row"><b class="mcv${mcMove(c)}">${usd(c.mcapUsd)}</b><small>${when}</small></div>
       ${isSup(c) ? `<div class="bar sup"><i style="width:100%"></i></div><small class="cv">${esc(t("cSupLine", "Supported by the city · not launched here"))}</small>` : `<div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small class="cv">${c.graduated ? esc(t("cGradTo", "graduated to PumpSwap")) : `${esc(t("cCurve", "curve"))} ${(c.progress || 0).toFixed(0)}%`}</small>`}
@@ -259,7 +263,7 @@ function paintFees() {
 
 // ---------------- CREATORS: your drops and their fees
 let paintWallet = async () => {};
-walletButton($("wallet"), (key) => { paintMe(); paintVote(CFG); paintCorner({ key, coins, CFG, openCoin, openSlot }).catch(() => {}); const pg = document.documentElement.dataset.page; if (pg === "nft" || pg === "lp" || pg === "prof") paintPage(pg); }).then((f) => (paintWallet = f));
+walletButton($("wallet"), (key) => { paintMe(); paintVote(CFG); paintCorner({ key, coins, CFG, openCoin, openSlot }).catch(() => {}); inviteOnConnect(key).catch(() => {}); const pg = document.documentElement.dataset.page; if (pg === "nft" || pg === "lp" || pg === "prof") paintPage(pg); }).then((f) => (paintWallet = f));
 async function paintMe() {
   const W = await sol(), el = $("me");
   if (!W || !W.key) { el.innerHTML = `<div class="me-box"><p class="me-p">${esc(t("meConnectP", "Connect the wallet you launch from to see your drops and the fees they've earned."))}</p><button type="button" class="btn hot" id="me-c">${esc(t("connect", "Connect wallet"))}</button></div>`; $("me-c").onclick = () => $("wallet").click(); return; }
@@ -504,7 +508,7 @@ function openCoin(mint) {
     <div class="cm-pane" data-pane="chart" hidden><div class="cx-chart"></div></div>
     <div class="cm-pane" data-pane="safe" hidden><div id="cm-x"><p class="fine">${esc(t("ctLoading", "Reading the chain…"))}</p></div></div>
     <div class="cm-pane" data-pane="tr" hidden><div id="cm-trd"><p class="fine">${esc(t("ctLoading", "Reading the chain…"))}</p></div></div>
-    <div class="cm-pane" data-pane="ov">${extrasHtml(c)}
+    <div class="cm-pane" data-pane="ov">${extrasHtml(c, CFG)}
     ${c.raid ? `<div class="raid"><b>${ic("siren")} ${esc(t("raidH", "POLICE RAID"))}</b><span>${esc(tf("raidP", "Its creator sold {s} SOL of it {h} h ago — seen on chain. The tape comes down after a day without another sale.", { s: Number(c.raid.sol).toFixed(c.raid.sol < 1 ? 3 : 2), h: Math.max(1, Math.round((Date.now() - c.raid.at) / 3600e3)) }))}</span></div>` : ""}
     ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}${sup ? `<p class="fine">${esc(t("cmSupFees", "No creator fees flow to the city from this coin — it's on our reels and pinned in Explore because the city supports it."))}</p>` : feeBox(c, CFG)}
     <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cmTower", "Tower"))}</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">${esc(t("cmShare", "Share"))}</a><button type="button" data-copy>${esc(t("cmCopy", "Copy CA"))}</button><button type="button" data-mug>${ic("camera")} ${esc(t("cmMug", "Mugshot"))}</button></div>
