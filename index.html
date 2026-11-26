@@ -19,12 +19,12 @@
 <link rel="stylesheet" href="/cards.css?v=1">
 <link rel="stylesheet" href="/street.css?v=2">
 <link rel="stylesheet" href="/clean.css?v=9">
-<link rel="stylesheet" href="/motion.css?v=10">
+<link rel="stylesheet" href="/motion.css?v=11">
 <link rel="stylesheet" href="/intro.css?v=8">
 <script>(function(){var d=document.documentElement,T={vote:"now",live:"now",today:"now",ranks:"ranks",launch:"launch",fees:"fees",wallets:"wallets",check:"check",creators:"mine",about:"about"},s="";
 d.classList.add("js","nodrops");
 try{if(sessionStorage.getItem("dc.intro")&&!/[?&]intro=1\b/.test(location.search))d.classList.add("nointro");s=sessionStorage.getItem("dc.tab")||""}catch(e){}
-var P=location.hash.slice(1)||({"/nft":"cards","/lp":"lp"})[location.pathname.replace(/\/$/,"")]||"";d.dataset.page=P==="explore"?"explore":P==="cards"||P==="nft"?"nft":P==="lp"?"lp":T[P]||P==="desk"?"desk":"home";
+var P=location.hash.slice(1)||({"/nft":"cards","/lp":"lp"})[location.pathname.replace(/\/$/,"")]||"";d.dataset.page=/^\/w\/[1-9A-HJ-NP-Za-km-z]{32,44}\/?$/.test(location.pathname)&&!location.hash?"prof":P==="explore"?"explore":P==="cards"||P==="nft"?"nft":P==="lp"?"lp":T[P]||P==="desk"?"desk":"home";
 d.dataset.tab=T[location.hash.slice(1)]||(/^(now|ranks|launch|fees|wallets|check|mine|about)$/.test(s)?s:"now");
 addEventListener("hashchange",function(){var k=T[location.hash.slice(1)];if(k)d.dataset.tab=k});
 setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on){i.remove();d.style.overflow="";window.__introDone=1;dispatchEvent(new Event("intro:done"))}},7000)})()</script>
@@ -100,6 +100,10 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
       <div class="sec-h"><h2 data-k="// SIDE HUSTLE" data-i18n="hLp">LP REWARDS</h2><p data-i18n="pLp">Add liquidity to the supported coins' Raydium pools — paired with SOL or with the main coin — and earn the main coin every hour you stay in.</p></div>
       <div id="lpbox" class="lpbox"><div class="sk-wrap"><div class="sk sk-stat"><i></i><i></i><i></i></div><div class="sk sk-stat"><i></i><i></i><i></i></div><div class="sk sk-stat"><i></i><i></i><i></i></div><div class="sk sk-stat"><i></i><i></i><i></i></div><div class="sk sk-pool"><i></i><i></i><i></i></div><div class="sk sk-pool"><i></i><i></i><i></i></div></div></div>
     </div>
+  </section>
+
+  <section id="pg-prof" class="sec pgsec">
+    <div class="dk-b" id="prof"><div id="profbox"><div class="sk-wrap"><div class="sk sk-hero"><i></i><i></i><i></i></div><div class="sk sk-stat"><i></i><i></i><i></i></div><div class="sk sk-stat"><i></i><i></i><i></i></div></div></div></div>
   </section>
 
   <section id="desk" class="sec dk" data-rv>

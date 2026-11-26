@@ -25,7 +25,7 @@ export async function openWallet() {
       if (!S) { const el = shell(`<h3>${esc(t("wmH", "Connect a wallet"))}</h3><p class="wm-sub">${esc(t("wmNone", "No Solana wallet in this browser."))}</p>${GET.map(([n, u]) => `<a class="wm-row" href="${u}" target="_blank" rel="noopener">${badge({ name: n })}<b>${esc(t("wmGet", "Get"))} ${n}</b><i>↗</i></a>`).join("")}`); wire(el); return; }
       if (S.key) {
         const el = shell(`<h3>${esc(t("wmYour", "Your wallet"))}</h3><div class="wm-acct">${badge({ name: S.name || "Wallet" })}<div><b>${esc(short(S.key))}</b><small>${esc(S.name || "")} · <span data-bal>…</span></small></div></div>
-          <div class="wm-acts"><button type="button" data-a="copy">${esc(t("copyCa", "Copy address"))}</button><a href="https://solscan.io/account/${esc(S.key)}" target="_blank" rel="noopener">Solscan ↗</a><button type="button" data-a="off" class="danger">${esc(t("wmOff", "Disconnect"))}</button></div>`);
+          <div class="wm-acts"><button type="button" data-a="copy">${esc(t("copyCa", "Copy address"))}</button><a href="/w/${esc(S.key)}">${esc(t("pfMy", "My profile"))}</a><a href="https://solscan.io/account/${esc(S.key)}" target="_blank" rel="noopener">Solscan ↗</a><button type="button" data-a="off" class="danger">${esc(t("wmOff", "Disconnect"))}</button></div>`);
         wire(el);
         try { const b = (await rpc1("getBalance", [S.key, { commitment: "confirmed" }])).value; const s = el.querySelector("[data-bal]"); if (s) s.textContent = (b / 1e9).toFixed(3) + " SOL"; } catch {}
         return;

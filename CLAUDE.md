@@ -133,6 +133,11 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   /invite <wallet> (the /?ref= link); anyone's new launch also goes to X when X's keys are set (lib/_extra.mjs announce
   with no hour = "NEW LAUNCH ON GTAFUN"); the daily countdown no longer speaks of hourly drops. After changing the command
   list, GET /api/tg?setup=1 re-registers it with Telegram.
+- **Wallet profiles (the owner, 2026-11-26):** /w/<wallet> (vercel rewrite → ?page=w&w= for its link card; the head script
+  opens data-page "prof", section #pg-prof, profile.js) reads ?profile=<wallet> (lib/_profile.mjs: its launches, cashback
+  + rank + invites, LP rewards, cards, and the badges BADGES — first launch, five launches, made it, cashback, top 10,
+  recruiter, crew boss, liquidity, collector, full set; nothing new stored). The wallet window links My profile; the creator
+  window links the profile; your own profile shows the slot title kept on the device.
 - **Speed (2026-11-25):** the home page never loads the 1 MB Solana kit (vendor/pump-kit.js) — balances on first paint go
   through common.js rpc1 (one JSON-RPC call through ?solrpc); kit() loads only when a wallet action needs it. Inter is
   gone (Barlow Condensed reads everywhere).

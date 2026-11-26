@@ -58,6 +58,10 @@
     {
       "source": "/lp",
       "destination": "/api/pad?page=lp"
+    },
+    {
+      "source": "/w/:wallet",
+      "destination": "/api/pad?page=w&w=:wallet"
     }
   ]
 }

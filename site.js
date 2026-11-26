@@ -299,6 +299,7 @@ function setPage(pg) { if (html.dataset.page === pg) return false; html.dataset.
 var lpDone = false;
 function paintPage(pg) {
   if (pg === "nft") import("/cards.js").then((m) => m.paintCards($("cardsbox"), { CFG })).catch(() => {});
+  if (pg === "prof") { const w = (location.pathname.match(/^\/w\/([1-9A-HJ-NP-Za-km-z]{32,44})/) || [])[1]; import("/profile.js").then((m) => m.paintProfile($("profbox"), w, CFG)).catch(() => {}); }
   if (pg === "lp" && coins.length) { lpDone = true; import("/lp-ui.js").then((m) => m.paintLp($("lpbox"), { coins, CFG })).catch(() => {}); }
 }
 function route(hash, smooth) {

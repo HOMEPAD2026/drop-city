@@ -15,6 +15,7 @@ import { makeAgent } from "../lib/_agent.mjs";
 import { makeLp } from "../lib/_lp.mjs";
 import { makeCashback } from "../lib/_cashback.mjs";
 import { makeFlows } from "../lib/_flows.mjs";
+import { makeProfile } from "../lib/_profile.mjs";
 import { makeCards } from "../lib/_cards.mjs";
 import { makeExtra } from "../lib/_extra.mjs";
 import { makeTg } from "../lib/_tg.mjs";
@@ -34,6 +35,7 @@ let CDX = null; const cards = () => (CDX = CDX || makeCards({ store: pad().store
 let CBX = null; const cb = () => (CBX = CBX || makeCashback({ store: pad().store, pad: pad() }));
 // the platform wallets whose moves the transparency list reads (2026-11-26)
 let FLX = null; const flows = () => (FLX = FLX || makeFlows({ store: pad().store, wallets: () => { const c = publicCfg(), e = (k) => String(process.env[k] || "").trim(); return [["vault", c.vault || e("PAD_VAULT")], ["buyer", c.buyer || e("PAD_BUYER")], ["agent", c.agent], ["rewards", e("PAD_LP_WALLET")], ["cards", e("PAD_CARDS_WALLET")]].filter((x) => x[1]); } }));
+let PFX = null; const prof = () => (PFX = PFX || makeProfile({ pad: pad(), cashback: cb(), lp: lp(), cards: cards() }));
 let LPX = null; const lp = () => (LPX = LPX || makeLp({ store: pad().store, pad: pad(), cashback: () => cb().earned() }));
 const agent = () => (AG = AG || makeAgent({ pad: pad(), extra: extra(), tg: makeTg({ pad: pad(), extra: extra() }) }));
 let ST = null;
@@ -136,7 +138,7 @@ export async function GET(req) {
     if (q.has("page")) {
       HTML = HTML || readFileSync(join(process.cwd(), "index.html"), "utf8");
       const m = String(q.get("page") || ""), coin = /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(m) ? await pad().store.get(`coins/${m}.json`).catch(() => null) : null;
-      const u = new URL(req.url), sec = m === "nft" || m === "lp" ? m : null; return html(200, extra().page(HTML, coin, `${u.protocol}//${req.headers.get("host") || u.host}`, sec));
+      const u = new URL(req.url), sec = m === "nft" || m === "lp" ? m : m === "w" && /^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(String(q.get("w") || "")) ? "w:" + q.get("w") : null; return html(200, extra().page(HTML, coin, `${u.protocol}//${req.headers.get("host") || u.host}`, sec));
     }
     if (q.has("check")) {
       if (limited("check:" + ipOf(req), 20, 60e3)) return json(429, { error: "slow down" });
@@ -147,6 +149,7 @@ export async function GET(req) {
       return json(r.status, r.body, "no-store");
     }
     if (q.has("cards")) return json(200, await cards().view(String(q.get("w") || "")), "public, max-age=10"); // GTAFUN CARDS: the machine, the board, a wallet's cards
+    if (q.has("profile")) { if (limited("pf:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); const r = await prof().view(String(q.get("profile") || "")); return json(r.status, r.body, "public, max-age=20"); } // a wallet's profile
     if (q.has("flows")) { if (limited("fl:" + ipOf(req), 20, 60e3)) return json(429, { error: "slow down" }); return json(200, await flows().view(), "public, max-age=60"); } // the platform wallets' latest moves
     if (q.has("cb")) return json(200, await cb().view(String(q.get("w") || "")), "public, max-age=20"); // trader cashback: the rate, the totals, the latest, a wallet's own
     if (q.has("lp")) { // LP rewards: ?lp=1&w=<wallet> the view · ?lp=tick the hour's snapshot · ?lp=due what is owed
