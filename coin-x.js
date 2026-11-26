@@ -35,11 +35,18 @@ export function checkAlerts(coins) {
 /// the window's extra row: watch · chart · buy here
 export function extrasHtml(c) {
   const on = isWatched(c.mint);
-  return `<div class="cx-row"><button type="button" class="cx-w${on ? " on" : ""}" data-cx="watch" aria-pressed="${on}"><span class="cx-star">★</span><span>${esc(on ? t("cxWatching", "Watching") : t("cxWatch", "Watch"))}</span></button>
-    <button type="button" data-cx="chart" aria-expanded="false">${esc(t("cxChart", "Chart"))}</button>
+  return `<div class="cx-row two"><button type="button" class="cx-w${on ? " on" : ""}" data-cx="watch" aria-pressed="${on}"><span class="cx-star">★</span><span>${esc(on ? t("cxWatching", "Watching") : t("cxWatch", "Watch"))}</span></button>
     <button type="button" class="cx-buy" data-cx="buy">${esc(t("cxBuy", "Buy here"))}</button></div>
-    <p class="cx-note">${esc(t("cxWatchN", "Watching tells you when it moves 20% — while this page is open."))}</p>
-    <div class="cx-chart" hidden></div>`;
+    <p class="cx-note">${esc(t("cxWatchN", "Watching tells you when it moves 20% — while this page is open."))}</p>`;
+}
+/// the chart tab: Dexscreener's embed, made when the tab first opens
+export function chartInto(box, c) { if (!box || box.firstChild) return; box.innerHTML = `<iframe title="Chart" loading="lazy" src="https://dexscreener.com/solana/${encodeURIComponent(c.mint)}?embed=1&loadChartSettings=0&trades=0&tabs=0&info=0&chartLeftToolbar=0&chartTheme=dark&theme=dark&chartStyle=1&chartType=usd&interval=15"></iframe>`; }
+/// the safety tab's holders: the ten biggest wallets (the curve / pool marked, the creator marked), as bars
+export function holdersHtml(d, c) {
+  const hs = (d && d.holders) || []; if (!hs.length) return "";
+  const mx = Math.max(...hs.map((h) => h.pct || 0), 1);
+  return `<div class="ch"><h5>${esc(t("chH", "Top holders"))}</h5><div class="ch-sum"><span>${esc(t("chTop", "Top 10 people"))} <b>${d.top10Pct != null ? d.top10Pct.toFixed(1) + "%" : "–"}</b></span><span>${esc(t("chDev", "Creator holds"))} <b>${d.creatorPct != null ? d.creatorPct.toFixed(2) + "%" : "–"}</b></span></div>
+    ${hs.map((h, i) => { const tag = h.curve ? t("chCurve", "bonding curve") : h.owner && c && h.owner === c.creator ? t("chCreator", "creator") : ""; return `<div class="ch-r${h.curve ? " cv" : ""}${tag && !h.curve ? " dev" : ""}"><span class="n">${i + 1}</span><span class="w">${esc(h.owner ? h.owner.slice(0, 4) + "…" + h.owner.slice(-4) : "–")}${tag ? ` <em>${esc(tag)}</em>` : ""}</span><span class="bar"><i style="width:${((h.pct || 0) / mx) * 100}%"></i></span><b>${(h.pct || 0).toFixed(2)}%</b></div>`; }).join("")}</div>`;
 }
 export function wireExtras(el, c) {
   const row = el.querySelector(".cx-row"); if (!row) return;
@@ -47,8 +54,6 @@ export function wireExtras(el, c) {
     const b = e.target.closest("[data-cx]"); if (!b) return; e.stopPropagation();
     const k = b.dataset.cx;
     if (k === "watch") { const on = toggleWatch(c); b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); b.querySelector("span:last-child").textContent = on ? t("cxWatching", "Watching") : t("cxWatch", "Watch"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); note(on ? t("cxAdded", "Added to your watchlist.") : t("cxRemoved", "Removed from your watchlist.")); }
-    if (k === "chart") { const box = el.querySelector(".cx-chart"), open = box.hidden; box.hidden = !open; b.setAttribute("aria-expanded", String(open));
-      if (open && !box.firstChild) box.innerHTML = `<iframe title="Chart" loading="lazy" src="https://dexscreener.com/solana/${encodeURIComponent(c.mint)}?embed=1&loadChartSettings=0&trades=0&tabs=0&info=0&chartLeftToolbar=0&chartTheme=dark&theme=dark&chartStyle=1&chartType=usd&interval=15"></iframe>`; }
     if (k === "buy") buyHere(c);
   };
 }

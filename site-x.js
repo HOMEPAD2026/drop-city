@@ -121,8 +121,8 @@ export function paintRanks(coins, openCoin, openCreator) {
 export const gradeChip = (g) => (g ? `<span class="grade g${esc(g)}" title="Safety grade (what the chain shows, not a promise)">${esc(g)}</span>` : "");
 export function gradeBox(d) {
   if (!d || !d.grade) return "";
-  if (d.partial) return `<div class="cm-grade"><span class="big grade">…</span><span><b>Safety check — partial</b><small>The holders couldn't be read just now; the grade shows once they are.</small></span></div>`;
-  return `<div class="cm-grade"><span class="big grade g${esc(d.grade)}">${esc(d.grade)}</span><span><b>Safety ${d.score}/100</b><small>What the chain shows right now — not a promise.</small></span></div>
+  if (d.partial) return `<div class="cm-grade"><span class="big grade">…</span><span><b>${esc(t("gbPartH", "Safety check — partial"))}</b><small>${esc(t("gbPartP", "The holders couldn't be read just now; the grade shows once they are."))}</small></span></div>`;
+  return `<div class="cm-grade"><span class="big grade g${esc(d.grade)}">${esc(d.grade)}</span><span><b>${esc(t("gbSafety", "Safety"))} ${d.score}/100</b><small>${esc(t("gbNote", "What the chain shows right now — not a promise."))}</small></span></div>
     <div class="parts" style="display:grid;gap:5px">${d.parts.map((p) => `<div class="pt" style="display:grid;grid-template-columns:1fr 90px 40px;gap:8px;align-items:center;font-size:12px;color:var(--dim)"><span>${esc(p.note)}</span><span class="pb" style="height:5px;border-radius:9px;background:rgba(255,255,255,.08);overflow:hidden"><i style="display:block;height:100%;width:${(p.got / p.max) * 100}%;background:var(--hot)"></i></span><span>${p.got}/${p.max}</span></div>`).join("")}</div>`;
 }
 export function initCheck(CFG, openCoin) {
@@ -173,6 +173,7 @@ async function paintFlows(CFG, coins) {
   const sum = (k) => rows.filter((m) => m.kind === k).reduce((a, m) => a + (m.sol || 0), 0);
   el.innerHTML = `<h4>${esc(t("flH", "Recent moves, read from the chain"))}</h4>
     <div class="fl-sum"><div><b>${sum("buy").toFixed(3)} SOL</b><small>${esc(t("flSumBuy", "spent on buybacks"))}</small></div><div><b>${rows.filter((m) => m.kind === "burn").length}</b><small>${esc(t("flSumBurn", "burns"))}</small></div><div><b>${rows.filter((m) => m.kind === "pay").length}</b><small>${esc(t("flSumPay", "payouts"))}</small></div><div><b>${sum("in").toFixed(3)} SOL</b><small>${esc(t("flSumIn", "fees in"))}</small></div></div>
+    ${V && V.all ? `<p class="fl-all">${esc(t("flAll", "All time, since"))} ${esc(new Date(V.all.since).toISOString().slice(0, 10))}: <b>${V.all.buySol.toFixed(3)} SOL</b> ${esc(t("flSumBuy", "spent on buybacks"))} · <b>${V.all.burns}</b> ${esc(t("flSumBurn", "burns"))}${Object.entries(V.all.burned || {}).length ? ` (${Object.entries(V.all.burned).map(([m, a]) => `${num(a)} ${esc(sym(m))}`).join(", ")})` : ""} · <b>${V.all.pays}</b> ${esc(t("flSumPay", "payouts"))} · <b>${V.all.inSol.toFixed(3)} SOL</b> ${esc(t("flSumIn", "fees in"))}</p>` : ""}
     ${rows.length ? `<div class="fl-list">${rows.slice(0, 20).map((m) => { const r = FL_ROLE[m.role] || [m.role, m.role], k = FL_KIND[m.kind] || [m.kind, m.kind];
       const what = m.kind === "buy" ? `${num(m.amount)} ${sym(m.mint)} · ${m.sol} SOL` : m.kind === "burn" || m.kind === "pay" ? `${num(m.amount)} ${sym(m.mint)}` : m.kind === "sell" ? `${num(m.amount)} ${sym(m.mint)} · ${m.sol} SOL` : `${m.sol} SOL`;
       return `<a class="fl-r k-${esc(m.kind)}" href="https://solscan.io/tx/${esc(m.sig)}" target="_blank" rel="noopener"><span class="fl-k">${esc(t(k[0], k[1]))}</span><span class="fl-w">${esc(what)}</span><small>${esc(t(r[0], r[1]))}</small><small>${esc(m.at ? new Date(m.at).toISOString().slice(5, 16).replace("T", " ") : "")}</small></a>`; }).join("")}</div>`

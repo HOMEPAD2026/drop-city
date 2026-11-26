@@ -2,7 +2,7 @@
 // FEES, wallets, the CA check, the creators' space, about) and the deep links into it. The drop itself is launch.js.
 import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, rpc1, dropState, poke, getJ } from "/common.js";
 import { walletButton } from "/wallet.js";
-import { extrasHtml, wireExtras, isWatched, checkAlerts } from "/coin-x.js";
+import { extrasHtml, wireExtras, isWatched, checkAlerts, chartInto, holdersHtml } from "/coin-x.js";
 import { keepRef } from "/cb-ui.js";
 keepRef(); // an invite link (?ref=<wallet>) is kept on this device until its wallet is linked
 import { openDrop, finishSplit, why, logsBox } from "/launch.js";
@@ -434,18 +434,31 @@ function openCoin(mint) {
     <p class="addr">${caHtml(c.mint)}</p>
     <div class="kv"><div><b>${usd(c.mcapUsd)}</b><small>${esc(t("lMcap", "Market cap"))}</small></div><div><b>${c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>${esc(t("lPrice", "Price"))}</small></div><div><b>${c.hour ? c.hour.slice(5, 10).replace("-", "/") + " " + c.hour.slice(11, 13) + ":00" : "–"}</b><small>${esc(t("cmWhen", "Dropped (UTC)"))}</small></div><div><b>${c.kind === "drop" ? "AGENT" : c.creator ? `<button type="button" class="creator-link" data-creator="${esc(c.creator)}">${esc(short(c.creator))}</button>` : "–"}</b><small>${esc(c.kind === "drop" ? t("cmDrop", "The hourly drop") : t("cmCre", "Creator"))}</small></div></div>
     ${c.kind === "partner" ? `<small style="color:var(--dim)">${esc(t("cSupLine", "Supported by the city · not launched here"))}</small>` : `<div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? esc(t("cGradTo", "graduated to PumpSwap")) : `${esc(t("cmCurve", "bonding curve"))} ${(c.progress || 0).toFixed(1)}%`}</small>`}
-    ${extrasHtml(c)}<div id="cm-x"></div>
+    <div class="cm-tabs" role="tablist"><button type="button" class="on" data-ct="ov">${esc(t("ctOv", "Overview"))}</button><button type="button" data-ct="chart">${esc(t("cxChart", "Chart"))}</button><button type="button" data-ct="safe">${esc(t("ctSafe", "Safety"))}</button><button type="button" data-ct="tr">${esc(t("ctTr", "Trades"))}</button></div>
+    <div class="cm-pane" data-pane="chart" hidden><div class="cx-chart"></div></div>
+    <div class="cm-pane" data-pane="safe" hidden><div id="cm-x"><p class="fine">${esc(t("ctLoading", "Reading the chain…"))}</p></div></div>
+    <div class="cm-pane" data-pane="tr" hidden><div id="cm-trd"><p class="fine">${esc(t("ctLoading", "Reading the chain…"))}</p></div></div>
+    <div class="cm-pane" data-pane="ov">${extrasHtml(c)}
     ${c.raid ? `<div class="raid"><b>🚨 ${esc(t("raidH", "POLICE RAID"))}</b><span>${esc(tf("raidP", "Its creator sold {s} SOL of it {h} h ago — seen on chain. The tape comes down after a day without another sale.", { s: Number(c.raid.sol).toFixed(c.raid.sol < 1 ? 3 : 2), h: Math.max(1, Math.round((Date.now() - c.raid.at) / 3600e3)) }))}</span></div>` : ""}
     ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}${feeBox(c, CFG)}
     <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cmTower", "Tower"))}</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">${esc(t("cmShare", "Share"))}</a><button type="button" data-copy>${esc(t("cmCopy", "Copy CA"))}</button><button type="button" data-mug>📸 ${esc(t("cmMug", "Mugshot"))}</button></div>
-    ${[c.twitter, c.telegram, c.website].filter(Boolean).length ? `<p style="margin:12px 0 0;font-size:13px">${[["X", c.twitter], ["Telegram", c.telegram], ["Website", c.website]].filter((x) => x[1]).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n} ↗</a>`).join(" · ")}</p>` : ""}</div></div>`;
+    ${[c.twitter, c.telegram, c.website].filter(Boolean).length ? `<p style="margin:12px 0 0;font-size:13px">${[["X", c.twitter], ["Telegram", c.telegram], ["Website", c.website]].filter((x) => x[1]).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n} ↗</a>`).join(" · ")}</p>` : ""}</div></div></div>`;
   el.hidden = false;
   const close = () => { el.hidden = true; document.removeEventListener("keydown", k); }, k = (e) => { if (e.key === "Escape") close(); };
   document.addEventListener("keydown", k);
   el.onclick = async (e) => { if (e.target === el || e.target.closest(".wm-x")) return close(); const cr = e.target.closest("[data-creator]"); if (cr) return openCreator(cr.dataset.creator, coins, openCoin); if (e.target.closest("[data-copy]")) { try { await navigator.clipboard.writeText(c.mint); note("Address copied"); } catch {} }
     const mg = e.target.closest("[data-mug]"); if (mg) { mg.disabled = true; try { const r = await (await import("/mugshot.js")).shareMugshot(c, CFG); if (r === "downloaded") note("Mugshot saved."); } catch { note("Couldn't make the mugshot."); } mg.disabled = false; } };
   wireFees(el, c, CFG, refresh); wireExtras(el, c);
-  if (!DEMO) getJ("?coin=" + encodeURIComponent(c.mint)).then((d) => { const x = $("cm-x"); if (!x || !d || d.error) return; x.innerHTML = gradeBox(d) + (d.trades && d.trades.length ? `<div class="cm-tr">${d.trades.slice(0, 6).map((r) => `<div class="tr ${r.side}"><span class="sd">${r.side.toUpperCase()}</span><span><b>${r.sol.toFixed(3)} SOL</b></span><small>${esc(short(r.who))}</small></div>`).join("")}</div>` : ""); }).catch(() => {});
+  // the tabs: Overview · Chart (made on first open) · Safety (grade + holders) · Trades
+  el.querySelector(".cm-tabs").onclick = (e) => { const b = e.target.closest("[data-ct]"); if (!b) return; e.stopPropagation(); const k = b.dataset.ct;
+    el.querySelectorAll("[data-ct]").forEach((x) => x.classList.toggle("on", x === b)); el.querySelectorAll(".cm-pane").forEach((p) => (p.hidden = p.dataset.pane !== k));
+    if (k === "chart") chartInto(el.querySelector(".cx-chart"), c); };
+  const fill = (d) => { const x = $("cm-x"), y = $("cm-trd"); if (!x || !y) return;
+    if (!d || d.error) { x.innerHTML = `<p class="fine">${esc(c.kind === "partner" ? t("ctSup", "A supported coin isn't graded here — check it on Dexscreener.") : t("ctNone", "No safety read for this coin yet."))}</p>`; y.innerHTML = `<p class="fine">${esc(t("noTrades", "No trades yet — the first one shows up here."))}</p>`; return; }
+    x.innerHTML = gradeBox(d) + holdersHtml(d, c);
+    y.innerHTML = d.trades && d.trades.length ? `<div class="cm-tr">${d.trades.slice(0, 20).map((r) => `<div class="tr ${r.side}"><span class="sd">${r.side.toUpperCase()}</span><span><b>${r.sol.toFixed(3)} SOL</b></span><small>${esc(short(r.who))}</small></div>`).join("")}</div>` : `<p class="fine">${esc(t("noTrades", "No trades yet — the first one shows up here."))}</p>`; };
+  if (DEMO) fill({ grade: "B", score: 72, parts: [], partial: false, creatorPct: 3.2, top10Pct: 31.4, trades: [{ side: "buy", sol: 0.42, who: "8GvmGzRCiT3Vsc4poLjJGdo2mKxds7NA6BqapiBVv3Zp" }, { side: "sell", sol: 0.1, who: "FxPeUcKhAst5dTyELKk7aMHKLLP1BCxw6eynCKRQJfzx" }], holders: [{ owner: "CurveCurveCurveCurveCurveCurveCurveCurveAA", pct: 61.2, curve: true }, { owner: c.creator || "8GvmGzRCiT3Vsc4poLjJGdo2mKxds7NA6BqapiBVv3Zp", pct: 3.2 }, { owner: "FxPeUcKhAst5dTyELKk7aMHKLLP1BCxw6eynCKRQJfzx", pct: 6.1 }, { owner: "4SDLpVR21WHY44qAvCjjqrExcW3BCyMw8nL8bTgUvzqV", pct: 4.4 }, { owner: "7yajVrzpMV8MBmvWnVrniD14FVs73muNqSqGsvG9B9Jb", pct: 2.9 }] });
+  else getJ("?coin=" + encodeURIComponent(c.mint)).then(fill).catch(() => fill(null));
 }
 // a coin watched / unwatched in its window: Explore's ★ marks and the Watching filter follow
 addEventListener("watch:change", () => { try { paintGrid(); } catch {} });

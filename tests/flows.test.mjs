@@ -24,4 +24,5 @@ const F = makeFlows({ store, wallets: () => [["vault", W]], rpc, now: () => cloc
 const v = await F.view(); ok(v.moves.length === 1 && v.moves[0].role === "vault" && v.moves[0].kind === "buy" && v.tot["vault:buy"] === 1, "the view: the vault's buyback with its total");
 const n = calls; await F.view(); ok(calls === n, "read once in five minutes");
 clock += 301e3; await F.view(); ok(calls > n, "read again after five minutes");
+{ const a1 = (await F.view()).all; clock += 301e3; const a2 = (await F.view()).all; ok(a1 && a1.buySol === 1 && a2.buySol === 1, "all-time totals count each transaction once"); }
 console.log(`flows: ${pass} passed, ${fail} failed`); if (fail) process.exit(1);

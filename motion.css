@@ -230,3 +230,23 @@ html.js[data-page="prof"] :is(.hero, #play, #explore, #desk, #pg-nft, #pg-lp) { 
 .pf-c img, .pf-c .ini { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; display: grid; place-items: center; font-size: 13px; font-weight: 800; background: radial-gradient(70% 70% at 30% 25%, #ff5fa6, #b3125f); }
 .pf-c span { min-width: 0; } .pf-c b { display: block; font-weight: 800; } .pf-c small { display: block; color: #8d8d93; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .pf-c em { font-style: normal; font-weight: 800; font-size: 13px; }
 .pf-cards { display: flex; flex-wrap: wrap; gap: 8px; } .pf-card { position: relative; width: 96px; } .pf-card img { width: 100%; border-radius: 10px; display: block; } .pf-card i { position: absolute; top: 6px; right: 6px; font-style: normal; font-size: 12px; font-weight: 800; color: #fff; background: #ff2e88; padding: 2px 6px; border-radius: 999px; }
+
+/* the coin window's tabs (Overview · Chart · Safety · Trades) and the holders' spread */
+.cm-tabs { display: flex; gap: 6px; margin: 14px 0 10px; overflow-x: auto; scrollbar-width: none; }
+.cm-tabs button { flex: 0 0 auto; padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.14); background: transparent; color: #a1a1aa; font: 700 13.5px "Pretendard Variable", Pretendard, system-ui, sans-serif; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.cm-tabs button.on { background: #fff; color: #0a0a0c; border-color: #fff; }
+.cm-pane { animation: pgin 0.25s ease both; }
+.cx-row.two { grid-template-columns: 1fr 1.3fr !important; }
+.cm-pane .cx-chart { margin-top: 0; }
+.ch { margin-top: 12px; padding: 14px; border-radius: 16px; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.08); }
+.ch h5 { margin: 0 0 8px; font-size: 14px; font-weight: 800; color: #fff; }
+.ch-sum { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-bottom: 10px; font-size: 13px; color: #a1a1aa; } .ch-sum b { color: #fff; }
+.ch-r { display: grid; grid-template-columns: 22px minmax(0, 1.2fr) 1fr 58px; gap: 8px; align-items: center; padding: 5px 0; font-size: 12.5px; }
+.ch-r .n { color: #8d8d93; font-weight: 800; } .ch-r .w { font-family: "JetBrains Mono", monospace; color: #d4d4d8; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ch-r em { font-style: normal; font-family: "Pretendard Variable", Pretendard, sans-serif; font-size: 11px; font-weight: 800; padding: 1px 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.1); color: #fff; }
+.ch-r.dev em { background: #ff2e88; } .ch-r .bar { height: 8px; border-radius: 999px; background: rgba(255, 255, 255, 0.08); overflow: hidden; }
+.ch-r .bar i { display: block; height: 100%; background: #ff2e88; border-radius: 999px; animation: dropfill 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both; } .ch-r.cv .bar i { background: #8d8d93; }
+.ch-r b { text-align: right; color: #fff; }
+@keyframes dropfill2 { from { width: 0; } }
+.ch-r .bar i { animation-name: dropfill2; }
+.fl-all { margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; background: rgba(255, 46, 136, 0.08); border: 1px solid rgba(255, 46, 136, 0.3); font-size: 13px; color: #d4d4d8; line-height: 1.6; } .fl-all b { color: #fff; }
