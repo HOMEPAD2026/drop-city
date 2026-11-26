@@ -4,6 +4,7 @@ import { $, esc, sleep, post, note, DEMO, sol, kit, conn } from "/common.js";
 import { t } from "/i18n.js";
 import { openWallet } from "/wallet.js";
 import { tm } from "/msgs.js";
+import { ic } from "/icons.js";
 // the crew's shares: the same rule as the server's (lib/_pad.mjs crewBps) — equal parts, the launcher keeps the odd bps
 export const CREW_MAX = 4;
 export const crewBps = (n, total) => { n = Math.max(1, Math.min(CREW_MAX, n | 0)); const each = Math.floor(total / n); return Array.from({ length: n }, (_, i) => (i === 0 ? total - each * (n - 1) : each)); };
@@ -49,7 +50,7 @@ export function openDrop(o = {}) {
       <div class="w crewset"><span class="lbl">${esc(t("lsCrew", "Crew (optional) — split your share with up to 3 more wallets"))} (${(CFG.split.creator / 100)}%)</span>
         <div class="crew" data-f="crew"></div><button type="button" class="btn ghost addcrew" data-f="addcrew">+ ${esc(t("lsCrewAdd", "Add a crew wallet"))}</button><small class="crewline" data-f="crewline">${esc(t("lsJustYou", "Just you: your whole share is yours."))} (${(CFG.split.creator / 100)}%)</small></div>
       <label class="w buyset"><span class="lbl">${esc(t("lsBuy", "Your first buy (optional) — bought in the same signing, before anyone else"))}</span>
-        <span class="custom"><input data-f="devsol" inputmode="decimal" placeholder="0" style="max-width:180px"> <b data-f="unit">SOL</b></span><small class="buyline" data-f="buyline">${esc(t("lsBuyNone", "Leave it empty for no first buy."))}</small></label>
+        <span class="custom"><input data-f="devsol" inputmode="decimal" placeholder="0" style="max-width:180px"> <b data-f="unit">SOL</b></span><small class="buyline" data-f="buyline">${esc(t("lsBuyNone", "Leave it empty for no first buy."))}</small><small class="ls-clean">${ic("shield")} ${esc(t("lsClean", "Clean launch: your first buy goes in the same transaction as the coin — nobody can buy before you in its first block, and your coin gets the CLEAN badge."))}</small></label>
     </div><div class="lprev"><p class="cap">${esc(t("lsPrev", "PREVIEW"))}</p><div data-f="prev"></div></div></div>
     <div class="note"><b>${esc(t("lsFees", "Fees, locked on chain"))}<span data-f="feeunit"></span>:</b> <span data-f="you">${(CFG.split.creator / 100)}% you</span> · ${(CFG.split.vault / 100)}% THE VAULT · ${(CFG.split.buyer / 100)}% buys $${esc(CFG.ticker)}.${CFG.suffix ? ` <b>${esc(t("lsSuffix", "Your coin's address will end in"))} ${esc(CFG.suffix)}</b> — ${esc(t("lsSuffixP", "found in this browser, the key never leaves it."))}` : ""} ${esc(t("lsCost", "No launch fee; about 0.03 SOL of network costs."))}</div>
     <div class="ls-tw" data-f="tw" aria-hidden="true"><div class="tw-b"><i></i><i></i><i></i><i></i><i></i></div><span data-f="twl"></span></div>

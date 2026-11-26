@@ -20,6 +20,7 @@ import { makeCashback } from "../lib/_cashback.mjs";
 import { makeFlows } from "../lib/_flows.mjs";
 import { makeProfile } from "../lib/_profile.mjs";
 import { makeBag } from "../lib/_bag.mjs";
+import { makeClean } from "../lib/_clean.mjs";
 import { makeSlots } from "../lib/_slots.mjs";
 import { makeCards } from "../lib/_cards.mjs";
 import { makeExtra } from "../lib/_extra.mjs";
@@ -41,6 +42,7 @@ let CBX = null; const cb = () => (CBX = CBX || makeCashback({ store: pad().store
 // the platform wallets whose moves the transparency list reads (2026-11-26)
 let FLX = null; const flows = () => (FLX = FLX || makeFlows({ store: pad().store, wallets: () => { const c = publicCfg(), e = (k) => String(process.env[k] || "").trim(); return [["vault", c.vault || e("PAD_VAULT")], ["buyer", c.buyer || e("PAD_BUYER")], ["agent", c.agent], ["rewards", e("PAD_LP_WALLET")], ["cards", e("PAD_CARDS_WALLET")]].filter((x) => x[1]); } }));
 let SLX = null; const slots = () => (SLX = SLX || makeSlots({ store: pad().store, pad: pad() }));
+let CLX = null; const clean = () => (CLX = CLX || makeClean({ rpc: C.rpc, store: blobStore(), list: () => pad().list() }));
 let BGX = null; const bag = () => (BGX = BGX || makeBag({ rpc: C.rpc, list: () => pad().list() }));
 let PFX = null; const prof = () => (PFX = PFX || makeProfile({ pad: pad(), cashback: cb(), lp: lp(), cards: cards() }));
 let LPX = null; const lp = () => (LPX = LPX || makeLp({ store: pad().store, pad: pad(), cashback: () => cb().earned() }));
@@ -170,7 +172,7 @@ export async function GET(req) {
     if (q.has("cb")) return json(200, await cb().view(String(q.get("w") || "")), "public, max-age=20"); // trader cashback: the rate, the totals, the latest, a wallet's own
     if (q.has("lp")) { // LP rewards: ?lp=1&w=<wallet> the view · ?lp=tick the hour's snapshot · ?lp=due what is owed
       const m = q.get("lp");
-      if (m === "tick") { if (limited("lpt:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" }); const a = await lp().tick().catch((e) => ({ error: String((e && e.message) || e).slice(0, 120) })); const c = await cb().tick().catch((e) => ({ error: String((e && e.message) || e).slice(0, 120) })); return json(200, { ...a, cashback: c }, "no-store"); }
+      if (m === "tick") { if (limited("lpt:" + ipOf(req), 6, 60e3)) return json(429, { error: "slow down" }); const a = await lp().tick().catch((e) => ({ error: String((e && e.message) || e).slice(0, 120) })); const c = await cb().tick().catch((e) => ({ error: String((e && e.message) || e).slice(0, 120) })); const k = await clean().tick().catch((e) => ({ error: String((e && e.message) || e).slice(0, 120) })); return json(200, { ...a, cashback: c, clean: k }, "no-store"); }
       if (m === "due") return json(200, { due: await lp().due() }, "no-store");
       return json(200, await lp().view(String(q.get("w") || "")), "public, max-age=20");
     }

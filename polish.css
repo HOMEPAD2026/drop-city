@@ -228,3 +228,11 @@ html[data-tab="now"] #t-now, html[data-tab="ranks"] #t-ranks, html[data-tab="lau
 /* ---- L1 ---- */
 .ptr.done i { animation: none !important; border-color: #7dffb4 !important; border-top-color: #7dffb4 !important; border-width: 0 2px 2px 0 !important; border-radius: 0 !important; width: 8px !important; height: 14px !important; transform: rotate(45deg) translate(-1px, -2px) !important; }
 :focus-visible { outline: 2px solid var(--v-pink2, #ff8ab8); outline-offset: 2px; }
+
+/* ---- L2: Clean Launch ---- */
+.clean-b { position: absolute; right: 8px; bottom: 8px; z-index: 3; display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800; color: #062a18; background: linear-gradient(135deg, #8dffc6, #4fe3a0); box-shadow: 0 4px 14px rgba(80, 230, 160, 0.35); }
+.clean-b .gi { width: 12px; height: 12px; }
+.cln { display: flex; align-items: center; gap: 8px; margin: 8px 0 0; padding: 8px 12px; border-radius: 12px; font-size: 13px; font-weight: 600; }
+.cln.ok { color: #b8ffd9; background: rgba(80, 230, 160, 0.1); border: 1px solid rgba(80, 230, 160, 0.3); } .cln.ok .gi { color: #7dffb4; }
+.cln.no { color: #ffc4c4; background: rgba(255, 90, 90, 0.08); border: 1px solid rgba(255, 110, 110, 0.3); } .cln.no .gi { color: #ff8a8a; }
+.ls-clean { display: flex; gap: 6px; align-items: flex-start; margin-top: 8px; color: #b8ffd9 !important; font-size: 12.5px; line-height: 1.45; } .ls-clean .gi { flex: 0 0 auto; color: #7dffb4; margin-top: 1px; }
