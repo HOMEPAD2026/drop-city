@@ -157,3 +157,70 @@ html.win-open body { overflow: hidden !important; }
 html.js:not([data-page="home"]) #cotd { display: none !important; }
 /* the desk's chosen tab in the same tint as every other chosen pill */
 html[data-tab="now"] #t-now, html[data-tab="ranks"] #t-ranks, html[data-tab="launch"] #t-launch, html[data-tab="fees"] #t-fees, html[data-tab="wallets"] #t-wallets, html[data-tab="check"] #t-check, html[data-tab="mine"] #t-mine, html[data-tab="about"] #t-about, html[data-tab="live"] #t-live, html[data-tab="creators"] #t-creators { background: var(--v-sun-soft) !important; color: #fff !important; box-shadow: inset 0 0 0 1px rgba(255, 140, 190, 0.45) !important; }
+
+/* ---- K5: motion ---- */
+/* the coin's picture travels from its card into the window */
+::view-transition-group(coin-pic) { animation-duration: 0.4s; animation-timing-function: cubic-bezier(0.2, 0.9, 0.3, 1); }
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.18s; }
+/* the skyline over the home rows: every coin a building as tall as its curve; a trade lights its windows */
+.sk2 { display: flex; align-items: flex-end; justify-content: center; gap: 6px; height: 132px; margin: 0 0 18px; padding: 0 4px; border-bottom: 1px solid var(--v-line2); position: relative; overflow: hidden;
+  background: radial-gradient(60% 120% at 50% 100%, rgba(255, 61, 139, 0.12), transparent 70%); }
+.sk2:empty { display: none; }
+.sk2-b { position: relative; flex: 0 0 var(--w, 40px); height: var(--h, 50%); padding: 0; border: 0; cursor: pointer; border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, #2a1f44, #17112a); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.12), inset 1px 0 0 rgba(255, 255, 255, 0.05);
+  transform-origin: bottom; animation: sk2up 0.7s cubic-bezier(0.2, 0.9, 0.3, 1) both; animation-delay: calc(var(--i) * 45ms); transition: filter 0.2s, transform 0.2s; }
+.sk2-b:hover { filter: brightness(1.25); transform: translateY(-3px); }
+.sk2-w { position: absolute; inset: 22px 6px 6px; background: repeating-linear-gradient(180deg, transparent 0 6px, rgba(255, 214, 150, 0.0) 6px 10px), repeating-linear-gradient(90deg, rgba(255, 220, 160, 0.28) 0 5px, transparent 5px 9px);
+  -webkit-mask: repeating-linear-gradient(180deg, #000 0 4px, transparent 4px 9px); mask: repeating-linear-gradient(180deg, #000 0 4px, transparent 4px 9px); opacity: 0.55; transition: opacity 0.3s; }
+.sk2-s { position: absolute; left: 50%; top: -14px; transform: translateX(-50%); width: 26px; height: 26px; border-radius: 50%; overflow: hidden; box-shadow: 0 0 0 2px #1a1330, 0 0 14px rgba(255, 61, 139, 0.45); background: #1a1330; z-index: 1; }
+.sk2-s img, .sk2-s .ini { width: 100%; height: 100%; object-fit: cover; font-size: 9px; }
+.sk2-b.main { background: linear-gradient(180deg, #4a1f3c, #1d1130); box-shadow: inset 0 1px 0 rgba(255, 140, 190, 0.5), 0 0 22px rgba(255, 61, 139, 0.25); }
+.sk2-b.sup { background: linear-gradient(180deg, #3b2f1c, #1b1424); }
+.sk2-b.made { background: linear-gradient(180deg, #4b3a17, #1d1424); }
+.sk2-c { position: absolute; left: 50%; top: -34px; transform: translateX(-50%); color: #ffd27a; filter: drop-shadow(0 0 6px rgba(255, 190, 90, 0.7)); }
+.sk2-c .gi { width: 16px; height: 16px; }
+.sk2-b.ping .sk2-w { animation: sk2lit 1.4s ease-out; }
+.sk2-b.ping { animation: sk2bump 0.5s ease-out; }
+@keyframes sk2up { from { transform: scaleY(0.15); opacity: 0; } }
+@keyframes sk2lit { 0% { opacity: 1; filter: brightness(2.2) saturate(1.5); } 100% { opacity: 0.55; } }
+@keyframes sk2bump { 40% { transform: translateY(-4px); } }
+@media (max-width: 760px) { .sk2 { height: 104px; gap: 4px; } .sk2-b { flex-basis: calc(var(--w, 40px) * 0.8); } .sk2-s { width: 22px; height: 22px; } }
+.hc.ping { animation: ping 0.8s ease; }
+/* the pack while it mints */
+.cd-mint { position: fixed; inset: 0; z-index: 9000; display: grid; place-content: center; justify-items: center; gap: 16px; background: rgba(8, 5, 18, 0.88); opacity: 0; transition: opacity 0.22s; text-align: center; }
+.cd-mint.in { opacity: 1; }
+.cm-pack { width: 180px; height: 260px; border-radius: 18px; display: grid; place-content: center; justify-items: center; gap: 8px; color: #fff;
+  background: linear-gradient(150deg, #ff3d8b, #8f6bff 60%, #2a1f44); box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18) inset, 0 20px 60px rgba(255, 61, 139, 0.35); animation: packbr 1.6s ease-in-out infinite; position: relative; overflow: hidden; }
+.cm-pack::after { content: ""; position: absolute; inset: -40% -60%; background: linear-gradient(105deg, transparent 40%, rgba(255, 255, 255, 0.35) 50%, transparent 60%); animation: packsh 2.4s ease-in-out infinite; }
+.cm-pack img { width: 92px; height: 92px; } .cm-pack b { font-size: 15px; font-weight: 800; } .cm-pack small { opacity: 0.8; }
+.cm-pack.shake { animation: packshake 0.3s ease, packbr 1.6s ease-in-out 0.3s infinite; }
+.cd-mint p { margin: 0; color: var(--v-dim, #b9b0cc); }
+.cm-dots { display: flex; gap: 8px; } .cm-dots i { width: 10px; height: 10px; border-radius: 50%; background: rgba(255, 255, 255, 0.18); transition: background 0.3s, transform 0.3s; }
+.cm-dots i.on { background: #ff8ab8; transform: scale(1.25); box-shadow: 0 0 10px rgba(255, 61, 139, 0.7); }
+@keyframes packbr { 50% { transform: scale(1.03); } }
+@keyframes packsh { 0% { transform: translateX(-60%); } 100% { transform: translateX(60%); } }
+@keyframes packshake { 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
+/* the launch form's tower: phones only (computers have the card preview) */
+.ls-tw { display: none; }
+@media (max-width: 760px) {
+  .ls-tw { display: flex; align-items: flex-end; gap: 12px; margin: 12px 0 4px; padding: 10px 12px; border-radius: 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--v-line2); }
+  .tw-b { display: flex; flex-direction: column-reverse; gap: 3px; width: 34px; }
+  .tw-b i { height: 9px; border-radius: 2px; background: rgba(255, 255, 255, 0.08); transition: background 0.3s, box-shadow 0.3s, transform 0.3s; transform: scaleX(0.7); }
+  .tw-b i.on { background: linear-gradient(90deg, #ff3d8b, #ff9a62); box-shadow: 0 0 10px rgba(255, 61, 139, 0.45); transform: none; }
+  .ls-tw span { font-size: 12.5px; color: var(--v-dim, #b9b0cc); font-weight: 700; }
+  .ls-tw.done .tw-b { animation: twrise 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.3); }
+}
+@keyframes twrise { 0% { transform: translateY(0); } 40% { transform: translateY(-14px) scale(1.1); } 100% { transform: none; } }
+/* reduced motion: a still, swipeable ticker; no legendary flash left on screen; no smooth scrolling */
+@media (prefers-reduced-motion: reduce) {
+  .tk-in { animation: none !important; padding-left: 16px; overflow-x: auto; }
+  .cd-rev.flash::after { display: none !important; }
+  .sk2-b, .sk2-b.ping, .sk2-b.ping .sk2-w, .cm-pack, .cm-pack::after, .cm-pack.shake, .ls-tw.done .tw-b { animation: none !important; }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
+.sk2 { padding-top: 40px; box-sizing: border-box; height: 168px; }
+@media (max-width: 760px) { .sk2 { height: 136px; padding-top: 36px; } }
+.cotdsec .sec-h h2 { font-size: clamp(20px, 2.2vw, 24px) !important; display: flex; align-items: center; gap: 0; margin: 0; }
+/* phones: a third card always peeks, so the rows read as rows you can swipe */
+@media (max-width: 760px) { .hot-list .hc { flex: 0 0 43% !important; min-width: 0 !important; scroll-snap-align: start; } .hot-list { scroll-snap-type: x proximity; -webkit-mask: linear-gradient(90deg, #000 88%, transparent); mask: linear-gradient(90deg, #000 88%, transparent); } }

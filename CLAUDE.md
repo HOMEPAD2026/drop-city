@@ -219,3 +219,29 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   .sl-machine; slot.js reads the window's height for the stop): on a short screen the window was 240 px with 96 px rows and
   the middle row sat below the pay line. The search list's grid is minmax(0, 1fr): its rows were wider than the box and
   the list slid sideways.
+- **Round K (the owner, 2026-11-26: "다 진행하자" — the review's list):** polish.css loads LAST (after vice.css) and holds the
+  round's styles. K1: toasts (z 10001, at the top while a window is open) and confetti above every window; a supported
+  coin's window has no fee box / pay-out and says no creator fees flow to the city; "Launched 3h ago" (agoTxt) instead of
+  "Dropped (UTC) –"; tiny prices as $0.0₅840 (pxFmt); copyCA answers on the button; the launch form points at the bad
+  field (shake + scroll), keeps a draft (sessionStorage dc.draft, the logo in memory), ignores backdrop taps once
+  filled, and on a phone with no wallet shows "open in Phantom / Solflare" first — the link carries the typed fields
+  (/?launch=1&n=&s=…, which also skips the intro); press feedback (:active), 16 px inputs on phones, the burger turns
+  into ×, Explore's own page starts with 12. K2: win.js — Back closes the open window (a coin gets /coin/<mint>), the
+  page behind is locked (html.win-open), coin + wallet windows are bottom sheets on phones (drag down); **never give
+  an overlay `display:flex !important` without `:not([hidden])`** — that shipped once and the invisible coin window
+  caught every tap on phones; home rows / the main coin card write their markup only when it changed (setH). K3: the
+  bot's deep links t.me/GTAFUNbot?start=w_<mint> (watch) · cb_<wallet> (cashback) · f_<wallet> (follow a creator:
+  tg/follow.json, their next launch is posted to that chat; /follow /unfollow /following); the coin window's 0.3 %
+  cashback line + "Get its alerts on Telegram"; an invite (?ref=) shows a strip on arrival and asks to link (one
+  signature, cb-ui.js linkInviter) the moment a wallet connects; My bag (?bag=<wallet>, lib/_bag.mjs: both token
+  programs, a minute per wallet) in My corner + "You hold … · Sell here" (Jupiter, the other way) in the coin window;
+  COIN OF THE DAY (lib/_extra.mjs cotd*: the five busiest launched coins of the last day, fixed at the day's first look,
+  one signed vote a wallet a UTC day under cotd/<day>/p<i>/<wallet>.json, ?cotd=1&w=, POST cotd-vote; yesterday's
+  winner on home (#cotd), a gold badge on its Explore card, and the bot posts it once a day) — a vote, nothing paid;
+  Explore: Trending sort, Near graduation (≥ 70 %), New · 1 h, Grade A–B. K4: Buy is the coin window's one main action
+  (secondary links as quiet pills, the fee box folded into one line, fees read through rpc1 — no 1 MB kit), one tint
+  for every chosen pill, the older colour names pointed at Vice Night, a deeper sunset on main buttons, medals + an
+  inviting Hall of Fame in Ranks. K5: the coin's picture travels into the window (View Transitions, computers), a
+  skyline over the home rows (#sk2: a building per coin, as tall as its curve, a crown when made; a trade lights its
+  windows), a sealed pack that breathes while a pack mints, a little tower in the phone launch form (a floor per part),
+  the stat tick only on a real change, reduced-motion fixes.

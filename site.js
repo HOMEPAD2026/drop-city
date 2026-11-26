@@ -67,7 +67,7 @@ setInterval(refresh, 20e3); setInterval(() => { paintHour(); tickVote(); takeove
 /// a trade lands: its card pulses, and the THIS HOUR tab shows a dot while another tab is open
 function flashTrade(x) {
   if (html.dataset.tab !== "now") { const d = document.querySelector("#t-now .dk-dot"); if (d) d.hidden = false; }
-  const el = document.querySelector(`.cc[data-m="${CSS.escape(x.mint)}"]`); if (!el) return; el.classList.remove("ping"); void el.offsetWidth; el.classList.add("ping");
+  for (const el of document.querySelectorAll(`.cc[data-m="${CSS.escape(x.mint)}"], .hc[data-m="${CSS.escape(x.mint)}"], .sk2-b[data-m="${CSS.escape(x.mint)}"]`)) { el.classList.remove("ping"); void el.offsetWidth; el.classList.add("ping"); }
 }
 function paintAll() {
   dropsUi();
@@ -91,6 +91,13 @@ function paintHot() {
   setH(nw, fresh.map((c, i) => hc(c, i, ago(c.launchedAt))).join("") || `<p class="fine">${esc(t("newNone", "No launches yet — be the first."))}</p>`);
   requestAnimationFrame(() => setTimeout(() => { tr.classList.add("seen"); nw.classList.add("seen"); }, 900));
   for (const el of [tr, nw]) el.onclick = (e) => { const b = e.target.closest("[data-m]"); if (b) openCoin(b.dataset.m); };
+  const sk = $("sk2"); if (sk) {
+    const town = coins.slice().sort((a, b) => (b.mcapUsd || 0) - (a.mcapUsd || 0)).slice(0, innerWidth < 760 ? 9 : 16), mx = Math.max(...town.map((c) => c.mcapUsd || 0), 1);
+    const order = []; town.forEach((c, i) => (i % 2 ? order.push([c, i]) : order.unshift([c, i]))); // the biggest in the middle
+    setH(sk, order.map(([c, i]) => { const h = isSup(c) ? 62 : c.graduated ? 100 : 26 + Math.round((c.progress || 0) * 0.7), w = 34 + Math.round(30 * Math.sqrt((c.mcapUsd || 0) / mx));
+      return `<button type="button" class="sk2-b${c.graduated && !isSup(c) ? " made" : ""}${isSup(c) ? " sup" : ""}${c.mint === CFG.main ? " main" : ""}" data-m="${esc(c.mint)}" style="--h:${h}%;--w:${w}px;--i:${i}" title="$${esc(c.symbol)} · ${esc(usd(c.mcapUsd))}">${c.graduated && !isSup(c) ? `<i class="sk2-c">${ic("crown")}</i>` : ""}<span class="sk2-s">${pic(c)}</span><span class="sk2-w"></span></button>`; }).join(""));
+    sk.onclick = (e) => { const b = e.target.closest("[data-m]"); if (b) openCoin(b.dataset.m); };
+  }
 }
 
 // ---------------- THE MAIN COIN (beside the hero): a full card on wide screens, a two-row strip that unfolds below 1100 px
@@ -496,6 +503,14 @@ function notListed(m) {
   el.onclick = (e) => { if (e.target === el || e.target.closest(".wm-x")) { el.hidden = true; return; } if (e.target.closest("[data-nl]")) { el.hidden = true; setTimeout(() => { const i = $("ck-m"); if (i) { i.value = m; const g = $("ck-go"); if (g) g.click(); } }, 150); } };
 }
 function openCoin(mint) {
+  const can = document.startViewTransition && !calm && matchMedia("(min-width: 761px)").matches && $("cmodal").hidden;
+  const src = can && [...document.querySelectorAll(`[data-m="${CSS.escape(mint)}"] img`)].find((i) => { const r = i.getBoundingClientRect(); return r.width > 8 && r.bottom > 0 && r.top < innerHeight; });
+  if (!src) return openCoinNow(mint);
+  src.style.viewTransitionName = "coin-pic";
+  const vt = document.startViewTransition(() => { src.style.viewTransitionName = ""; openCoinNow(mint); const p = document.querySelector("#cmodal .poster img"); if (p) { p.style.viewTransitionName = "coin-pic"; setTimeout(() => (p.style.viewTransitionName = ""), 700); } });
+  vt.finished.finally(() => { const p = document.querySelector("#cmodal .poster img"); if (p) p.style.viewTransitionName = ""; }).catch(() => {});
+}
+function openCoinNow(mint) {
   const c = coins.find((x) => x.mint === mint); if (!c) return;
   const sup = c.kind === "partner", sfx = CFG.suffix && c.mint.endsWith(CFG.suffix) ? ` CA ends in ${CFG.suffix}.` : "";
   const share = encodeURIComponent(sup ? `$${c.symbol} — supported by ${CFG.name || "GTAFUN"}.\n` : `$${c.symbol} — ${c.kind === "drop" ? `the ${c.hour.slice(11, 13)}:00 drop` : "launched"} in ${CFG.name || "the city"}.${sfx}\n`), el = $("cmodal"), link = encodeURIComponent(`${location.origin}/coin/${c.mint}`);

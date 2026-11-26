@@ -51,6 +51,7 @@ export function openDrop(o = {}) {
         <span class="custom"><input data-f="devsol" inputmode="decimal" placeholder="0" style="max-width:180px"> <b data-f="unit">SOL</b></span><small class="buyline" data-f="buyline">${esc(t("lsBuyNone", "Leave it empty for no first buy."))}</small></label>
     </div><div class="lprev"><p class="cap">${esc(t("lsPrev", "PREVIEW"))}</p><div data-f="prev"></div></div></div>
     <div class="note"><b>${esc(t("lsFees", "Fees, locked on chain"))}<span data-f="feeunit"></span>:</b> <span data-f="you">${(CFG.split.creator / 100)}% you</span> · ${(CFG.split.vault / 100)}% THE VAULT · ${(CFG.split.buyer / 100)}% buys $${esc(CFG.ticker)}.${CFG.suffix ? ` <b>${esc(t("lsSuffix", "Your coin's address will end in"))} ${esc(CFG.suffix)}</b> — ${esc(t("lsSuffixP", "found in this browser, the key never leaves it."))}` : ""} ${esc(t("lsCost", "No launch fee; about 0.03 SOL of network costs."))}</div>
+    <div class="ls-tw" data-f="tw" aria-hidden="true"><div class="tw-b"><i></i><i></i><i></i><i></i><i></i></div><span data-f="twl"></span></div>
     <ol class="steps" data-f="steps" hidden></ol><p class="err" data-f="err" hidden></p>
     <div class="foot"><button type="button" class="btn ghost" data-f="close">${esc(t("close", "Close"))}</button><button type="button" class="btn hot" data-f="go">${esc(t("lsGo", "Launch on pump.fun"))}</button></div></div>`;
   const q = (k) => sh.querySelector(`[data-f="${k}"]`);
@@ -58,6 +59,10 @@ export function openDrop(o = {}) {
   const prev = () => { const v = (k) => String((q(k) && q(k).value) || "").trim(), sym = v("symbol") || "TICKER", nm = v("name") || "Your coin";
     q("prev").innerHTML = `<article class="cc"><div class="poster"><span class="tag">WANTED</span><span class="badge new">NEW</span>${f.logoData ? `<img src="${f.logoData}" alt="">` : `<span class="ini">${esc(sym.slice(0, 3))}</span>`}<span class="bounty">BOUNTY $0</span></div><div class="body"><h3>${esc(nm)}</h3><span class="sym">$${esc(sym)}</span> <span class="stars">★☆☆☆☆</span><div class="bar"><i style="width:2%"></i></div><small style="color:var(--dim)">${CFG.suffix ? `CA …${esc(CFG.suffix)}` : "curve 0%"}${f.quote ? ` · ${esc(f.quote.id)} pair` : ""}</small></div></article>`; };
   sh.addEventListener("input", prev); prev();
+  // the little tower (phones have no preview): a floor for each part that's done — logo, name, ticker, story, a link
+  const tower = () => { const v = (k) => String((q(k) && q(k).value) || "").trim(), done = [!!f.logoData, !!v("name"), !!v("symbol"), !!v("description"), !!(v("twitter") || v("telegram") || v("website"))];
+    q("tw").querySelectorAll(".tw-b i").forEach((x, i) => x.classList.toggle("on", done[i])); q("twl").textContent = `$${v("symbol") || "TICKER"}${CFG.suffix ? " · CA …" + CFG.suffix : ""} · ${done.filter(Boolean).length}/5`; };
+  sh.addEventListener("input", tower); setTimeout(tower, 0);
   const err = (s, k) => { const e = q("err"); e.hidden = !s; e.textContent = s || ""; sh.querySelectorAll(".bad-f").forEach((x) => x.classList.remove("bad-f"));
     if (!s) return; const fld = k && q(k), at = fld && fld.closest("label") ? fld : e;
     if (fld) { fld.classList.add("bad-f"); try { fld.focus({ preventScroll: true }); } catch {} }
@@ -110,7 +115,7 @@ export function openDrop(o = {}) {
       const m = Math.min(img.width, img.height), d = Math.min(512, m), c = document.createElement("canvas"); c.width = c.height = d;
       c.getContext("2d").drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, d, d);
       let data = c.toDataURL("image/webp", 0.86); if (!data.startsWith("data:image/webp")) data = c.toDataURL("image/png");
-      f.logoData = DRAFT.logo = data; q("pv").innerHTML = `<img src="${data}" alt="">`; q("lmsg").textContent = t("lsReady", "ready"); err(""); prev();
+      f.logoData = DRAFT.logo = data; q("pv").innerHTML = `<img src="${data}" alt="">`; q("lmsg").textContent = t("lsReady", "ready"); err(""); prev(); tower();
     } catch (x) { err(String((x && x.message) || x)); }
   };
   const STEPS = [["find", CFG.suffix ? `${t("stFind", "Find an address ending in")} ${CFG.suffix}` : t("stMake", "Make the coin's address")], ["host", t("stHost", "Host the logo and details")], ["sign", t("stSign", "Sign the launch")], ["launch", t("lsGo", "Launch on pump.fun")], ["split", t("stSplit", "Lock the fee split")], ["list", t("stList", "Move into the city")]];
@@ -207,7 +212,7 @@ export function openDrop(o = {}) {
         if (k === "ca" || k === "link") { const v = k === "ca" ? g.pub : `${location.origin}/coin/${g.pub}`; try { await navigator.clipboard.writeText(v); note(t("kitCopied", "Copied.")); } catch { note(v, 6000); } }
         if (k === "mug") { b.disabled = true; try { const r = await (await import("/mugshot.js")).shareMugshot(coinNow, CFG); if (r === "downloaded") note(t("kitMugSaved", "Mugshot saved.")); } catch { note("Couldn't make the mugshot."); } b.disabled = false; } };
       sh.querySelector(".sub").innerHTML = `<b style="color:var(--lime)">$${esc(F.symbol)} is live.</b> Its tower is going up in the city.`; burst(sh.firstChild);
-      note(`$${F.symbol} launched — welcome to the city.`, 5000); o.onDone && o.onDone(); try { sessionStorage.removeItem(DKEY); } catch {} DRAFT.logo = "";
+      note(`$${F.symbol} launched — welcome to the city.`, 5000); o.onDone && o.onDone(); q("tw").classList.add("done"); try { sessionStorage.removeItem(DKEY); } catch {} DRAFT.logo = "";
     } catch (x) {
       step(cur, "bad"); err(why(x)); logsBox(q("err"), x);
       busy = false; q("go").disabled = false;

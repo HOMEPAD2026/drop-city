@@ -82,6 +82,7 @@ async function openPack(V, done) {
   const btn = document.querySelector('[data-cd="open"]'), label = btn ? btn.textContent : "";
   const set = (s) => { if (btn) btn.textContent = s; };
   if (btn) btn.disabled = true;
+  let mo = null;
   try {
     const cn = await conn(), K = await cardsKit();
     const PK = (await kit()).PublicKey, bal = await cn.getBalance(new PK(W.key)).catch(() => null);
@@ -90,7 +91,9 @@ async function openPack(V, done) {
     const { txs, assets } = await K.packTxs({ endpoint: EP(), wallet: W.key, candyMachine: V.cm, collection: V.collection, destination: V.wallet, n: SEASON.pack });
     set(t("cdSign", "Approve in your wallet…"));
     const signed = typeof W.p.signAllTransactions === "function" ? await W.p.signAllTransactions(txs) : await Promise.all(txs.map((x) => W.p.signTransaction(x)));
-    const res = await sendAll(cn, signed, (i, n) => set(`${t("cdMinting", "Minting…")} ${i}/${n}`));
+    mo = mintOverlay(signed.length);
+    const res = await sendAll(cn, signed, (i, n) => { set(`${t("cdMinting", "Minting…")} ${i}/${n}`); mo.step(i, n); });
+    mo.close(); mo = null;
     const got = [];
     for (let i = 0; i < res.length; i++) {
       if (!res[i].sig || res[i].err) continue;
@@ -101,8 +104,19 @@ async function openPack(V, done) {
     if (failed) note(tf("cdPartial", "{n} of the cards didn't go through — you weren't charged for those.", { n: failed }), 6000);
     if (!got.length && !failed) note(t("cdLater", "Your cards are minted — they'll show here in a moment."), 5000);
     done && setTimeout(done, 1500);
-  } catch (e) { const s = String((e && e.message) || e); note(/reject|denied|cancel/i.test(s) ? t("cancelled", "Cancelled in your wallet.") : s.slice(0, 180), 6000); }
+  } catch (e) { if (mo) mo.close(); const s = String((e && e.message) || e); note(/reject|denied|cancel/i.test(s) ? t("cancelled", "Cancelled in your wallet.") : s.slice(0, 180), 6000); }
   if (btn) { btn.disabled = false; btn.textContent = label; }
+}
+/// while a pack mints (15–40 s on chain): a sealed pack that breathes, shakes as each card lands, and a dot a card
+function mintOverlay(n) {
+  const el = document.createElement("div"); el.className = "cd-mint"; el.setAttribute("role", "status");
+  el.innerHTML = `<div class="cm-pack"><img src="/images/logo-192.webp" alt=""><b>GTAFUN CARDS</b><small>${esc(t("cdPackOf", "3 cards inside"))}</small></div><p>${esc(t("cdMintingP", "Minting your cards on chain…"))}</p><div class="cm-dots">${Array.from({ length: n }, () => "<i></i>").join("")}</div>`;
+  document.body.appendChild(el); requestAnimationFrame(() => el.classList.add("in"));
+  let last = 0;
+  return {
+    step(i) { const d = el.querySelectorAll(".cm-dots i"); for (let k = 0; k < d.length; k++) d[k].classList.toggle("on", k < i); if (i > last) { last = i; const p = el.querySelector(".cm-pack"); p.classList.remove("shake"); void p.offsetWidth; p.classList.add("shake"); } },
+    close() { el.classList.remove("in"); setTimeout(() => el.parentNode && el.parentNode.removeChild(el), 220); },
+  };
 }
 
 /// the operations wallet's one-time setup: the collection + the machine (2 approvals' worth in one), then the items
