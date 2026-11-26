@@ -6,7 +6,7 @@ let pass = 0, fail = 0; const ok = (c, m) => { if (c) pass++; else { fail++; con
 const kp = () => C.b58enc(ed25519.getPublicKey(ed25519.utils.randomSecretKey()));
 process.env.PAD_VAULT = kp(); process.env.PAD_BUYER = kp(); process.env.PAD_SUFFIX = "";
 const REWARDS = kp(); process.env.PAD_LP_WALLET = REWARDS;
-const { tradeOf, creditOf, cbCfg, makeCashback } = await import("../lib/_cashback.mjs");
+const { tradeOf, creditOf, cbCfg, makeCashback, refMessage } = await import("../lib/_cashback.mjs");
 const { makeLp } = await import("../lib/_lp.mjs");
 const { PAD } = await import("../pad-config.js");
 const MAIN = PAD.main, WSOL = "So11111111111111111111111111111111111111112";
@@ -67,6 +67,20 @@ ok(docs.get("cb/state.json").cur[COIN] === "C3" && docs.get("cb/state.json").cur
 clock += 300e3; r = await CB.tick(); ok(r.read === 0 && Math.abs(docs.get("cb/ledger.json").earned[A] - 600) < 1e-6, "the same trades never count twice");
 ok((await CB.tick()).busy === true, "a second tick in the same few minutes waits");
 const v = await CB.view(A); ok(v.me.earned === 600 && v.bps === 30 && v.last.length === 2 && v.last[0].sym, "the view: my cashback, the rate, the latest");
+// ---------------- referrals: a trader links its inviter once, signed; the inviter then earns 10 % of its cashback on top
+{ const sk = ed25519.utils.randomSecretKey(), T = C.b58enc(ed25519.getPublicKey(sk)), INV = kp(), issued = new Date(clock).toISOString();
+  const sign = (w, inv, at) => C.b58enc(ed25519.sign(new TextEncoder().encode(refMessage(w, inv, at)), sk));
+  ok((await CB.ref({ wallet: T, ref: INV, issued, sig: C.b58enc(new Uint8Array(64)) })).status === 403, "a referral needs the trader's own signature");
+  ok((await CB.ref({ wallet: T, ref: T, issued, sig: sign(T, T, issued) })).status === 400, "a wallet can't invite itself");
+  ok((await CB.ref({ wallet: T, ref: INV, issued: new Date(clock - 3600e3).toISOString(), sig: sign(T, INV, new Date(clock - 3600e3).toISOString()) })).status === 400, "an old signature is refused");
+  ok((await CB.ref({ wallet: T, ref: INV, issued, sig: sign(T, INV, issued) })).status === 200, "the trader links its inviter");
+  ok((await CB.ref({ wallet: T, ref: kp(), issued, sig: sign(T, INV, issued) })).status >= 400, "a linked wallet can't change its inviter");
+  sigs[COIN] = [{ signature: "C4" }, ...sigs[COIN]]; txs.C4 = mk(T, { lam: [5e9, 4e9 - 5000], post: [tb(T, COIN, 1000)] });
+  clock += 300e3; await CB.tick();
+  const l2 = docs.get("cb/ledger.json");
+  ok(Math.abs(l2.earned[T] - 600) < 1e-6 && Math.abs(l2.earned[INV] - 60) < 1e-6 && Math.abs(l2.ref[INV] - 60) < 1e-6, "the inviter earns 10 % of the trader's cashback on top (60 of 600)");
+  const vi = await CB.view(INV); ok(vi.me.invited === 1 && Math.abs(vi.me.refEarned - 60) < 1e-6 && vi.refBps === 1000, "the inviter's view: one invite, the bonus earned");
+  const vt = await CB.view(T); ok(vt.me.ref === INV && vt.top.length >= 3 && vt.top[0].amt >= vt.top[1].amt && vt.me.rank >= 1, "the leaderboard, the trader's rank and inviter"); }
 // a new day resets the caps
 clock += 86400e3; await CB.tick(); ok(docs.get("cb/state.json").spent === 0, "a new UTC day starts the caps again");
 

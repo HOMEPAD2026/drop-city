@@ -109,6 +109,15 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   transactions a run). Credits in cb/ledger.json; the LP payout owes LP rewards + cashback − paid (lib/_lp.mjs due /
   view, cashback()) and the same rewards wallet pays both. ?cb=1&w= is the view; the LP tab opens with the cashback
   card, the hero carries the 0.3 % line (cbChip — change its words if bps changes). Supported coins don't earn it.
+- **Cashback dashboard + referrals (the owner, 2026-11-26: "응 다 진행하자"):** under the LP pools (cb-ui.js): my cashback,
+  today, my rank, what's waiting to be paid (LP + cashback), the top 10 earners (all time + today), my invite link
+  (/?ref=<wallet>, kept on the device as dc.ref until linked) and "Link my inviter" — the trader signs
+  refMessage once (POST cb-ref; cb/ref/<wallet>.json create-only + cb/refmap.json); the inviter then earns
+  cashback.refBps (1000 = 10 %) of that trader's cashback ON TOP (never out of theirs), inside the day's total. The
+  coin window (coin-x.js): ★ Watch (dc.watch, a 20 % move → a toast / notification while the page is open, Explore's ★
+  filter), Chart (Dexscreener embed), Buy here (Jupiter plugin-v1 modal; jup.ag/swap/SOL-<mint> if it can't load — its
+  options are from memory: dev.jup.ag isn't reachable from here). Supported coins: name / symbol override in
+  pad-config (AudaCity → AUDACITY) and their logos copied into our Blob (sup/logos.json).
 - **Speed (2026-11-25):** the home page never loads the 1 MB Solana kit (vendor/pump-kit.js) — balances on first paint go
   through common.js rpc1 (one JSON-RPC call through ?solrpc); kit() loads only when a wallet action needs it. Inter is
   gone (Barlow Condensed reads everywhere).

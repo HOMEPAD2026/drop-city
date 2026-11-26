@@ -101,3 +101,35 @@ html.fx-pill .bbar a.on { background: transparent !important; }
 #cm-x { margin-top: 12px; }
 /* Explore: a ★ on watched coins */
 .cc .poster .wstar { position: absolute; top: 10px; left: 10px; z-index: 4; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px; color: #fff; background: #ff2e88; box-shadow: 0 4px 12px rgba(255, 46, 136, 0.5); }
+
+/* the cashback dashboard (cb-ui.js) */
+.cbd { margin: -6px 0 18px; display: grid; gap: 12px; }
+.cbd-me { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; align-items: center; }
+.cbd-me > div { padding: 14px 16px; border-radius: 16px; background: #111116; border: 1px solid rgba(255, 255, 255, 0.08); }
+.cbd-me > div.hi { border-color: rgba(255, 46, 136, 0.55); background: rgba(255, 46, 136, 0.08); }
+.cbd-me b { display: block; font-size: 22px; font-weight: 800; color: #fff; } .cbd-me small { font-size: 12px; color: #8d8d93; font-weight: 600; }
+.cbd-me > p { margin: 0; color: #a1a1aa; font-size: 14px; } .cbd-me > .btn { justify-self: start; }
+.cbd-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 760px) { .cbd-grid { grid-template-columns: 1fr; } }
+.cbd-board, .cbd-inv { padding: 18px; border-radius: 20px; background: #111116; border: 1px solid rgba(255, 255, 255, 0.08); }
+.cbd h4 { margin: 0 0 12px; font-size: 16px; font-weight: 800; color: #fff; }
+.cbd-board ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.cbd-board li { display: grid; grid-template-columns: 28px 1fr auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: 12px; font-size: 14px; }
+.cbd-board li:nth-child(odd) { background: rgba(255, 255, 255, 0.03); }
+.cbd-board li .n { font-weight: 800; color: #8d8d93; } .cbd-board li:nth-child(-n + 3) .n { color: #ff2e88; }
+.cbd-board li .w { font-family: "JetBrains Mono", monospace; font-size: 12.5px; color: #d4d4d8; } .cbd-board li em { font-style: normal; font-family: inherit; font-size: 11px; font-weight: 800; color: #fff; background: #ff2e88; padding: 2px 6px; border-radius: 999px; }
+.cbd-board li.me { box-shadow: inset 0 0 0 1px rgba(255, 46, 136, 0.55); }
+.cbd-board li b { font-weight: 800; color: #fff; }
+.cbd-today { margin: 12px 0 0; font-size: 12.5px; color: #8d8d93; display: flex; flex-wrap: wrap; gap: 6px 12px; } .cbd-today b { color: #fff; }
+.cbd-inv p { margin: 0 0 12px; font-size: 14px; line-height: 1.55; color: #a1a1aa; }
+.cbd-link { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 6px; align-items: center; }
+.cbd-link code { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 10px 12px; border-radius: 12px; background: #0a0a0c; border: 1px dashed rgba(255, 46, 136, 0.45); font-size: 12px; color: #fff; }
+.cbd-kv { margin-top: 12px; display: grid; grid-template-columns: 1fr auto; gap: 6px 12px; font-size: 13.5px; color: #a1a1aa; } .cbd-kv b { color: #fff; text-align: right; }
+.cbd-by { margin: 12px 0 0 !important; color: #fff !important; font-weight: 700; }
+.cbd-claim { margin-top: 14px; padding: 14px; border-radius: 16px; background: rgba(255, 46, 136, 0.1); border: 1px solid rgba(255, 46, 136, 0.45); }
+.cbd-claim p { color: #fff !important; }
+/* LP: "How the rewards work" and the payouts list read at the page's size */
+.lp-how { padding: 14px 16px !important; margin-top: 12px; }
+.lp-how summary { font: 700 14px "Pretendard Variable", Pretendard, system-ui, sans-serif !important; letter-spacing: 0 !important; text-transform: none !important; color: #fff !important; cursor: pointer; }
+.lp-how ol { margin: 10px 0 0; padding-left: 20px; font-size: 14px; line-height: 1.6; color: #a1a1aa; }
+.lp-paid h4 { font: 800 16px "Pretendard Variable", Pretendard, system-ui, sans-serif !important; letter-spacing: 0 !important; text-transform: none !important; margin: 18px 0 8px !important; }

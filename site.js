@@ -3,6 +3,8 @@
 import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, rpc1, dropState, poke, getJ } from "/common.js";
 import { walletButton } from "/wallet.js";
 import { extrasHtml, wireExtras, isWatched, checkAlerts } from "/coin-x.js";
+import { keepRef } from "/cb-ui.js";
+keepRef(); // an invite link (?ref=<wallet>) is kept on this device until its wallet is linked
 import { openDrop, finishSplit, why, logsBox } from "/launch.js";
 import { feeBox, wireFees } from "/fees.js";
 import { t, tf, initLang, initSound, tone, roll, paintVote, tickVote, paintLive, paintRanks, initCheck, paintWallets, openCreator, gradeChip, gradeBox, takeoverTick, showDrop, confetti, voteLead, lastTrades } from "/site-x.js";

@@ -5,6 +5,7 @@
 import { $, esc, short, sleep, note, DEMO, sol, kit, conn, getJ, usd, pic } from "/common.js";
 import { openWallet } from "/wallet.js";
 import { t } from "/i18n.js";
+import { dashHtml, wireDash } from "/cb-ui.js";
 
 const API = "/api/pad";
 const fmt = (x) => (x >= 1e6 ? (x / 1e6).toFixed(2) + "M" : x >= 1e3 ? (x / 1e3).toFixed(1) + "K" : x >= 1 ? x.toFixed(0) : x > 0 ? x.toFixed(2) : "0");
@@ -33,14 +34,14 @@ export async function paintLp(box, { coins, CFG }) {
       ${p.eligible === false ? `<small class="lp-min">${esc(t("lpMin", "Earns once the pool holds"))} ${usd(V.minPoolUsd)}</small>` : ""}
       <a class="btn hot" href="${RAY_ADD(p.id)}" target="_blank" rel="noopener">${esc(t("lpAdd", "Add liquidity"))} ↗</a></div>`;
   };
-  const me = V.me;
+  const me = V.me, ME = await sol().then((x) => (x && x.key) || "").catch(() => "");
   // the pools come first; the trader cashback card follows them (2026-11-26)
   box.innerHTML = `
     <div class="lp-stats"><div><b>${fmt(V.daily)}</b><small>$${esc(mainSym)} ${esc(t("lpPerDay", "a day to LPs"))}</small></div><div><b>${fmt(V.total)}</b><small>${esc(t("lpEarnedAll", "earned so far"))}</small></div><div><b>${fmt(V.paidTotal)}</b><small>${esc(t("lpPaidAll", "paid out"))}</small></div><div><b>${V.hours}</b><small>${esc(t("lpHours", "hours counted"))}</small></div></div>
     <div class="lp-me">${me ? `<div><span>${esc(t("lpEarned", "Earned"))}</span><b>${fmt(me.earned)}</b></div>${me.cashback ? `<div><span>${esc(t("cbMine", "Cashback"))}</span><b>${fmt(me.cashback)}</b></div>` : ""}<div><span>${esc(t("lpPaid", "Paid"))}</span><b>${fmt(me.paid)}</b></div><div class="hi"><span>${esc(t("lpPending", "Pending"))}</span><b>${fmt(me.pending)} $${esc(mainSym)}</b></div>`
       : `<p>${esc(t("lpConnect", "Connect your wallet to see what your liquidity has earned."))}</p><button type="button" class="btn ghost" data-lp="conn">${esc(t("connect", "Connect wallet"))}</button>`}</div>
     <div class="lp-grid">${sup.map((c) => `<div class="lp-coin"><div class="lp-ch">${pic(c)}<b>$${esc(c.symbol)}</b><small>${esc(c.name || "")}</small></div>${cell(c, "sol")}${cell(c, "main")}</div>`).join("") || `<p class="fine">${esc(t("lpNoSup", "No supported coins yet."))}</p>`}</div>
-    ${cbCard(CB, mainSym)}
+    ${cbCard(CB, mainSym)}${dashHtml(CB, V, mainSym, ME)}
     <details class="lp-how"><summary>${esc(t("lpHowH", "How the rewards work"))}</summary><ol>
       <li>${esc(t("lpHow1", "Add liquidity to a supported coin's Raydium pool — paired with SOL, or with the main coin (those pools weigh more)."))}</li>
       <li>${esc(t("lpHow2", "Every hour the city reads who holds each pool's LP tokens and splits that hour's reward: across the pools by their liquidity, inside a pool by the LP tokens you hold."))}</li>
@@ -50,6 +51,7 @@ export async function paintLp(box, { coins, CFG }) {
     <div class="lp-admin" hidden></div>`;
   // cashback that grew since this wallet last looked rises over its number once
   try { if (CB && CB.me) { const k = "dc.cbSeen", was = Number(localStorage.getItem(k) || 0), now = CB.me.earned || 0; localStorage.setItem(k, String(now)); const hi = box.querySelector(".cb-stats .hi"); if (hi && was > 0 && now > was) { const f = document.createElement("span"); f.className = "cb-up"; f.textContent = "+" + fmt(now - was); hi.appendChild(f); setTimeout(() => f.remove(), 2600); } } } catch {}
+  wireDash(box, () => paintLp(box, { coins, CFG }));
   const cb = box.querySelector('[data-lp="conn"]'); if (cb) cb.onclick = async () => { await openWallet(); paintLp(box, { coins, CFG }); };
   // the rewards wallet sees the payout desk
   const W = await sol().catch(() => null);

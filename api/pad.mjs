@@ -173,6 +173,7 @@ export async function POST(req) {
   if (b.action === "diag") { if (limited("diag:" + ip, 6, 60e3)) return json(429, { error: "slow down" }); const r = await diag().report(b, req.headers.get("user-agent") || ""); return json(r.status, r.body); }
   if (b.action === "vault") { if (limited("vault:" + ip, 12, 60e3)) return json(429, { error: "slow down" }); const r = await vault().open(b); return json(r.status, r.body); }
   if (b.action === "cards-setup" || b.action === "cards-minted") { if (limited("cards:" + ip, 20, 60e3)) return json(429, { error: "slow down" }); try { const r = b.action === "cards-setup" ? await cards().setup(b) : await cards().minted(b); return json(r.status, r.body); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 160) }); } }
+  if (b.action === "cb-ref") { if (limited("cbr:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await cb().ref(b); return json(r.status, r.body); } catch (e) { return json(500, { error: "couldn't link the invite" }); } }
   if (b.action === "lp-paid") { if (limited("lpp:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await lp().paid(b); return json(r.status, r.body); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 160) }); } }
   if (b.action === "score") { if (limited("score:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); const r = await street().score(b); return json(r.status, r.body); }
   const lim = { register: 30, meta: 20, logo: 20, vote: 10 }[b.action];
