@@ -7,6 +7,8 @@ import { keepRef } from "/cb-ui.js";
 import { paintCity, notice, paintFoot } from "/home-x.js";
 import { paintCorner, paintBoards, initSearch } from "/home-me.js";
 import { ic } from "/icons.js";
+import "/win.js";
+try { notice(); } catch {}
 import { paintBand, shineMain, startFx, headline } from "/home-fx.js";
 keepRef(); // an invite link (?ref=<wallet>) is kept on this device until its wallet is linked
 import { openDrop, finishSplit, why, logsBox } from "/launch.js";
@@ -70,12 +72,14 @@ function flashTrade(x) {
 function paintAll() {
   dropsUi();
   paintHour(); paintMain(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker();
-  paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot(); paintCity({ coins, trades: lastTrades(30), CFG, openCoin }).catch(() => {}); notice(); paintCorner({ coins, CFG, openCoin, openSlot }).catch(() => {}); paintBoards({ CFG, openSlot }).catch(() => {}); paintBand(coins).catch(() => {}); try { shineMain(coins.find((x) => x.mint === CFG.main)); } catch {}
+  paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot(); paintCity({ coins, trades: lastTrades(30), CFG, openCoin }).catch(() => {}); paintCorner({ coins, CFG, openCoin, openSlot }).catch(() => {}); paintBoards({ CFG, openSlot }).catch(() => {}); paintBand(coins).catch(() => {}); try { shineMain(coins.find((x) => x.mint === CFG.main)); } catch {}
   const sl = $("suffixline"); if (CFG.suffix) { sl.hidden = false; sl.innerHTML = `${esc(t("caEnds", "Every coin's CA ends in"))} <b>${esc(CFG.suffix)}</b>`; const kk = document.querySelector(".hero .kicker"); if (kk) kk.dataset.sfx = "CA …" + CFG.suffix; }
 }
 
 // ---------------- the home page's coin rows (2026-11-26): 🔥 trending (SOL traded in the latest trades, then market cap)
 // and 🆕 just launched — small cards that open the coin's window
+/// write a box only when its markup really changed: a repaint never replays the cards' slide-in or drops a hover
+const setH = (el, h) => { if (!el || el._h === h) return false; el._h = h; el.innerHTML = h; return true; };
 function paintHot() {
   const tr = $("hot-trend"), nw = $("hot-new"); if (!tr || !nw || !coins.length) return;
   const vol = new Map(); for (const x of lastTrades(60)) vol.set(x.mint, (vol.get(x.mint) || 0) + (x.sol || 0));
@@ -83,8 +87,9 @@ function paintHot() {
   const fresh = coins.filter((c) => c.kind !== "partner" && c.launchedAt).sort((a, b) => b.launchedAt - a.launchedAt).slice(0, 10);
   const ago = (s) => { const m = Math.max(1, Math.round((Date.now() / 1000 - s) / 60)); return m < 60 ? m + "m" : m < 1440 ? Math.round(m / 60) + "h" : Math.round(m / 1440) + "d"; };
   const hc = (c, i, side) => `<button type="button" class="hc${isSup(c) ? " sup" : ""}" data-m="${esc(c.mint)}" style="--i:${i}">${pic(c)}<span><b>$${esc(c.symbol)}</b><small>${usd(c.mcapUsd)}</small></span><em>${side}</em></button>`;
-  tr.innerHTML = hot.map((c, i) => hc(c, i, vol.get(c.mint) ? `${ic("flame", "hc-fl")}${vol.get(c.mint).toFixed(2)} SOL` : `#${i + 1}`)).join("");
-  nw.innerHTML = fresh.map((c, i) => hc(c, i, ago(c.launchedAt))).join("") || `<p class="fine">${esc(t("newNone", "No launches yet — be the first."))}</p>`;
+  setH(tr, hot.map((c, i) => hc(c, i, vol.get(c.mint) ? `${ic("flame", "hc-fl")}${vol.get(c.mint).toFixed(2)} SOL` : `#${i + 1}`)).join(""));
+  setH(nw, fresh.map((c, i) => hc(c, i, ago(c.launchedAt))).join("") || `<p class="fine">${esc(t("newNone", "No launches yet — be the first."))}</p>`);
+  requestAnimationFrame(() => setTimeout(() => { tr.classList.add("seen"); nw.classList.add("seen"); }, 900));
   for (const el of [tr, nw]) el.onclick = (e) => { const b = e.target.closest("[data-m]"); if (b) openCoin(b.dataset.m); };
 }
 
@@ -97,7 +102,8 @@ function paintMain() {
   el.hidden = false;
   const sym = c ? c.symbol : CFG.ticker, prog = c ? (c.graduated ? 100 : c.progress || 0) : 0, city = `/city?coin=${esc(m)}${DEMO ? "&demo=1" : ""}`;
   const buy = `https://pump.fun/coin/${esc(m)}`;
-  el.innerHTML = `<span class="mc-k">${esc(t("mcTag", "THE MAIN COIN"))}</span>
+  const was = el._h;
+  el._h = `<span class="mc-k">${esc(t("mcTag", "THE MAIN COIN"))}</span>
     <div class="mc-h">${c ? pic(c) : `<span class="ini">${esc(String(sym).slice(0, 3))}</span>`}<div class="mc-id"><b>$${esc(sym)}</b><small>${esc(c ? c.name : CFG.name)}</small></div>
       <a class="btn hot mc-buy" href="${buy}" target="_blank" rel="noopener">${esc(t("buy", "Buy"))}</a>
       <button type="button" class="mc-more" id="mc-more" aria-controls="mainc" aria-expanded="${UI.mcOpen}" aria-label="${esc(UI.mcOpen ? t("mcLess", "Less") : t("mcMore", "More about the main coin"))}"><i aria-hidden="true"></i></button></div>
@@ -107,6 +113,7 @@ function paintMain() {
     <button type="button" class="mc-ca" id="mc-ca" title="${esc(t("copyCa", "Copy the address"))}"><code><span class="ca-h">${esc(m.slice(0, -8))}</span><span class="ca-t">${caHtml(m).slice(esc(m.slice(0, -8)).length)}</span></code><span>${esc(t("copy", "COPY"))}</span></button>
     <p class="mc-p">${esc(tf("mcP3", "Every platform launch buys it with {p}% of its fees. Its own creator fees go 100% to the dev.", { p: CFG.split.buyer / 100 }))}</p>
     <div class="mc-a"><a class="btn hot" href="${buy}" target="_blank" rel="noopener">${esc(t("buy", "Buy"))} $${esc(sym)}</a><a class="btn ghost" href="https://dexscreener.com/solana/${esc(m)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a class="btn ghost" href="${city}">${esc(t("cGame", "Game"))}</a></div>`;
+  if (was !== el._h) el.innerHTML = el._h;
   el.classList.toggle("open", UI.mcOpen);
   $("mc-ca").onclick = () => copyCA($("mc-ca"), m, false);
   $("mc-more").onclick = () => { UI.mcOpen = !UI.mcOpen; paintMain(); };
@@ -116,7 +123,7 @@ function paintMain() {
 let SPARK = null, sparkAt = 0;
 async function readSpark(m) {
   if (Date.now() - sparkAt < 5 * 60e3) return; sparkAt = Date.now();
-  try { const r = await getJ("?spark=" + encodeURIComponent(m)); if (r && r.ok && r.pts && r.pts.length >= 2) { SPARK = r; const el = $("mc-sp"); if (el) el.innerHTML = sparkHtml(); } } catch {}
+  try { const r = await getJ("?spark=" + encodeURIComponent(m)); if (r && r.ok && r.pts && r.pts.length >= 2) { SPARK = r; const el = $("mc-sp"), h = sparkHtml(); if (el && el.innerHTML !== h) { el.innerHTML = h; const mc = $("mainc"); if (mc) mc._h = null; } } } catch {}
 }
 function sparkHtml() {
   const r = SPARK; if (!r) return "";
@@ -479,7 +486,7 @@ async function copyCA(btn, text, swap = true) { let ok = false; try { await navi
 function agoTxt(s) { const m = Math.max(1, Math.round((Date.now() / 1000 - s) / 60)); return m < 60 ? tf("agoM", "{n}m ago", { n: m }) : m < 1440 ? tf("agoH", "{n}h ago", { n: Math.round(m / 60) }) : tf("agoD", "{n}d ago", { n: Math.round(m / 1440) }); }
 /// a shared link to a coin the city doesn't list (yet): say so, and offer the CA check / pump.fun
 function notListed(m) {
-  const el = $("cmodal");
+  const el = $("cmodal"); el.dataset.coin = "";
   el.innerHTML = `<div class="cm-card cm-miss"><button type="button" class="wm-x" aria-label="Close">×</button><div class="cm-in"><h2>${esc(t("nlH", "This coin isn't in the city (yet)"))}</h2><p class="addr"><code>${esc(m)}</code></p><p class="fine">${esc(t("nlP", "It may have just launched, or it was launched somewhere else. Check it here, or look it up on pump.fun."))}</p><div class="nl-a"><a class="btn hot" href="#check" data-nl>${esc(t("nlCheck", "Check this CA"))}</a><a class="btn ghost" href="https://pump.fun/coin/${esc(m)}" target="_blank" rel="noopener">pump.fun ↗</a></div></div></div>`;
   el.hidden = false;
   el.onclick = (e) => { if (e.target === el || e.target.closest(".wm-x")) { el.hidden = true; return; } if (e.target.closest("[data-nl]")) { el.hidden = true; setTimeout(() => { const i = $("ck-m"); if (i) { i.value = m; const g = $("ck-go"); if (g) g.click(); } }, 150); } };
@@ -502,8 +509,8 @@ function openCoin(mint) {
     ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}${sup ? `<p class="fine">${esc(t("cmSupFees", "No creator fees flow to the city from this coin — it's on our reels and pinned in Explore because the city supports it."))}</p>` : feeBox(c, CFG)}
     <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cmTower", "Tower"))}</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">${esc(t("cmShare", "Share"))}</a><button type="button" data-copy>${esc(t("cmCopy", "Copy CA"))}</button><button type="button" data-mug>${ic("camera")} ${esc(t("cmMug", "Mugshot"))}</button></div>
     ${[c.twitter, c.telegram, c.website].filter(Boolean).length ? `<p style="margin:12px 0 0;font-size:13px">${[["X", c.twitter], ["Telegram", c.telegram], ["Website", c.website]].filter((x) => x[1]).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n} ↗</a>`).join(" · ")}</p>` : ""}</div></div></div>`;
-  el.hidden = false;
-  const close = () => { el.hidden = true; document.removeEventListener("keydown", k); }, k = (e) => { if (e.key === "Escape") close(); };
+  el.dataset.coin = c.mint; el.hidden = false;
+  const close = () => { el.hidden = true; el.dataset.coin = ""; document.removeEventListener("keydown", k); }, k = (e) => { if (e.key === "Escape") close(); };
   document.addEventListener("keydown", k);
   el.onclick = async (e) => { if (e.target === el || e.target.closest(".wm-x")) return close(); const cr = e.target.closest("[data-creator]"); if (cr) return openCreator(cr.dataset.creator, coins, openCoin); if (e.target.closest("[data-copy]")) { copyCA(e.target.closest("[data-copy]"), c.mint); }
     const mg = e.target.closest("[data-mug]"); if (mg) { mg.disabled = true; try { const r = await (await import("/mugshot.js")).shareMugshot(c, CFG); if (r === "downloaded") note("Mugshot saved."); } catch { note("Couldn't make the mugshot."); } mg.disabled = false; } };

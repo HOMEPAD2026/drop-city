@@ -65,3 +65,23 @@ html:has(.navlinks.open) .bbar { transform: translateY(140%) !important; opacity
 .copied .gi { color: #7dffb4; }
 .mc-ca.copied code { animation: capulse 0.6s ease-out; }
 @keyframes capulse { from { color: var(--v-pink2, #ff7ab8); } to { color: inherit; } }
+
+/* ---- windows (win.js): the page behind stands still, a flat scrim instead of a live blur, bottom sheets on phones ---- */
+html.win-open body { overflow: hidden !important; }
+.cm-card, .wm-card, .sheet > div, .sl-card { overscroll-behavior: contain; }
+.cmodal, .wmodal, .sheet, .cd-zoom, .cd-rev { -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+.cmodal, .wmodal, .sheet { background: rgba(8, 5, 18, 0.82) !important; }
+.cmodal > .cm-card { animation: winin 0.24s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+@keyframes winin { from { opacity: 0; transform: translateY(14px) scale(0.97); } }
+@media (max-width: 760px) {
+  .cmodal, .wmodal { display: flex !important; align-items: flex-end !important; justify-content: center !important; padding: 0 !important; }
+  .cmodal > .cm-card, .wmodal > .wm-card { width: 100% !important; max-width: none !important; margin: 0 !important; border-radius: 24px 24px 0 0 !important;
+    max-height: 92dvh !important; overflow-y: auto; padding-bottom: env(safe-area-inset-bottom, 0px); border-bottom: 0 !important; animation: sheetup 0.28s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+  .wmodal > .wm-card { padding-bottom: calc(22px + env(safe-area-inset-bottom, 0px)) !important; }
+  .cm-card::before, .wm-card::before { content: ""; position: absolute; top: 8px; left: 50%; width: 40px; height: 4px; margin-left: -20px; border-radius: 2px; background: rgba(255, 255, 255, 0.32); z-index: 4; }
+}
+@keyframes sheetup { from { transform: translateY(100%); } }
+@media (prefers-reduced-motion: reduce) { .cmodal > .cm-card, .wmodal > .wm-card { animation: none !important; } }
+
+/* ---- the home rows: the slide-in plays on the first fill only ---- */
+.hot-list.seen .hc { animation: none !important; }
