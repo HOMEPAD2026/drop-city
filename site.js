@@ -1,6 +1,6 @@
 // site.js — the website: the hour, the numbers, EXPLORE (every drop as a card), the desk (this hour, ranks, the launch,
 // FEES, wallets, the CA check, the creators' space, about) and the deep links into it. The drop itself is launch.js.
-import { $, esc, short, usd, hh, sleep, note, DEMO, shareOr, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, rpc1, dropState, poke, getJ } from "/common.js";
+import { $, esc, short, usd, hh, sleep, note, DEMO, shareOr, buzz, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, rpc1, dropState, poke, getJ } from "/common.js";
 import { walletButton } from "/wallet.js";
 import { extrasHtml, wireExtras, isWatched, checkAlerts, chartInto, holdersHtml } from "/coin-x.js";
 import { keepRef } from "/cb-ui.js";
@@ -78,7 +78,7 @@ function staleChip() {
   el.querySelector("button").onclick = () => refresh().catch(() => {});
 }
 function paintAll() {
-  dropsUi(); staleChip();
+  dropsUi(); staleChip(); filtLabel();
   paintHour(); paintMain(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker();
   paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot(); paintCity({ coins, trades: lastTrades(30), CFG, openCoin }).catch(() => {}); paintCorner({ coins, CFG, openCoin, openSlot }).catch(() => {}); paintBoards({ CFG, openSlot }).catch(() => {}); moments({ coins, trades: lastTrades(60), isMade }).catch(() => {}); paintCotd({ coins, CFG, openCoin }).then(() => { if ((window.__dcCotd || "") !== (UI.cotd || "")) { UI.cotd = window.__dcCotd; paintGrid(); } }).catch(() => {}); paintBand(coins).catch(() => {}); try { shineMain(coins.find((x) => x.mint === CFG.main)); } catch {}
   const sl = $("suffixline"); if (CFG.suffix) { sl.hidden = false; sl.innerHTML = `${esc(t("caEnds", "Every coin's CA ends in"))} <b>${esc(CFG.suffix)}</b>`; const kk = document.querySelector(".hero .kicker"); if (kk) kk.dataset.sfx = "CA …" + CFG.suffix; }
@@ -200,7 +200,15 @@ $("q").oninput = (e) => { S.q = e.target.value.trim().toLowerCase(); paintGrid()
 function setSort(v) { S.sort = v; $("sort").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x.dataset.s === v)); $("sortsel").value = v; paintGrid(); }
 $("sort").onclick = (e) => { const b = e.target.closest("[data-s]"); if (b) setSort(b.dataset.s); };
 $("sortsel").onchange = (e) => setSort(e.target.value);
-$("filt").onclick = (e) => { const b = e.target.closest("[data-f]"); if (!b) return; S.filt = b.dataset.f; $("filt").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); paintGrid(); };
+$("filt").onclick = (e) => { const b = e.target.closest("[data-f]"); if (!b) return; S.filt = b.dataset.f; $("filt").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); paintGrid(); filtLabel(); filtSheet(false); };
+// phones: the filter pills as one "Filter: All ▾" button that opens them as a sheet
+const fb = document.createElement("button"); fb.type = "button"; fb.className = "filt-b"; $("filt").before(fb);
+function filtLabel() { const on = $("filt").querySelector("button.on"); fb.innerHTML = `<span>${esc(t("fltL", "Filter"))}: <b>${esc(on ? on.textContent.trim() : t("fAll", "All"))}</b></span><i></i>`; }
+// the sheet lives in <body> while it's open: a section that rises in (a transform) would otherwise hold the fixed sheet
+const filtHome = document.createComment("filt"); $("filt").before(filtHome);
+function filtSheet(open) { const f = $("filt"); html.classList.toggle("filt-open", open); if (open) document.body.appendChild(f); else if (filtHome.parentNode && f.parentNode === document.body) filtHome.after(f); }
+fb.onclick = () => filtSheet(!html.classList.contains("filt-open")); filtLabel();
+document.addEventListener("click", (e) => { if (html.classList.contains("filt-open") && !e.target.closest("#filt, .filt-b")) filtSheet(false); });
 $("quiet").onchange = (e) => { S.quiet = e.target.checked; $("qnote").hidden = !S.quiet; paintGrid(); };
 // once opened, more coins come in as the end of the list comes into view (Explore grows in steps of 24)
 UI.step = 24;
@@ -499,7 +507,7 @@ navH(); addEventListener("resize", navH); if (document.fonts && document.fonts.r
 function pxFmt(p) { if (!p) return "–"; if (p >= 0.0001) return "$" + p.toPrecision(3); const z = Math.floor(-Math.log10(p)), sub = String(z).split("").map((d) => "₀₁₂₃₄₅₆₇₈₉"[d]).join(""); return "$0.0" + sub + String(Math.floor(p * 10 ** (z + 3))).slice(0, 3); }
 /// copy a CA: the button itself answers (a check + Copied), and where the clipboard is blocked the address shows to copy by hand
 async function copyCA(btn, text, swap = true) { let ok = false; try { await navigator.clipboard.writeText(text); ok = true; } catch { try { const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); ta.parentNode.removeChild(ta); } catch {} }
-  if (!ok) return note(text, 8000); note(t("copied", "Address copied."));
+  if (!ok) return note(text, 8000); note(t("copied", "Address copied.")); buzz(12);
   if (btn && !swap) { btn.classList.remove("copied"); void btn.offsetWidth; btn.classList.add("copied"); setTimeout(() => btn.classList.remove("copied"), 900); }
   else if (btn) { if (!btn.dataset.lbl) btn.dataset.lbl = btn.innerHTML; btn.classList.add("copied"); btn.innerHTML = ic("check") + " " + esc(t("copiedS", "Copied")); clearTimeout(btn._ct); btn._ct = setTimeout(() => { btn.innerHTML = btn.dataset.lbl; btn.classList.remove("copied"); }, 1400); } }
 /// "3h ago" in the reader's words
@@ -557,6 +565,7 @@ function openCoinNow(mint) {
   const fill = (d) => { const x = $("cm-x"), y = $("cm-trd"); if (!x || !y) return;
     if (!d || d.error) { x.innerHTML = `<p class="fine">${esc(c.kind === "partner" ? t("ctSup", "A supported coin isn't graded here — check it on Dexscreener.") : t("ctNone", "No safety read for this coin yet."))}</p>`; y.innerHTML = `<p class="fine">${esc(t("noTrades", "No trades yet — the first one shows up here."))}</p>`; return; }
     x.innerHTML = gradeBox(d) + holdersHtml(d, c);
+    const po = el.querySelector(".poster"); if (po && !po.querySelector(".pst")) po.insertAdjacentHTML("beforeend", `<div class="pst">${d.grade ? `<span><b class="g-${esc(d.grade)}">${esc(d.grade)}</b><small>${esc(t("pstGrade", "safety grade"))}</small></span>` : ""}${d.top10Pct != null ? `<span><b>${d.top10Pct.toFixed(1)}%</b><small>${esc(t("chTop", "Top 10 people"))}</small></span>` : ""}${d.creatorPct != null ? `<span><b>${d.creatorPct.toFixed(2)}%</b><small>${esc(t("chDev", "Creator holds"))}</small></span>` : ""}</div>`);
     y.innerHTML = d.trades && d.trades.length ? `<div class="cm-tr">${d.trades.slice(0, 20).map((r) => `<div class="tr ${r.side}"><span class="sd">${r.side.toUpperCase()}</span><span><b>${r.sol.toFixed(3)} SOL</b></span><small>${esc(short(r.who))}</small></div>`).join("")}</div>` : `<p class="fine">${esc(t("noTrades", "No trades yet — the first one shows up here."))}</p>`; };
   if (DEMO) fill({ grade: "B", score: 72, parts: [], partial: false, creatorPct: 3.2, top10Pct: 31.4, trades: [{ side: "buy", sol: 0.42, who: "8GvmGzRCiT3Vsc4poLjJGdo2mKxds7NA6BqapiBVv3Zp" }, { side: "sell", sol: 0.1, who: "FxPeUcKhAst5dTyELKk7aMHKLLP1BCxw6eynCKRQJfzx" }], holders: [{ owner: "CurveCurveCurveCurveCurveCurveCurveCurveAA", pct: 61.2, curve: true }, { owner: c.creator || "8GvmGzRCiT3Vsc4poLjJGdo2mKxds7NA6BqapiBVv3Zp", pct: 3.2 }, { owner: "FxPeUcKhAst5dTyELKk7aMHKLLP1BCxw6eynCKRQJfzx", pct: 6.1 }, { owner: "4SDLpVR21WHY44qAvCjjqrExcW3BCyMw8nL8bTgUvzqV", pct: 4.4 }, { owner: "7yajVrzpMV8MBmvWnVrniD14FVs73muNqSqGsvG9B9Jb", pct: 2.9 }] });
   else getJ("?coin=" + encodeURIComponent(c.mint)).then(fill).catch(() => fill(null));

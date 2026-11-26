@@ -51,6 +51,7 @@ export async function paintCards(box, { CFG }) {
     ${!W || !W.key ? `<p class="cd-note">${esc(t("cdConn", "Connect your wallet to see your cards."))}</p>` : ""}
     <div class="cd-admin" hidden></div>`;
   box.querySelector('[data-cd="open"]').onclick = () => openPack(V, () => paintCards(box, { CFG }));
+  stickyBuy(box);
   box.querySelectorAll("[data-card]").forEach((b) => (b.onclick = () => zoom(cardById(b.dataset.card), own[b.dataset.card] || 0)));
   if (V.wallet && W && W.key === V.wallet) adminDesk(box.querySelector(".cd-admin"), V, () => paintCards(box, { CFG }));
 }
@@ -106,6 +107,17 @@ async function openPack(V, done) {
     done && setTimeout(done, 1500);
   } catch (e) { if (mo) mo.close(); const s = String((e && e.message) || e); note(/reject|denied|cancel/i.test(s) ? t("cancelled", "Cancelled in your wallet.") : s.slice(0, 180), 6000); }
   if (btn) { btn.disabled = false; btn.textContent = label; }
+}
+/// phones: a slim "Open a pack · 0.1 SOL" bar above the dock while the page's own button is out of view
+function stickyBuy(box) {
+  const real = box.querySelector('[data-cd="open"]'); let bar = document.querySelector(".cd-sticky");
+  if (!real || real.disabled || !matchMedia("(max-width: 760px)").matches) { if (bar) bar.hidden = true; return; }
+  if (!bar) { bar = document.createElement("div"); bar.className = "cd-sticky"; document.body.appendChild(bar); }
+  bar.innerHTML = `<span><b>${esc(t("cdOpen", "Open a pack"))}</b><small>${esc(t("cdPackOf", "3 cards inside"))} · ${SEASON.packSol} SOL</small></span><button type="button" class="btn hot">${esc(t("cdOpen", "Open a pack"))}</button>`;
+  bar.querySelector("button").onclick = () => real.click();
+  if (stickyBuy.io) stickyBuy.io.disconnect();
+  stickyBuy.io = new IntersectionObserver(([e]) => { bar.hidden = e.isIntersecting || document.documentElement.dataset.page !== "nft"; }, { threshold: 0.1 }); stickyBuy.io.observe(real);
+  addEventListener("hashchange", () => { if (document.documentElement.dataset.page !== "nft") bar.hidden = true; });
 }
 /// while a pack mints (15–40 s on chain): a sealed pack that breathes, shakes as each card lands, and a dot a card
 function mintOverlay(n) {

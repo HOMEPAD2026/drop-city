@@ -1,6 +1,8 @@
 // common.js — what the website and the city share: the API, formatting, the wallet, the pump.fun kit, demo coins.
 import { tm } from "/msgs.js";
 export const API = "/api/pad";
+/// a short buzz on phones that have it (Android / Samsung) — a vote, a copy, a launch
+export const buzz = (p = 15) => { try { if (navigator.vibrate && !matchMedia("(prefers-reduced-motion: reduce)").matches) navigator.vibrate(p); } catch {} };
 export const $ = (id) => document.getElementById(id);
 export const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
 export const short = (a) => (a ? a.slice(0, 4) + "…" + a.slice(-4) : "");

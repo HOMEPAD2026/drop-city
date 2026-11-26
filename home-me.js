@@ -152,6 +152,7 @@ async function voteCotd(mint, day) {
     const issued = new Date().toISOString(), msg = `GTAFUN coin of the day\nWallet: ${S.key}\nDay (UTC): ${day}\nCoin: ${mint}\nIssued: ${issued}`;
     const sig = await S.signMessage(new TextEncoder().encode(msg));
     const r = await post({ action: "cotd-vote", wallet: S.key, mint, day, issued, sig: b58(sig) });
+    if (r.ok && navigator.vibrate) try { navigator.vibrate([12, 40, 20]); } catch {}
     note(r.ok ? t("ctDone", "Vote counted — see you at midnight UTC.") : (r.j && r.j.error) || "Couldn't count the vote.", 3500);
   } catch (x) { note(/reject|denied|cancel/i.test(String(x && x.message)) ? t("cbCancel", "Cancelled in your wallet.") : String((x && x.message) || x).slice(0, 120), 3500); }
 }

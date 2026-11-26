@@ -1,0 +1,12 @@
+/* city-vice.css — the game (/city) in the site's look (round L, the owner 2026-11-26): Pretendard for every word (the HUD's
+   Korean no longer falls back to boxes), VICE NIGHT's colours, the sunset on the main buttons, no letter-spacing. */
+:root {
+  --head: "Pretendard Variable", Pretendard, system-ui, sans-serif; --body: "Pretendard Variable", Pretendard, system-ui, sans-serif;
+  --bg: #0b0913; --ink: #fbf8ff; --dim: #b9b0cc; --hot: #ff3d8b; --hot2: #ff8ab8; --gold: #ff8ab8; --glass: rgba(18, 13, 30, 0.86);
+  --line: rgba(232, 214, 255, 0.15); --hair: rgba(232, 214, 255, 0.08);
+}
+html, body { letter-spacing: 0; }
+* { letter-spacing: 0 !important; }
+.brand b { font-weight: 800 !important; font-style: normal !important; transform: none !important; }
+.btn.hot { background: linear-gradient(100deg, #ee2f7d 0%, #f0446c 52%, #ef6550 100%) !important; color: #fff !important; border-radius: 999px !important; }
+.btn { border-radius: 999px !important; }

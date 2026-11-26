@@ -245,3 +245,27 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   skyline over the home rows (#sk2: a building per coin, as tall as its curve, a crown when made; a trade lights its
   windows), a sealed pack that breathes while a pack mints, a little tower in the phone launch form (a floor per part),
   the stat tick only on a real change, reduced-motion fixes.
+- **Round L (the owner, 2026-11-26: "투표 제한 없이. 다 진행하자"):** L1 — msgs.js tm(): the toasts and the launch form's
+  errors in the reader's language (exact English lines + a few patterns; tests/msgs.test.mjs checks the scripts); windows
+  trap and return keyboard focus (win.js); pull to refresh spins until the refresh ends (dc:refresh detail.p); sitemap.xml
+  (?sitemap=1) + robots.txt; **tools/phone-audit.mjs** — run it before a deploy that touches CSS or windows (fails on a
+  hidden overlay over the page, a page wider than the screen, a toast under a window, Back not closing a window). A CSS
+  purge was measured and dropped: only 2 % of site.min.css is unused; the rest is overridden, not dead. L2 — CLEAN LAUNCH:
+  lib/_clean.mjs reads each launched coin's first block from its bonding curve's oldest transactions (in the ?lp=tick
+  housekeeping, a few coins a run; clean.json) → c.clean true / false; a CLEAN badge, a line in the coin window (or the
+  snipers warning), Explore's Clean filter, the launch form says launching here is clean by itself, the bot's coin posts
+  carry it. L3 — the creator's coin page (lib/_creator.mjs, POST coin-page, creator.json merged by list()): links, a
+  pinned 140-character note and a big link card (a poster drawn in creator-ui.js from the logo; the coin page then serves
+  summary_large_image) with ONE signed message; "Edit my coin page" in the coin window for the creator / crew lead and
+  "Set up my coin page" after a launch; the main coin's poster says its fees go 100 % to the dev. moments.js: my coin
+  graduates / gets a buy → a toast (confetti for a graduation), my cashback rises → +N flies up, a new coin's building
+  rises in the skyline. L4 — alerts at 10 / 20 / 50 % (site: watched()[mint].step; bot: tg/watchstep.json, /watch $X 10,
+  ?start=w_<mint>_10); offline: the last good list (dc.lastList) with a retry chip; shareOr() — the phone's own share
+  sheet; the week's invite board (cb/invweek/<monday>.json, ?invites=1) as the third leaderboard (a board only); badge
+  progress + "Next badge" + My GTAFUN card (1200×630) on my profile; the bot's "day in the city" at DIGEST_HOUR 18 UTC;
+  the coin of the day under a gold beam in the game. L5/L6 — Explore's filters as one button + a sheet on phones (the
+  sheet is moved into <body> while open: a rising section's transform would hold a fixed child); the coin window's
+  left column shows grade / top 10 / creator % on computers; skeleton rows in Live / Ranks / Wallets; the NFT page's
+  sticky "Open a pack" bar on phones; "Right now" and the leaderboards share one place on phones (two pills); vote bars
+  fill, the skyline has stars, a sweeping searchlight, growing buildings and a dropping crown; short buzzes on a vote, a
+  copy, a launch; the game (/city) uses Pretendard and Vice Night (city-vice.css).

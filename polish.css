@@ -270,3 +270,59 @@ html[data-tab="now"] #t-now, html[data-tab="ranks"] #t-ranks, html[data-tab="lau
 .pf-pr { position: relative; display: block; grid-column: 1 / -1; height: 16px; margin-top: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); overflow: hidden; font-style: normal; }
 .pf-pr::before { content: ""; position: absolute; inset: 0 auto 0 0; width: var(--p, 0%); background: linear-gradient(90deg, #8f6bff, #ff3d8b); }
 .pf-pr em { position: relative; display: block; text-align: center; font-size: 10.5px; line-height: 16px; font-weight: 700; font-style: normal; color: #fff; }
+
+/* ---- L5: layout ---- */
+/* Explore's filters: one button + a sheet on phones */
+.filt-b { display: none; }
+@media (max-width: 760px) {
+  .filt-b { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; margin: 8px 0 4px; padding: 11px 14px; border-radius: 14px; border: 1px solid var(--v-line2); background: rgba(255, 255, 255, 0.04); color: var(--v-dim); font: inherit; font-size: 14px; cursor: pointer; }
+  .filt-b b { color: #fff; } .filt-b i { width: 8px; height: 8px; border-right: 2px solid var(--v-dim); border-bottom: 2px solid var(--v-dim); transform: rotate(45deg) translateY(-3px); }
+  #filt { display: none !important; }
+  html.filt-open #filt { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 8px !important; position: fixed !important; left: 0 !important; right: 0 !important; bottom: 0 !important; top: auto !important; width: auto !important; margin: 0 !important; z-index: 10050 !important; box-sizing: border-box; padding: 18px 16px calc(22px + env(safe-area-inset-bottom, 0px)) !important; background: #110d1c !important; border-top: 1px solid var(--v-line2) !important; border-radius: 24px 24px 0 0 !important; box-shadow: 0 -20px 60px rgba(0, 0, 0, 0.6) !important; animation: sheetup 0.26s cubic-bezier(0.2, 0.9, 0.3, 1) both; overflow: visible !important; mask: none !important; -webkit-mask: none !important; }
+  html.filt-open #filt > * { min-width: 0 !important; margin: 0 !important; }
+  html.filt-open #filt button, html.filt-open #filt .qchip { width: 100%; justify-content: center; min-height: 44px; }
+  html.filt-open::after { content: ""; position: fixed; inset: 0; z-index: 10040; background: rgba(8, 5, 18, 0.6); }
+}
+/* the coin window's left column on computers: grade, top 10, creator under the picture */
+.pst { display: none; }
+@media (min-width: 761px) { .pst { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; width: 100%; margin: 18px 0 0; }
+  .pst span { display: grid; gap: 2px; padding: 10px; border-radius: 14px; background: rgba(255, 255, 255, 0.05); border: 1px solid var(--v-line2); text-align: center; }
+  .pst b { font-size: 20px; font-weight: 800; color: #fff; } .pst small { font-size: 11.5px; color: var(--v-dim); }
+  .pst .g-A, .pst .g-B { color: #7dffb4; } .pst .g-C { color: #ffd27a; } .pst .g-D, .pst .g-F { color: #ff8a8a; }
+  .cm-card .poster { align-content: center; gap: 0; } }
+/* skeleton rows where a box used to open empty */
+.sk.sk-row { display: grid; grid-template-columns: 36px 1fr 60px; gap: 10px; align-items: center; height: 44px; margin-bottom: 8px; padding: 0 10px; border-radius: 14px; background: rgba(255, 255, 255, 0.03); }
+.sk.sk-row i { height: 12px; border-radius: 6px; background: rgba(255, 255, 255, 0.07); } .sk.sk-row i:first-child { height: 28px; border-radius: 50%; }
+/* NFT page on a phone: the buy bar */
+.cd-sticky { position: fixed; left: 12px; right: 12px; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 40; display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 10px 10px 16px; border-radius: 18px; background: rgba(18, 13, 30, 0.96); border: 1px solid var(--v-line2); box-shadow: 0 14px 40px rgba(0, 0, 0, 0.55); animation: sheetup 0.3s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+.cd-sticky[hidden], html:not([data-page="nft"]) .cd-sticky { display: none !important; }
+.cd-sticky span { display: grid; } .cd-sticky small { color: var(--v-dim); font-size: 12px; }
+.cd-sticky .btn { padding: 10px 18px !important; min-height: 0 !important; }
+/* My corner: an odd last tile takes the whole row on phones */
+@media (max-width: 760px) { .cn-g > .cn-t:last-child:nth-child(odd) { grid-column: 1 / -1; } }
+/* home on phones: "Right now" and the leaderboards share one place */
+.hm-tabs { display: none; }
+@media (max-width: 760px) {
+  html[data-page="home"] .hm-tabs { display: flex; gap: 6px; width: calc(100% - 32px); margin: 28px auto 0; padding: 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.04); border: 1px solid var(--v-line2); }
+  .hm-tabs button { flex: 1; border: 0; border-radius: 999px; padding: 10px; background: transparent; color: var(--v-dim); font: inherit; font-weight: 700; cursor: pointer; transition: background 0.2s, color 0.2s; }
+  .hm-tabs button.on { background: var(--v-sun-soft); color: #fff; box-shadow: inset 0 0 0 1px rgba(255, 140, 190, 0.45); }
+  html[data-hometab="lb"] #cityrn, html[data-hometab="live"] #lbt { display: none !important; }
+}
+
+/* ---- L6: motion ---- */
+.ct-r::before { animation: ctfill 0.9s cubic-bezier(0.2, 0.9, 0.3, 1) both; }
+@keyframes ctfill { from { width: 0; } }
+.ct-r.mine { animation: ctmine 0.8s ease-out; } @keyframes ctmine { 30% { box-shadow: 0 0 0 3px rgba(255, 120, 170, 0.45); } }
+/* the skyline: stars, a searchlight, buildings that grow, a crown that drops */
+.sk2::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.7;
+  background-image: radial-gradient(1px 1px at 8% 18%, #fff, transparent), radial-gradient(1px 1px at 22% 8%, #ffd9e8, transparent), radial-gradient(1.5px 1.5px at 37% 22%, #fff, transparent), radial-gradient(1px 1px at 55% 10%, #fff, transparent), radial-gradient(1px 1px at 68% 26%, #ffd9e8, transparent), radial-gradient(1.5px 1.5px at 81% 12%, #fff, transparent), radial-gradient(1px 1px at 93% 20%, #fff, transparent);
+  animation: twinkle 4s ease-in-out infinite alternate; }
+.sk2::after { content: ""; position: absolute; left: 50%; bottom: 0; width: 60px; height: 220px; margin-left: -30px; transform-origin: 50% 100%; pointer-events: none;
+  background: linear-gradient(to top, rgba(255, 150, 200, 0.22), transparent 85%); clip-path: polygon(45% 100%, 55% 100%, 100% 0, 0 0); animation: sweep 9s ease-in-out infinite alternate; }
+@keyframes twinkle { to { opacity: 0.35; } }
+@keyframes sweep { from { transform: rotate(-38deg); } to { transform: rotate(38deg); } }
+.sk2-b { transition: height 0.9s cubic-bezier(0.2, 0.9, 0.3, 1), filter 0.2s, transform 0.2s; z-index: 1; }
+.sk2-c { animation: crowndrop 0.9s cubic-bezier(0.3, 1.4, 0.5, 1) 0.8s both; }
+@keyframes crowndrop { from { transform: translate(-50%, -40px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .sk2::before, .sk2::after, .sk2-c, .ct-r::before, .ct-r.mine, html.filt-open #filt, .cd-sticky { animation: none !important; } .sk2::after { display: none; } }
+@media (min-width: 761px) { .pst b { font-size: 17px !important; white-space: nowrap; } }

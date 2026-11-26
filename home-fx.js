@@ -59,6 +59,13 @@ function once() {
   };
   if (innerWidth >= 700) requestAnimationFrame(step);
 
+  // phones: "Right now in the city" and the leaderboards share one place, two pills pick which
+  if (innerWidth < 761) { const rn = $("cityrn"); if (rn && !document.querySelector(".hm-tabs")) {
+    const bar = document.createElement("div"); bar.className = "hm-tabs"; bar.setAttribute("role", "tablist");
+    bar.innerHTML = `<button type="button" data-ht="live" class="on">${esc(t("hmLive", "Right now"))}</button><button type="button" data-ht="lb">${esc(t("hmLb", "Leaderboards"))}</button>`;
+    rn.before(bar); html.dataset.hometab = "live";
+    bar.onclick = (e) => { const b = e.target.closest("[data-ht]"); if (!b) return; html.dataset.hometab = b.dataset.ht; bar.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); };
+  } }
   // sections rise into view (the ones already on screen don't move)
   const secs = [...document.querySelectorAll("main > section.sec")];
   const io = new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); } }, { rootMargin: "0px 0px -8% 0px" });

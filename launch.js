@@ -215,7 +215,7 @@ export function openDrop(o = {}) {
         if (k === "page") { import("/creator-ui.js").then((m) => m.openEditor({ ...coinNow, creator: S.key, twitter: F.twitter, telegram: F.telegram, website: F.website }, CFG)).catch(() => {}); return; }
         if (k === "mug") { b.disabled = true; try { const r = await (await import("/mugshot.js")).shareMugshot(coinNow, CFG); if (r === "downloaded") note(t("kitMugSaved", "Mugshot saved.")); } catch { note("Couldn't make the mugshot."); } b.disabled = false; } };
       sh.querySelector(".sub").innerHTML = `<b style="color:var(--lime)">$${esc(F.symbol)} is live.</b> Its tower is going up in the city.`; burst(sh.firstChild);
-      note(`$${F.symbol} launched — welcome to the city.`, 5000); window.__dcBorn = g.pub; o.onDone && o.onDone(); q("tw").classList.add("done"); try { sessionStorage.removeItem(DKEY); } catch {} DRAFT.logo = "";
+      note(`$${F.symbol} launched — welcome to the city.`, 5000); window.__dcBorn = g.pub; if (navigator.vibrate) try { navigator.vibrate([20, 50, 30, 50, 60]); } catch {} o.onDone && o.onDone(); q("tw").classList.add("done"); try { sessionStorage.removeItem(DKEY); } catch {} DRAFT.logo = "";
     } catch (x) {
       step(cur, "bad"); err(why(x)); logsBox(q("err"), x);
       busy = false; q("go").disabled = false;
