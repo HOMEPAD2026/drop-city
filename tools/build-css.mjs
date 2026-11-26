@@ -9,7 +9,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-export const ORDER = ["pad.css", "site.css", "game.css", "premium.css", "cards.css", "street.css", "clean.css", "motion.css"];
+export const ORDER = ["pad.css", "site.css", "game.css", "premium.css", "cards.css", "street.css", "clean.css", "motion.css", "vice.css"];
 
 /// squeeze CSS without changing what it means: comments out, runs of whitespace to one space, none around { } ; and ,
 export function minify(css) {

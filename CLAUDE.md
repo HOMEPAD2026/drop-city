@@ -200,3 +200,12 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   touch / wheel), the main coin card shines when its price moves, sections below the fold rise in, a pink glow follows
   the pointer over cards, lanes lift on hover, the hero's sky lags the scroll (transform only), the headline rises once
   only right after a played intro (never on a plain load — the no-flicker rule). Reduced motion turns all of it off.
+- **VICE NIGHT — colours, tone, brightness (the owner, 2026-11-26: "디자인 색상, 톤, 밝기 … 멋지게 수정해봐"):** this
+  replaces the grey grade of "Black · white · pink" — vice.css loads LAST in site.min.css (tools/build-css.mjs ORDER).
+  The hero's sunset shows its own colours (violet → magenta → coral → gold; no grayscale filter, a light violet wash at the
+  top); pink #ff3d8b stays the lead colour; the sunset gradient (--v-sun: pink → coral → peach) marks the big moments only
+  — the headline's second line, the main buttons, the dock's Launch key, progress bars, the 24 h line; the ink is
+  violet-tinted (#0b0913) with faint violet / pink glows painted on <main>; greys are warm lavender (--v-dim #b9b0cc,
+  --v-faint #857c9b); every card shares one surface (--v-surf + a top light + shadow); the main coin card and THE GAME
+  band have a gradient rim. The older sheets' variables (--cl-*, --st-pink, --hot, --pm-*) point at these, so other pages
+  follow. No backdrop blur over the hero's moving sky.

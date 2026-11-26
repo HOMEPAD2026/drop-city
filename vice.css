@@ -1,0 +1,107 @@
+/* vice.css — VICE NIGHT (the owner, 2026-11-26: "디자인 색상, 톤, 밝기 … 멋지게"): loads LAST over every other sheet.
+   The sunset shows its own colours again (violet → magenta → coral → gold; the grey grade is gone), pink stays the lead
+   colour, a sunset gradient (pink → coral → peach) marks the few big moments (the headline's second line, the main
+   buttons, bars), the black is a violet-tinted ink, the greys are warm lavender, and every card has depth: a soft light
+   along its top edge, a gradient rim and a shadow. No live blur over the moving sky (it costs frames). */
+:root {
+  --v-bg: #0b0913; --v-bg2: #110d1c; --v-card: #15111f; --v-card2: #1b1628; --v-card3: #221b33;
+  --v-line: rgba(232, 214, 255, 0.08); --v-line2: rgba(232, 214, 255, 0.15);
+  --v-ink: #fbf8ff; --v-dim: #b9b0cc; --v-faint: #857c9b;
+  --v-pink: #ff3d8b; --v-pink2: #ff8ab8; --v-coral: #ff6b6b; --v-peach: #ffae7a; --v-violet: #8f6bff; --v-violet2: #b49cff;
+  --v-sun: linear-gradient(100deg, #ff3d8b 0%, #ff5e74 48%, #ff9a62 100%);
+  --v-sun-soft: linear-gradient(100deg, rgba(255, 61, 139, 0.22), rgba(255, 154, 98, 0.14));
+  --v-rim: linear-gradient(160deg, rgba(255, 140, 190, 0.38), rgba(143, 107, 255, 0.16) 40%, rgba(255, 255, 255, 0.04) 70%);
+  --v-surf: linear-gradient(180deg, rgba(255, 255, 255, 0.045), rgba(255, 255, 255, 0.012)), var(--v-card);
+  --v-lift: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 14px 34px rgba(4, 2, 12, 0.45);
+  /* the older sheets' names, pointed at the new colours */
+  --cl-bg: var(--v-bg); --cl-card: var(--v-card); --cl-card2: var(--v-card2); --cl-line: var(--v-line); --cl-line2: var(--v-line2);
+  --cl-ink: var(--v-ink); --cl-dim: var(--v-dim); --cl-faint: var(--v-faint); --cl-pink: var(--v-pink); --cl-pink2: var(--v-pink2);
+  --st-pink: var(--v-pink); --st-pink2: var(--v-pink2); --hot: var(--v-pink); --pm-acc: var(--v-pink); --pm-acc2: var(--v-pink2);
+  --pm-grad: var(--v-sun); --bg: var(--v-bg);
+}
+html, body { background: var(--v-bg) !important; }
+body { color: var(--v-ink); }
+/* a little colour in the dark: violet and pink glows that scroll with the page (painted once, never animated) */
+main { position: relative; background: radial-gradient(900px 600px at 8% 6%, rgba(143, 107, 255, 0.10), transparent 70%), radial-gradient(800px 600px at 96% 28%, rgba(255, 61, 139, 0.08), transparent 70%), radial-gradient(900px 700px at 12% 62%, rgba(255, 110, 100, 0.06), transparent 70%), radial-gradient(900px 700px at 90% 92%, rgba(143, 107, 255, 0.08), transparent 70%); }
+::selection { background: rgba(255, 61, 139, 0.45); color: #fff; }
+
+/* ---- the hero: the sunset in its own colours ---- */
+.coast, .hero-bg { filter: saturate(1.08) brightness(1.04) !important; }
+.hero::before { background: linear-gradient(180deg, rgba(40, 14, 90, 0.38), rgba(255, 61, 139, 0.06) 55%, transparent) !important; mix-blend-mode: normal !important; }
+.hero-scrim { background: linear-gradient(90deg, rgba(11, 9, 19, 0.82) 0%, rgba(11, 9, 19, 0.5) 38%, rgba(11, 9, 19, 0.05) 70%), linear-gradient(0deg, var(--v-bg) 0, rgba(11, 9, 19, 0) 26%) !important; }
+@media (max-width: 760px) { .hero-scrim { background: linear-gradient(180deg, rgba(11, 9, 19, 0.15) 0, rgba(11, 9, 19, 0.55) 200px, var(--v-bg) 340px) !important; } }
+.hero h1 { color: #fff !important; text-shadow: 0 4px 40px rgba(20, 6, 40, 0.55) !important; }
+.hero h1 span, .hero h1 .flick { background: linear-gradient(95deg, #ff4f97 0%, #ff6a78 45%, #ffb07a 100%) !important; -webkit-background-clip: text !important; background-clip: text !important; -webkit-text-fill-color: transparent !important; color: transparent !important; }
+.kicker, .sec-h h2::before, .lane .ln-k, .mainc .mc-k, .tz-t small { color: var(--v-pink2) !important; }
+.lead, .sec-h p { color: var(--v-dim) !important; }
+.lane, .count { background: linear-gradient(180deg, rgba(30, 22, 48, 0.82), rgba(18, 13, 30, 0.86)) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; border: 1px solid var(--v-line2) !important; box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.07), 0 12px 30px rgba(6, 2, 16, 0.35) !important; }
+.lane p { color: var(--v-dim) !important; }
+.mainc { backdrop-filter: none !important; -webkit-backdrop-filter: none !important; border: 1px solid transparent !important; background: linear-gradient(180deg, rgba(34, 24, 54, 0.94), rgba(17, 12, 28, 0.96)) padding-box, linear-gradient(160deg, rgba(255, 120, 180, 0.7), rgba(143, 107, 255, 0.35) 45%, rgba(255, 174, 122, 0.4)) border-box !important; box-shadow: 0 24px 60px rgba(8, 2, 20, 0.55), 0 0 80px rgba(255, 61, 139, 0.12) !important; }
+.mc-n > div { background: rgba(255, 255, 255, 0.04) !important; border: 1px solid var(--v-line) !important; }
+.mc-ca { background: rgba(10, 7, 18, 0.6) !important; border-color: rgba(255, 120, 180, 0.3) !important; }
+.stats b { color: #fff !important; } .stats small { color: var(--v-faint) !important; }
+.cbchip, .hero .cb-chip { background: rgba(255, 61, 139, 0.12) !important; border-color: rgba(255, 120, 180, 0.35) !important; }
+
+/* ---- buttons: the main one is the sunset, the rest are glass ---- */
+.btn.hot, .cc .acts a.pri { background: var(--v-sun) !important; color: #fff !important; border: 0 !important; box-shadow: 0 8px 24px rgba(255, 61, 139, 0.32), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important; text-shadow: 0 1px 1px rgba(120, 10, 50, 0.25); }
+.btn.hot:hover, .cc .acts a.pri:hover { filter: brightness(1.08); box-shadow: 0 10px 30px rgba(255, 61, 139, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.3) !important; }
+.btn.ghost, .btn.cy { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(232, 214, 255, 0.2) !important; color: #fff !important; }
+.btn.ghost:hover, .btn.cy:hover { background: rgba(255, 255, 255, 0.09) !important; border-color: rgba(255, 140, 190, 0.55) !important; }
+.bbar .bb-plus { background: var(--v-sun) !important; color: #fff !important; box-shadow: 0 6px 18px rgba(255, 61, 139, 0.45) !important; }
+
+/* ---- the bars across the top ---- */
+.nav { background: rgba(11, 9, 19, 0.86) !important; box-shadow: 0 1px 0 var(--v-line) !important; }
+.navlinks a { color: var(--v-dim) !important; } .navlinks a:hover, .navlinks a.on { color: #fff !important; }
+.ticker { background: rgba(14, 11, 24, 0.96) !important; box-shadow: inset 0 -1px 0 var(--v-line) !important; }
+.notice { background: linear-gradient(90deg, rgba(255, 61, 139, 0.2), rgba(143, 107, 255, 0.12) 60%, rgba(143, 107, 255, 0.04)) !important; border-bottom-color: rgba(255, 120, 180, 0.28) !important; }
+.srch-b, .gm-slot, .nav-r .btn#wallet { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid rgba(232, 214, 255, 0.16) !important; }
+
+/* ---- cards everywhere: the same surface with depth ---- */
+.hc, .cf, .ts, .cn-t, .lb-c, .tz, .qf details, .cc, .faq details, .srch-in {
+  background: var(--v-surf) !important; border: 1px solid var(--v-line) !important; box-shadow: var(--v-lift) !important;
+}
+.hc:hover, .cf[data-m]:hover, a.ts:hover, a.cn-t:hover, button.cn-t:hover, .tz:hover, .cc:hover, .lb-r:hover { border-color: rgba(255, 120, 180, 0.45) !important; }
+.lb-r { background: rgba(255, 255, 255, 0.035) !important; } .lb-r:hover { background: rgba(255, 255, 255, 0.06) !important; }
+.cn-t { background: linear-gradient(160deg, rgba(255, 61, 139, 0.09), transparent 55%), var(--v-surf) !important; }
+.cn-chip { background: rgba(255, 255, 255, 0.06) !important; border-color: var(--v-line2) !important; }
+.tz-nft { background: radial-gradient(120% 140% at 0% 50%, rgba(143, 107, 255, 0.22), transparent 55%), var(--v-surf) !important; }
+.tz-lp { background: radial-gradient(120% 140% at 0% 50%, rgba(255, 110, 110, 0.22), transparent 55%), var(--v-surf) !important; }
+.tz-drop i { background: var(--v-sun) !important; }
+.cf.big { background: linear-gradient(90deg, rgba(255, 61, 139, 0.16), transparent 60%), var(--v-surf) !important; border-color: rgba(255, 120, 180, 0.4) !important; }
+.cf-ic { background: var(--v-faint) !important; } .cf.k-buy .cf-ic { background: var(--v-sun) !important; } .cf.k-new .cf-ic { background: linear-gradient(180deg, #fff, var(--v-violet2)) !important; } .cf.k-cb .cf-ic { background: linear-gradient(180deg, var(--v-peach), var(--v-pink)) !important; }
+.ts b, .cn-t b { background: linear-gradient(180deg, #fff 30%, #f1dcff); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+.ts small, .cn-t small, .cn-t > span, .cf small, .tz-t span, .qf p, .sf-brand p, .lb-n { color: var(--v-dim) !important; }
+.cc .poster { background: radial-gradient(90% 80% at 50% 100%, rgba(255, 61, 139, 0.18), transparent 60%), radial-gradient(70% 60% at 50% 0%, rgba(143, 107, 255, 0.16), transparent 70%), linear-gradient(180deg, #1a1426, #0e0a17) !important; }
+.cc.sup { border-color: rgba(255, 120, 180, 0.45) !important; }
+.cc .bar, .mc-bar, .bar { background: rgba(255, 255, 255, 0.07) !important; }
+.cc .bar i, .mc-bar i, .lp-x, .bar i { background: var(--v-sun) !important; }
+
+/* ---- pictures of coins: a soft ring ---- */
+.hc img, .hc .ini, .cf img, .srch-i img, .mainc .mc-h img { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.08), 0 6px 16px rgba(0, 0, 0, 0.4); }
+.ini, .cf .ini, .hc .ini, .srch-i .ini, .cn-chip .ini { background: radial-gradient(70% 70% at 30% 25%, #ff7aa8, #c21a64 70%, #6d1a8f) !important; }
+
+/* ---- the 24 h line in the sunset ---- */
+.mc-sp .sp-l { stroke: url(#mcsl); }
+.sp-c.up b { color: var(--v-peach) !important; }
+
+/* ---- THE GAME band ---- */
+.cband-in { border: 1px solid transparent !important; background: linear-gradient(var(--v-bg2), var(--v-bg2)) padding-box, linear-gradient(120deg, rgba(255, 61, 139, 0.6), rgba(143, 107, 255, 0.35), rgba(255, 174, 122, 0.45)) border-box !important; box-shadow: 0 30px 80px rgba(6, 2, 16, 0.5) !important; }
+.cband-in::before { background: linear-gradient(90deg, rgba(11, 9, 19, 0.92) 25%, rgba(11, 9, 19, 0.45) 60%, rgba(11, 9, 19, 0.15)) !important; }
+.cband-bg { filter: saturate(1.15) !important; }
+.cb-now { background: rgba(255, 61, 139, 0.16) !important; border-color: rgba(255, 140, 190, 0.45) !important; }
+
+/* ---- section heads ---- */
+.sec-h h2, .hot-h h3, .cn-h h3, .city-h h3, .cityr h3 { color: #fff !important; }
+.hot-h a, .cn-prof, .lb-h a, .lb-play, .qf-more, .cn-go, .srch-ca, .cityr a { color: var(--v-pink2) !important; }
+.qf summary::after { color: var(--v-pink2) !important; }
+
+/* ---- footer + dock ---- */
+.sitefoot { background: linear-gradient(180deg, rgba(20, 14, 34, 0.9), var(--v-bg)) !important; box-shadow: inset 0 1px 0 rgba(255, 140, 190, 0.16) !important; }
+.sf-col a { color: #ece6f7 !important; } .sf-col a:hover { color: var(--v-pink2) !important; } .sf-dis { color: var(--v-faint) !important; }
+.sf-ca, .sf-soc a { background: rgba(255, 255, 255, 0.05) !important; border-color: var(--v-line2) !important; }
+.bbar { background: rgba(18, 13, 30, 0.9) !important; border: 1px solid var(--v-line2) !important; box-shadow: 0 14px 40px rgba(4, 2, 12, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.06) !important; }
+
+/* ---- the desk and its tabs ---- */
+.dk-tabs a.on, .seg button.on, .rseg button.on { background: var(--v-sun-soft) !important; color: #fff !important; box-shadow: inset 0 0 0 1px rgba(255, 140, 190, 0.45) !important; }
+.sheet, .cmodal > *, .wpop, .wmodal { background-color: var(--v-bg2) !important; }
+.lp-nav { background: transparent !important; box-shadow: none !important; border: 0 !important; }
