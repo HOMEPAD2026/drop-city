@@ -50,6 +50,14 @@
     {
       "source": "/coin/:mint",
       "destination": "/api/pad?page=:mint"
+    },
+    {
+      "source": "/nft",
+      "destination": "/api/pad?page=nft"
+    },
+    {
+      "source": "/lp",
+      "destination": "/api/pad?page=lp"
     }
   ]
 }

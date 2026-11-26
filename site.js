@@ -43,10 +43,10 @@ async function start() {
   const title = () => (document.title = `${CFG.name} — ${t("title", "the launchpad you can play")}`);
   // a coin page (/coin/<mint>) keeps the title the server gave it
   if (!window.__COIN) title();
-  initLang(() => { if (!window.__COIN) title(); paintAll(); paintFees(); paintVote(CFG).then(paintTicker); paintWallets(CFG); });
+  initLang(() => { if (!window.__COIN) title(); paintAll(); paintFees(); paintVote(CFG).then(paintTicker); paintWallets(CFG, coins); });
   initSound();
   await refresh(); paintFees(); paintMe(); readVault(); setInterval(readVault, 60e3); paintPage(html.dataset.page);
-  initCheck(CFG, openCoin); paintWallets(CFG); setInterval(() => paintWallets(CFG), 60e3);
+  initCheck(CFG, openCoin); paintWallets(CFG, coins); setInterval(() => paintWallets(CFG, coins), 60e3);
   paintVote(CFG).then(paintTicker); setInterval(() => paintVote(CFG), 20e3);
   paintLive(coins, flashTrade).then(paintTicker); setInterval(() => paintLive(coins, flashTrade), DEMO ? 3000 : 8000);
   if (location.hash.length > 1) route(location.hash, false);

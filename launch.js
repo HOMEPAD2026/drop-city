@@ -122,7 +122,7 @@ export function openDrop(o = {}) {
       step("find", "ok", `<div class="slot">${esc(g.pub.slice(0, g.pub.length - sx.length))}<b class="lock">${esc(sx)}</b></div>`);
       // 3. the details
       cur = "host"; step("host", "doing");
-      const lg = await post({ action: "logo", image: f.logoData }); if (!lg.ok) throw new Error(lg.j.error || "couldn't host the logo");
+      const lg = await post({ action: "logo", image: f.logoData }); if (!lg.ok) throw new Error(lg.j.error || "couldn't host the logo"); f.logo = lg.j.url;
       const md = await post({ action: "meta", ...F, image: lg.j.url }); if (!md.ok) throw new Error(md.j.error || "couldn't host the details");
       step("host", "ok");
       // 4–6. the launch
@@ -172,8 +172,13 @@ export function openDrop(o = {}) {
       cur = "list"; step("list", "doing");
       let listed = false; for (let i = 0; i < 6 && !listed; i++) { if (i) await sleep(2500 + i * 1000); const r = await post({ action: "register", mint: g.pub, sig: sig1 }); listed = r.ok; if (!r.ok && (r.status === 400 || i === 5)) { step("list", "bad", esc(r.j.error || "")); break; } } // a 404 / 409 right after the launch is the RPC still catching up: try again
       if (listed) step("list", "ok");
-      const tw = encodeURIComponent(`$${F.symbol} just launched in the city.\n`), link = encodeURIComponent(`${location.origin}/city?coin=${g.pub}`);
-      q("go").outerHTML = `<a class="btn ghost" href="https://x.com/intent/tweet?text=${tw}&url=${link}" target="_blank" rel="noopener">Share on X</a><a class="btn cy" href="/city?coin=${esc(g.pub)}">See its tower</a><a class="btn hot" href="https://pump.fun/coin/${esc(g.pub)}" target="_blank" rel="noopener">pump.fun ↗</a>`;
+      // the share kit (2026-11-26): a ready post (ticker, CA, the coin's own page with its card), the CA to copy, the mugshot card
+      const tw = encodeURIComponent(`$${F.symbol} just launched on ${CFG.name || "GTAFUN"} 🏙️\n\nCA: ${g.pub}\n\n`), link = encodeURIComponent(`${location.origin}/coin/${g.pub}`);
+      q("go").outerHTML = `<div class="kit"><b class="kit-h">${esc(t("kitH", "Tell the city"))}</b><div class="kit-row"><a class="btn hot" href="https://x.com/intent/tweet?text=${tw}&url=${link}" target="_blank" rel="noopener">${esc(t("kitX", "Post on X"))}</a><button type="button" class="btn ghost" data-kit="ca">${esc(t("kitCa", "Copy CA"))}</button><button type="button" class="btn ghost" data-kit="mug">${esc(t("kitMug", "Mugshot card"))}</button><button type="button" class="btn ghost" data-kit="link">${esc(t("kitLink", "Copy link"))}</button></div><div class="kit-row"><a class="btn cy" href="/city?coin=${esc(g.pub)}">${esc(t("kitTower", "See its tower"))}</a><a class="btn ghost" href="https://pump.fun/coin/${esc(g.pub)}" target="_blank" rel="noopener">pump.fun ↗</a></div></div>`;
+      const kit = sh.querySelector(".kit"), coinNow = { mint: g.pub, symbol: F.symbol, name: F.name, image: f.logo || "", progress: 0, mcapUsd: 0, hour: "", kind: "user" };
+      if (kit) kit.onclick = async (e) => { const b = e.target.closest("[data-kit]"); if (!b) return; const k = b.dataset.kit;
+        if (k === "ca" || k === "link") { const v = k === "ca" ? g.pub : `${location.origin}/coin/${g.pub}`; try { await navigator.clipboard.writeText(v); note(t("kitCopied", "Copied.")); } catch { note(v, 6000); } }
+        if (k === "mug") { b.disabled = true; try { const r = await (await import("/mugshot.js")).shareMugshot(coinNow, CFG); if (r === "downloaded") note(t("kitMugSaved", "Mugshot saved.")); } catch { note("Couldn't make the mugshot."); } b.disabled = false; } };
       sh.querySelector(".sub").innerHTML = `<b style="color:var(--lime)">$${esc(F.symbol)} is live.</b> Its tower is going up in the city.`; burst(sh.firstChild);
       note(`$${F.symbol} launched — welcome to the city.`, 5000); o.onDone && o.onDone();
     } catch (x) {

@@ -118,6 +118,13 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   filter), Chart (Dexscreener embed), Buy here (Jupiter plugin-v1 modal; jup.ag/swap/SOL-<mint> if it can't load — its
   options are from memory: dev.jup.ag isn't reachable from here). Supported coins: name / symbol override in
   pad-config (AudaCity → AUDACITY) and their logos copied into our Blob (sup/logos.json).
+- **Transparency, share pages, install, launch kit (the owner, 2026-11-26):** the Wallets tab ends with "Recent moves, read
+  from the chain" (lib/_flows.mjs moveOf / makeFlows, ?flows=1, 5 min: each platform wallet's newest transactions read
+  from its side — buy / burn / pay / sell / in / out — every row a Solscan link); /nft and /lp are share pages with their
+  own link card (vercel rewrites → ?page=nft|lp, lib/_extra.mjs SECTIONS, images/og-nft.jpg / og-lp.jpg; the head script
+  maps the path to the page); manifest.webmanifest + an "Install the app" button only when the browser offers it (fx.js;
+  no service worker, so a deploy is never stuck behind a cache); after a launch the share kit (post on X with the CA +
+  /coin/<mint>, copy CA / link, the mugshot card).
 - **Speed (2026-11-25):** the home page never loads the 1 MB Solana kit (vendor/pump-kit.js) — balances on first paint go
   through common.js rpc1 (one JSON-RPC call through ?solrpc); kit() loads only when a wallet action needs it. Inter is
   gone (Barlow Condensed reads everywhere).

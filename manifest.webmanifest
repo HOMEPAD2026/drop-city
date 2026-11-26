@@ -1,0 +1,23 @@
+{
+  "name": "GTAFUN \u2014 the launchpad you can play",
+  "short_name": "GTAFUN",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#070708",
+  "icons": [
+    {
+      "src": "/images/icon-256.png",
+      "sizes": "256x256",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

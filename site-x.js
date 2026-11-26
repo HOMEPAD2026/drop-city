@@ -151,12 +151,33 @@ export function initCheck(CFG, openCoin) {
 }
 
 // ---------------- the wallets out in the open
-export async function paintWallets(CFG) {
+export async function paintWallets(CFG, coins = []) {
   const el = $("walletsbox"); if (!el) return;
-  const list = [[t("wVault", "THE VAULT"), CFG.vault, t("wVaultP", "30 % of the creator fees of every coin launched on the platform — the city fund.")], [t("wBuyer", "Buys the main coin"), CFG.buyer, t("wBuyerP", "10 % of the creator fees of every coin launched on the platform — it buys the main coin.")], [t("wAgent", "The agent"), CFG.agent, t("wAgentP", "Drops a coin every hour. Keeps 0.5 SOL for launches; the rest goes to THE VAULT.")]].filter((x) => x[1]);
+  const list = [[t("wVault", "THE VAULT"), CFG.vault, t("wVaultP", "30 % of the creator fees of every coin launched on the platform — the city fund.")], [t("wBuyer", "Buys the main coin"), CFG.buyer, t("wBuyerP", "10 % of the creator fees of every coin launched on the platform — it buys the main coin.")], [t("wAgent", "The agent"), CFG.agent, (CFG.drops === false ? t("wAgentOffP", "The agent's wallet. Its hourly drops are off; it still sends the old drops' creator fees on to THE VAULT.") : t("wAgentP", "Drops a coin every hour. Keeps 0.5 SOL for launches; the rest goes to THE VAULT."))]].filter((x) => x[1]);
   let bal = {};
   if (!DEMO) try { const r = (await rpc1("getMultipleAccounts", [list.map((x) => x[1]), { encoding: "base64", dataSlice: { offset: 0, length: 0 }, commitment: "confirmed" }])).value; list.forEach((x, i) => (bal[x[1]] = r[i] ? r[i].lamports / 1e9 : 0)); } catch {}
-  el.innerHTML = list.map(([k, w, p]) => `<div class="wl"><span class="k">${esc(k)}</span><b>${bal[w] != null ? bal[w].toFixed(3) + " SOL" : "–"}</b><p>${esc(p)}</p><a href="https://solscan.io/account/${esc(w)}" target="_blank" rel="noopener">${esc(w)} ↗</a></div>`).join("");
+  el.innerHTML = list.map(([k, w, p]) => `<div class="wl"><span class="k">${esc(k)}</span><b>${bal[w] != null ? bal[w].toFixed(3) + " SOL" : "–"}</b><p>${esc(p)}</p><a href="https://solscan.io/account/${esc(w)}" target="_blank" rel="noopener">${esc(w)} ↗</a></div>`).join("") + `<div class="fl" id="flows"></div>`;
+  paintFlows(CFG, coins);
+}
+/// the platform wallets' latest moves, read from the chain by the server (lib/_flows.mjs): every row is a transaction
+const FL_ROLE = { vault: ["wVault", "THE VAULT"], buyer: ["wBuyer", "Buys the main coin"], agent: ["flAgent", "The agent"], rewards: ["flRewards", "Rewards wallet"], cards: ["flCards", "Cards wallet"] };
+const FL_KIND = { buy: ["flBuy", "Bought"], burn: ["flBurn", "Burned"], pay: ["flPay", "Paid out"], sell: ["flSell", "Sold"], in: ["flIn", "Received"], out: ["flOut", "Sent"] };
+async function paintFlows(CFG, coins) {
+  const el = $("flows"); if (!el) return;
+  let V = null;
+  if (DEMO) { const n = Date.now(); V = { moves: [{ role: "vault", kind: "buy", mint: CFG.main, amount: 182000, sol: 0.42, at: n - 9e5, sig: "d1" }, { role: "vault", kind: "burn", mint: CFG.main, amount: 182000, at: n - 8e5, sig: "d2" }, { role: "rewards", kind: "pay", mint: CFG.main, amount: 50000, at: n - 3.6e6, sig: "d3" }, { role: "vault", kind: "in", sol: 0.083, at: n - 7.2e6, sig: "d4" }] }; }
+  else try { V = await getJ("?flows=1"); } catch { V = null; }
+  const sym = (m) => { const c = coins.find((x) => x.mint === m); return c ? "$" + c.symbol : m === CFG.main ? "$" + (CFG.ticker || "MAIN") : short(m); };
+  const num = (x) => (x >= 1e6 ? (x / 1e6).toFixed(2) + "M" : x >= 1e3 ? (x / 1e3).toFixed(1) + "K" : String(Math.round(x * 1000) / 1000));
+  const rows = (V && V.moves) || [];
+  const sum = (k) => rows.filter((m) => m.kind === k).reduce((a, m) => a + (m.sol || 0), 0);
+  el.innerHTML = `<h4>${esc(t("flH", "Recent moves, read from the chain"))}</h4>
+    <div class="fl-sum"><div><b>${sum("buy").toFixed(3)} SOL</b><small>${esc(t("flSumBuy", "spent on buybacks"))}</small></div><div><b>${rows.filter((m) => m.kind === "burn").length}</b><small>${esc(t("flSumBurn", "burns"))}</small></div><div><b>${rows.filter((m) => m.kind === "pay").length}</b><small>${esc(t("flSumPay", "payouts"))}</small></div><div><b>${sum("in").toFixed(3)} SOL</b><small>${esc(t("flSumIn", "fees in"))}</small></div></div>
+    ${rows.length ? `<div class="fl-list">${rows.slice(0, 20).map((m) => { const r = FL_ROLE[m.role] || [m.role, m.role], k = FL_KIND[m.kind] || [m.kind, m.kind];
+      const what = m.kind === "buy" ? `${num(m.amount)} ${sym(m.mint)} · ${m.sol} SOL` : m.kind === "burn" || m.kind === "pay" ? `${num(m.amount)} ${sym(m.mint)}` : m.kind === "sell" ? `${num(m.amount)} ${sym(m.mint)} · ${m.sol} SOL` : `${m.sol} SOL`;
+      return `<a class="fl-r k-${esc(m.kind)}" href="https://solscan.io/tx/${esc(m.sig)}" target="_blank" rel="noopener"><span class="fl-k">${esc(t(k[0], k[1]))}</span><span class="fl-w">${esc(what)}</span><small>${esc(t(r[0], r[1]))}</small><small>${esc(m.at ? new Date(m.at).toISOString().slice(5, 16).replace("T", " ") : "")}</small></a>`; }).join("")}</div>`
+      : `<p class="fine">${esc(t("flNone", "No moves read yet — the list fills as the wallets act."))}</p>`}
+    <p class="fine">${esc(t("flFine", "Every row opens its transaction on Solscan. Read from the chain every few minutes."))}</p>`;
 }
 
 // ---------------- a creator's window
