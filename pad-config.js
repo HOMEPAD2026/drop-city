@@ -39,7 +39,8 @@ export const PAD = {
   supported: [
     { mint: "9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump", note: "We support $DCTY — it will also be in the slot mini-game." },
     // added 2026-11-24 (the owner) — also the coins the city's liquidity will be paired with (the LP rewards to come)
-    { mint: "DKYcjobF7HPtL9RyQBRdeRQ2iWvizpfbgWwPWNXdpump", note: "" },
+    // name / symbol: shown in place of the chain's (its metadata says ticker "DacityCoin" — the owner, 2026-11-26)
+    { mint: "DKYcjobF7HPtL9RyQBRdeRQ2iWvizpfbgWwPWNXdpump", note: "", name: "AudaCity", symbol: "AUDACITY" },
     { mint: "2xCd5qHX5tW6pGUo7zfgHSSAnRjJwPA7Sz1Fu4fWcJjX", note: "" },
     { mint: "6MKD1NkLvWRqdbFtqmgACBwUV5o6GJpZry8HkNgzpump", note: "" },
     { mint: "9jhs5qoJnUFU7AZXbsiD1Q6De6FVsino9Ysw8QU6pump", note: "" },

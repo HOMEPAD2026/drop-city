@@ -66,7 +66,14 @@ process.env.PAD_SUFFIX = "GTA"; chain[nsCv] = [C.PROGRAM.pump, curveOf(SPONSOR.p
 const ns = await P.register({ mint: NOSPLIT });
 ok(ns.status === 200 && docs.get(`coins/${NOSPLIT}.json`).noSplit && docs.get(`coins/${NOSPLIT}.json`).creator === SPONSOR.pub, "a coin on the owner's list is listed without a split, its creator from the curve");
 process.env.PAD_SUFFIX = "Xy"; docs.delete(`coins/${NOSPLIT}.json`);
+C.CFG.dexInfo = async (m) => ({ name: "Dex " + m.slice(0, 4), symbol: "DX", image: "https://img.example/" + m + ".png", twitter: "", telegram: "", website: "" });
+const keptSrc = []; C.CFG.keepLogo = async (src) => { keptSrc.push(src); return "https://blob.example/kept/" + src.split("/").pop(); };
 const L = await P.list();
+{ const s = L.items.filter((x) => x.kind === "partner"), au = s.find((x) => x.mint === "DKYcjobF7HPtL9RyQBRdeRQ2iWvizpfbgWwPWNXdpump");
+  ok(s.length >= 1 && s.every((x) => x.image.startsWith("https://blob.example/kept/")), "supported coins' logos are copied into our own store (a host that drops one can't blank it)");
+  ok(au && au.symbol === "AUDACITY" && au.name === "AudaCity", "the owner's own name / ticker for a supported coin wins over the chain's");
+  ok(docs.get("sup/logos.json") && Object.keys(docs.get("sup/logos.json")).length === s.length, "the copies are remembered (no refetch a day)"); }
+delete C.CFG.dexInfo; delete C.CFG.keepLogo;
 { const own = L.items.filter((x) => x.kind !== "partner"), sup = L.items.filter((x) => x.kind === "partner");
   ok(own.length === 2 && own[0].progress === 0 && own[0].mcapUsd > 0, "the list reads the coin's curve live");
   ok(sup.length >= 1 && sup.some((x) => x.mint === "9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump") && sup.every((x) => x.feesWaitingSol === 0 && x.creator === null) && sup[0].mint === "9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump" && sup[0].feesWaitingSol === 0 && sup[0].creator === null, "a supported coin ($DCTY) is listed as a partner, no fees, no creator"); }

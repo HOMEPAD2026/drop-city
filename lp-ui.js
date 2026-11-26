@@ -24,7 +24,7 @@ export async function paintLp(box, { coins, CFG }) {
   const pool = (coin, kind) => V.pools.filter((p) => p.coin === coin && p.kind === kind).sort((a, b) => b.tvl - a.tvl)[0];
   const cell = (c, kind) => {
     const p = pool(c.mint, kind), pair = kind === "sol" ? "SOL" : "$" + mainSym;
-    if (!p) return `<div class="lp-cell none"><b>$${esc(c.symbol)} / ${esc(pair)}</b><small>${esc(t("lpNone", "No pool yet"))}</small><a class="btn ghost" href="${RAY_NEW}" target="_blank" rel="noopener">${esc(t("lpCreate", "Create on Raydium"))} ↗</a></div>`;
+    if (!p) return `<div class="lp-cell none"><b>$${esc(c.symbol)} / ${esc(pair)}</b><i class="lp-drop" aria-hidden="true"></i><small>${esc(t("lpNone", "No pool yet"))}</small><p class="lp-first">${esc(tfill(t("lpFirst", "Be the first: create the pool on Raydium. From {m} of liquidity it earns a share of the day's rewards."), { m: usd(V.minPoolUsd || 1000) }))}</p><a class="btn ghost" href="${RAY_NEW}" target="_blank" rel="noopener">${esc(t("lpCreate", "Create on Raydium"))} ↗</a></div>`;
     return `<div class="lp-cell${kind === "main" ? " boost" : ""}"><b>$${esc(c.symbol)} / ${esc(pair)}</b>${kind === "main" ? `<i class="lp-x">×${V.boostMain}</i>` : ""}
       <div class="lp-kv"><span>${esc(t("lpTvl", "Liquidity"))}</span><b>${usd(p.tvl)}</b></div>
       <div class="lp-kv"><span>${esc(t("lpDay", "Reward / day"))}</span><b>${fmt(p.perDay)} $${esc(mainSym)}</b></div>
@@ -33,11 +33,13 @@ export async function paintLp(box, { coins, CFG }) {
       <a class="btn hot" href="${RAY_ADD(p.id)}" target="_blank" rel="noopener">${esc(t("lpAdd", "Add liquidity"))} ↗</a></div>`;
   };
   const me = V.me;
-  box.innerHTML = `${cbCard(CB, mainSym)}
+  // the pools come first; the trader cashback card follows them (2026-11-26)
+  box.innerHTML = `
     <div class="lp-stats"><div><b>${fmt(V.daily)}</b><small>$${esc(mainSym)} ${esc(t("lpPerDay", "a day to LPs"))}</small></div><div><b>${fmt(V.total)}</b><small>${esc(t("lpEarnedAll", "earned so far"))}</small></div><div><b>${fmt(V.paidTotal)}</b><small>${esc(t("lpPaidAll", "paid out"))}</small></div><div><b>${V.hours}</b><small>${esc(t("lpHours", "hours counted"))}</small></div></div>
     <div class="lp-me">${me ? `<div><span>${esc(t("lpEarned", "Earned"))}</span><b>${fmt(me.earned)}</b></div>${me.cashback ? `<div><span>${esc(t("cbMine", "Cashback"))}</span><b>${fmt(me.cashback)}</b></div>` : ""}<div><span>${esc(t("lpPaid", "Paid"))}</span><b>${fmt(me.paid)}</b></div><div class="hi"><span>${esc(t("lpPending", "Pending"))}</span><b>${fmt(me.pending)} $${esc(mainSym)}</b></div>`
       : `<p>${esc(t("lpConnect", "Connect your wallet to see what your liquidity has earned."))}</p><button type="button" class="btn ghost" data-lp="conn">${esc(t("connect", "Connect wallet"))}</button>`}</div>
     <div class="lp-grid">${sup.map((c) => `<div class="lp-coin"><div class="lp-ch">${pic(c)}<b>$${esc(c.symbol)}</b><small>${esc(c.name || "")}</small></div>${cell(c, "sol")}${cell(c, "main")}</div>`).join("") || `<p class="fine">${esc(t("lpNoSup", "No supported coins yet."))}</p>`}</div>
+    ${cbCard(CB, mainSym)}
     <details class="lp-how"><summary>${esc(t("lpHowH", "How the rewards work"))}</summary><ol>
       <li>${esc(t("lpHow1", "Add liquidity to a supported coin's Raydium pool — paired with SOL, or with the main coin (those pools weigh more)."))}</li>
       <li>${esc(t("lpHow2", "Every hour the city reads who holds each pool's LP tokens and splits that hour's reward: across the pools by their liquidity, inside a pool by the LP tokens you hold."))}</li>

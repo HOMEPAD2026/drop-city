@@ -335,3 +335,15 @@ html.js[data-page="nft"] :is(.hero, #play, #explore, #desk), html.js[data-page="
 .lp-ch .ini { display: grid !important; place-items: center; font-size: 13px !important; font-weight: 800 !important; color: #fff !important; background: radial-gradient(70% 70% at 30% 25%, #ff5fa6, #b3125f) !important; }
 /* a supported coin's card: a quiet full line in place of the curve (it wasn't launched or graduated here) */
 .cc .bar.sup i { background: rgba(255, 255, 255, 0.28) !important; }
+/* the hero's four doors (2026-11-26): supported · launch · NFT · LP, two by two; each line kept to two rows */
+.hero-in .lanes { grid-template-columns: 1fr 1fr !important; }
+.lane p { display: -webkit-box !important; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+@media (max-width: 760px) { .hero-in .lanes { grid-template-columns: 1fr 1fr !important; } .lanes .lane p { display: none !important; } .lane { padding: 12px 14px !important; } .lane b { font-size: 15px !important; } }
+/* MORE → Live with the drops off: the vote / today column is gone, so the live feed takes the whole width */
+html.nodrops #p-now { display: none; }
+html.nodrops[data-tab="now"] #p-now { display: block !important; }
+html.nodrops #p-now #live { max-width: 860px; }
+/* LP: a pool that doesn't exist yet asks for its first liquidity */
+.lp-cell.none { position: relative; }
+.lp-cell .lp-first { margin: 6px 0 10px; font-size: 13px; line-height: 1.5; color: var(--cl-dim); }
+.lp-cell .lp-drop { position: absolute; top: 14px; right: 14px; width: 18px; height: 22px; background: rgba(255, 46, 136, 0.18); clip-path: path("M9 0C13 6 18 11 18 15a9 9 0 0 1-18 0C0 11 5 6 9 0Z"); }
