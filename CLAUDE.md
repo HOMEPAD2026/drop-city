@@ -100,6 +100,15 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   every paint; no repainting animation over the hero (the cashback dot's pulse cost desktop 30 fps). The intro: black
   throughout (BG #000), the burst is light only (glow + rays, no cartoon star body, pink / white, no orange), the end
   card = logo + the tag in Pretendard + a pink loading line, a readable skip button.
+- **The intro, round 3 (the owner, 2026-11-26: "로딩화면 … 진행하자"):** intro.js — four tableaux (s1 hotel, s2 pergola, s5
+  flamingos, s6 sunset), the logo by ~4–5 s (BURST 700 · PER 780/820 · OUT 750; the wait for the first two paintings ≤ 1.2 s,
+  the rest load behind them); the first painting fills the screen from the start; graded black & white with pink in the
+  light (soft-light; Safari without canvas filters: grey by blend mode); a caption a scene (ixCap1–4), letterbox + grain,
+  a pink light leak at each doorway, a lens flare + tiny shake at the burst, the rush-out is a warp of streaks into the
+  star; a slow device (> 48 ms a frame) jumps to the warp; swipe up = ×3.2; a big "Tap to skip" at the bottom; 🔇/🔊
+  (dc.snd, off by default, Web Audio only). Shared links (/coin, /w, /nft, /lp, #hash, ?coin=) skip it; returning
+  visitors get the short end. The end card: the logo landing + sparkle + glow pulse, the live numbers (site.js sets
+  window.__dcCoins and fires dc:coins), Launch · Play · Enter, a line that fills when the coins arrive.
 - **Translations (2026-11-25):** i18n.js — each language's lines go into ITS OWN block (MORE.ko / .zh / .tr); on
   2026-11-24 the zh and tr lines of 84 keys were pasted into the ko block and Korean readers saw Turkish.
   tests/i18n.test.mjs fails on a key twice in a block, a key missing from a language, or a line in the wrong script.

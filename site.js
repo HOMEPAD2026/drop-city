@@ -34,6 +34,7 @@ async function refresh() {
   const was = slot;
   [coins, slot] = await Promise.all([loadCoins(), loadSlot()]);
   paintAll(); try { checkAlerts(coins); } catch {}
+  window.__dcCoins = coins; dispatchEvent(new Event("dc:coins")); // the intro's end card shows the live numbers
   // a new hourly drop while the page is open → the takeover
   if (was && slot && slot.state === "dropped" && slot.drop && (!was.drop || was.drop.mint !== slot.drop.mint)) { const c = coins.find((x) => x.mint === slot.drop.mint); if (c) showDrop(c); }
 }
