@@ -186,3 +186,8 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   never `#city`: pad.css fixes it to the screen) = trades + launches in the last day + cashback credits, newest 8; the
   trust tiles read ?cb=1 / ?flows=1 (no number made up; "–" until read); a notice bar under the ticker, closed for good
   once closed (dc.notice = its id).
+  J3 — the main coin card's 24 h line + change (?spark=<mint>, lib/_spark.mjs: Dexscreener's busiest pair, GeckoTerminal's
+  24 hourly closes, else five points from the 5 m / 1 h / 6 h / 24 h changes; 5 min in the warm function); a shorter
+  main-coin line (mcP3); NFT / LP teaser cards (#tease) and three quick answers (#qfaq) on home; the footer in four columns
+  (main coin CA copy, socials from pad-config links / PAD_X_URL / PAD_TG_URL — Telegram is @GTAFUNbot, no X until set —,
+  pages, more, language, the disclaimer).

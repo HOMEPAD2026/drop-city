@@ -13,7 +13,7 @@
 <style>html.wf .nav,html.wf .ticker,html.wf .hero,html.wf main,html.wf .sitefoot,html.wf .bbar{opacity:0}html.wf-in .nav,html.wf-in .ticker,html.wf-in .hero,html.wf-in main,html.wf-in .sitefoot,html.wf-in .bbar{transition:opacity .2s ease}</style>
 <script>(function(){var d=document.documentElement;if(!document.fonts||!document.fonts.load)return;d.classList.add("wf");var done=false,go=function(){if(done)return;done=true;d.classList.add("wf-in");d.classList.remove("wf")};Promise.all([document.fonts.load('800 16px "Pretendard Variable"',"A가"),document.fonts.load('500 16px "Pretendard Variable"',"A가")]).then(go,go);setTimeout(go,900)})()</script><link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <link rel="manifest" href="/manifest.webmanifest"><link rel="icon" href="/images/favicon-64.png" type="image/png"><link rel="apple-touch-icon" href="/images/icon-256.png">
-<link rel="stylesheet" href="/site.min.css?v=fc228bf4f8">
+<link rel="stylesheet" href="/site.min.css?v=f1191516f2">
 <link rel="stylesheet" href="/intro.css?v=9">
 <script>(function(){var d=document.documentElement,T={vote:"now",live:"now",today:"now",ranks:"ranks",launch:"launch",fees:"fees",wallets:"wallets",check:"check",creators:"mine",about:"about"},s="";
 d.classList.add("js","nodrops");
@@ -90,6 +90,19 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
     </a>
   </section>
 
+  <section id="tease" class="sec teasec" aria-label="More to do">
+    <a class="tz tz-nft" href="#cards"><span class="tz-art" aria-hidden="true"><img src="/nft/img/pepe-360.webp" alt="" loading="lazy" decoding="async"><img src="/nft/img/doge-360.webp" alt="" loading="lazy" decoding="async"><img src="/nft/img/pengu-360.webp" alt="" loading="lazy" decoding="async"></span><span class="tz-t"><small data-i18n="tzNftK">GTAFUN CARDS</small><b data-i18n="tzNftH">Open a pack of 3 meme cards</b><span data-i18n="tzNftP">10 characters · 0.1 SOL a pack · random on chain</span></span><span class="tz-go" aria-hidden="true">›</span></a>
+    <a class="tz tz-lp" href="#lp"><span class="tz-art tz-drop" aria-hidden="true"><i></i></span><span class="tz-t"><small data-i18n="tzLpK">LP &amp; CASHBACK</small><b data-i18n="tzLpH">Earn the main coin back</b><span data-i18n="tzLpP">0.3% cashback on every trade · hourly LP rewards</span></span><span class="tz-go" aria-hidden="true">›</span></a>
+  </section>
+  <section id="qfaq" class="sec qfsec" aria-label="Quick answers">
+    <div class="sec-h"><h2 data-k="// QUICK ANSWERS" data-i18n="qfH">GOOD TO KNOW</h2></div>
+    <div class="qf">
+      <details><summary data-i18n="qf1">How do I launch a coin?</summary><p data-i18n="qf1a">Press Launch, add a logo, name and ticker, and sign once in your own wallet. It goes live on pump.fun with its fee split locked on chain — any time, no limit.</p></details>
+      <details><summary data-i18n="qf2">Where do the fees go?</summary><p data-i18n="qf2a">For every coin launched here: 60% to its creator, 30% to THE VAULT (buybacks and burns), 10% buys the main coin. The main coin itself is the dev's own — its creator fees go 100% to the dev.</p></details>
+      <details><summary data-i18n="qf3">Is anyone holding my money?</summary><p data-i18n="qf3a">No. You launch and trade from your own wallet, and every platform wallet's moves are public on chain.</p></details>
+    </div>
+    <a class="qf-more" href="#about" data-i18n="qfMore">All questions ›</a>
+  </section>
   <section id="pg-nft" class="sec pgsec">
     <div class="dk-b" id="cards">
       <div class="sec-h"><h2 data-k="// NEW DROP" data-i18n="hCards">GTAFUN CARDS</h2><p data-i18n="pCards">Season 1 — the 10 top meme characters as NFT cards. Packs of 3, 0.1 SOL, every card picked at random on chain.</p></div>
@@ -209,7 +222,12 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
     </div>
   </section>
 </main>
-<footer class="sitefoot"><span class="foot-logo"><img class="logo-img" src="/images/logo-96.webp" srcset="/images/logo-96.webp 1x, /images/logo-192.webp 2x" alt="GTAFUN" width="70" height="48" decoding="async"><b data-name class="sr-only">GTAFUN</b></span><span data-i18n="fBuilt">Built on pump.fun · Solana. Not affiliated with pump.fun.</span><span class="fl"><a href="/city" data-i18n="fGame">The game</a><a href="#fees" data-i18n="nFees">Fees</a><a href="https://github.com/HOMEPAD2026/drop-city" rel="noopener" data-i18n="fSource">Source</a></span><select id="lang2" aria-label="Language" data-i18n-al="aLang"><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文</option><option value="tr">Türkçe</option></select></footer>
+<footer class="sitefoot sf2">
+  <div class="sf-brand"><span class="foot-logo"><img class="logo-img" src="/images/logo-96.webp" srcset="/images/logo-96.webp 1x, /images/logo-192.webp 2x" alt="GTAFUN" width="70" height="48" decoding="async"><b data-name class="sr-only">GTAFUN</b></span><p data-i18n="fTag">The launchpad you can play — pump.fun launches as a city.</p><button type="button" class="sf-ca" id="sf-ca" hidden><small data-i18n="fCa">Main coin CA</small><code id="sf-cav"></code><span data-i18n="copy">COPY</span></button><span class="sf-soc" id="sf-soc"></span></div>
+  <nav class="sf-col" aria-label="Pages"><b data-i18n="fPages">Pages</b><a href="#launch" data-i18n="nLaunch">Launch</a><a href="#explore" data-i18n="nExplore">Explore</a><a href="#cards" data-i18n="bNft">NFT</a><a href="#lp" data-i18n="bLp">LP</a><a href="/city" data-i18n="fGame">The game</a></nav>
+  <nav class="sf-col" aria-label="More"><b data-i18n="fMore">More</b><a href="#fees" data-i18n="nFees">Fees</a><a href="#wallets" data-i18n="fWallets">Wallets</a><a href="#check" data-i18n="fCheck">Check a CA</a><a href="#about" data-i18n="fAbout">About</a><a href="https://github.com/HOMEPAD2026/drop-city" rel="noopener" data-i18n="fSource">Source</a></nav>
+  <div class="sf-end"><select id="lang2" aria-label="Language" data-i18n-al="aLang"><option value="en">English</option><option value="ko">한국어</option><option value="zh">中文</option><option value="tr">Türkçe</option></select><p class="sf-dis" data-i18n="fDis">Built on pump.fun · Solana. Not affiliated with pump.fun or Rockstar Games. Meme coins are extremely risky — not financial advice.</p></div>
+</footer>
 <div class="sheet" id="sheet" hidden></div>
 <div class="cmodal" id="cmodal" hidden></div>
 <div class="toast" id="toast" hidden></div>

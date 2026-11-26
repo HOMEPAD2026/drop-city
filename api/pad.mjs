@@ -9,6 +9,8 @@
 //   GET  ?street        the streets: players here now + the week's street board
 //   POST {action}       register · meta · logo · here (a player's beat in the streets) · score (the street board)
 import { makePad, publicCfg, cfg, quotesOf } from "../lib/_pad.mjs";
+import { makeSpark } from "../lib/_spark.mjs";
+let SPK = null; const spark = () => (SPK = SPK || makeSpark());
 import { proxy } from "../lib/_chain.mjs";
 import { blobStore, blobEnabled } from "../lib/_blob.mjs";
 import { makeAgent } from "../lib/_agent.mjs";
@@ -151,6 +153,7 @@ export async function GET(req) {
       return json(r.status, r.body, "no-store");
     }
     if (q.has("cards")) return json(200, await cards().view(String(q.get("w") || "")), "public, max-age=10"); // GTAFUN CARDS: the machine, the board, a wallet's cards
+    if (q.has("spark")) { const m = String(q.get("spark") || ""); if (!/^[1-9A-HJ-NP-Za-km-z]{32,44}$/.test(m)) return json(400, { error: "bad mint" }); if (limited("sp:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); return json(200, await spark().view(m), "public, max-age=120, s-maxage=300"); } // a coin's last 24 h (home page's main card)
     if (q.has("slots")) return json(200, await slots().view(String(q.get("w") || "")), "no-store"); // CITY SLOTS' weekly board
     if (q.has("profile")) { if (limited("pf:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); const r = await prof().view(String(q.get("profile") || "")); return json(r.status, r.body, "public, max-age=20"); } // a wallet's profile
     if (q.has("flows")) { if (limited("fl:" + ipOf(req), 20, 60e3)) return json(429, { error: "slow down" }); return json(200, await flows().view(), "public, max-age=60"); } // the platform wallets' latest moves

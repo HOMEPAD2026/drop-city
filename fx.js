@@ -23,7 +23,7 @@ addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault(); deferred = e;
   if (document.querySelector(".inst")) return;
   const label = t("instApp", "Install the app");
-  for (const host of [document.getElementById("links"), document.querySelector(".sitefoot")]) {
+  for (const host of [document.getElementById("links"), document.querySelector(".sitefoot .sf-end") || document.querySelector(".sitefoot")]) {
     if (!host) continue;
     const b = document.createElement("button"); b.type = "button"; b.className = "inst" + (host.id === "links" ? " nx" : ""); b.textContent = "⤓ " + label;
     b.onclick = async () => { if (!deferred) return; deferred.prompt(); try { await deferred.userChoice; } catch {} deferred = null; document.querySelectorAll(".inst").forEach((x) => x.remove()); };

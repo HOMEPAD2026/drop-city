@@ -34,7 +34,7 @@ export function poke(slot) {
 }
 
 export const DEMO = new URLSearchParams(location.search).get("demo") === "1";
-export const DEFAULT_CFG = { name: "DROP CITY", ticker: "DROP", suffix: "", split: { creator: 6000, vault: 3000, buyer: 1000 }, open: false };
+export const DEFAULT_CFG = { name: "DROP CITY", ticker: "DROP", suffix: "", split: { creator: 6000, vault: 3000, buyer: 1000 }, open: false, links: { x: "", tg: "https://t.me/GTAFUNbot" } };
 export async function loadCfg() { try { return { ...DEFAULT_CFG, ...(await getJ("?cfg")) }; } catch { return { ...DEFAULT_CFG }; } }
 export async function loadCoins() { if (DEMO) return demoCoins(); try { const j = await getJ("?list"); loadCoins.failed = !Array.isArray(j.items); return Array.isArray(j.items) ? j.items : []; } catch { loadCoins.failed = true; return []; } }
 export async function loadSlot() { if (DEMO) return { hour: new Date().toISOString().slice(0, 13), next: Math.ceil(Date.now() / 3600e3) * 3600e3, state: "dropped", drop: { symbol: "OWL" } }; try { return await getJ("?slot"); } catch { return null; } }

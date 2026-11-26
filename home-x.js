@@ -43,3 +43,15 @@ export async function paintCity({ coins, trades, CFG, openCoin }) {
     [all ? String(all.burns) : "–", t("tsBurn", "burns on chain"), "#wallets"],
   ].map(([v, l, h]) => `<a class="ts" href="${h}"><b>${esc(v)}</b><small>${esc(l)}</small></a>`).join("");
 }
+
+/// the footer (2026-11-26): the main coin's CA to copy and the social links from the config (PAD_X_URL / PAD_TG_URL)
+export function paintFoot(CFG, note) {
+  const ca = $("sf-ca"), soc = $("sf-soc");
+  if (ca && CFG.main) { ca.hidden = false; $("sf-cav").textContent = short(CFG.main); ca.onclick = async () => { try { await navigator.clipboard.writeText(CFG.main); note(t("copied", "Address copied.")); } catch { note(CFG.main, 6000); } }; }
+  if (soc) {
+    const L = CFG.links || {}, a = [];
+    if (L.x) a.push(`<a href="${esc(L.x)}" target="_blank" rel="noopener" aria-label="X"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M17.8 3h3.1l-6.8 7.8L22 21h-6.2l-4.9-6.4L5.3 21H2.2l7.3-8.3L2 3h6.4l4.4 5.8L17.8 3Zm-1.1 16.2h1.7L7.4 4.7H5.6l11.1 14.5Z"/></svg></a>`);
+    if (L.tg) a.push(`<a href="${esc(L.tg)}" target="_blank" rel="noopener" aria-label="Telegram"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M21.5 4.3 18.3 19.6c-.2 1.1-.9 1.4-1.8.9l-4.9-3.6-2.4 2.3c-.3.3-.5.5-1 .5l.3-5 9.1-8.2c.4-.4-.1-.6-.6-.2L5.8 13.4 1 11.9c-1-.3-1-1 .2-1.5L20.2 3c.9-.3 1.6.2 1.3 1.3Z"/></svg></a>`);
+    soc.innerHTML = a.join("");
+  }
+}

@@ -4,7 +4,7 @@ import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot
 import { walletButton } from "/wallet.js";
 import { extrasHtml, wireExtras, isWatched, checkAlerts, chartInto, holdersHtml } from "/coin-x.js";
 import { keepRef } from "/cb-ui.js";
-import { paintCity, notice } from "/home-x.js";
+import { paintCity, notice, paintFoot } from "/home-x.js";
 keepRef(); // an invite link (?ref=<wallet>) is kept on this device until its wallet is linked
 import { openDrop, finishSplit, why, logsBox } from "/launch.js";
 import { feeBox, wireFees } from "/fees.js";
@@ -40,7 +40,7 @@ async function refresh() {
   if (was && slot && slot.state === "dropped" && slot.drop && (!was.drop || was.drop.mint !== slot.drop.mint)) { const c = coins.find((x) => x.mint === slot.drop.mint); if (c) showDrop(c); }
 }
 async function start() {
-  CFG = await loadCfg();
+  CFG = await loadCfg(); try { paintFoot(CFG, note); } catch {}
   document.querySelectorAll("[data-name]").forEach((e) => (e.textContent = CFG.name));
   const title = () => (document.title = `${CFG.name} — ${t("title", "the launchpad you can play")}`);
   // a coin page (/coin/<mint>) keeps the title the server gave it
@@ -98,13 +98,29 @@ function paintMain() {
       <a class="btn hot mc-buy" href="${buy}" target="_blank" rel="noopener">${esc(t("buy", "Buy"))}</a>
       <button type="button" class="mc-more" id="mc-more" aria-controls="mainc" aria-expanded="${UI.mcOpen}" aria-label="${esc(UI.mcOpen ? t("mcLess", "Less") : t("mcMore", "More about the main coin"))}"><i aria-hidden="true"></i></button></div>
     <div class="mc-n"><div><b>${usd(c && c.mcapUsd)}</b><small>${esc(t("lMcap", "Market cap"))}</small></div><div><b>${c && c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>${esc(t("lPrice", "Price"))}</small></div><div><b>${c ? (isSup(c) ? esc(t("lSup", "Supported")) : c.graduated ? esc(t("lMade", "MADE")) : prog.toFixed(1) + "%") : "–"}</b><small>${esc(isSup(c) ? t("lNotHere", "Not launched here") : c && c.graduated ? t("lGrad", "Graduated") : t("lCurve", "Bonding curve"))}</small></div></div>
+    <div class="mc-sp" id="mc-sp">${sparkHtml()}</div>
     <div class="bar mc-bar"><i style="width:${Math.max(2, prog)}%"></i></div>
     <button type="button" class="mc-ca" id="mc-ca" title="${esc(t("copyCa", "Copy the address"))}"><code><span class="ca-h">${esc(m.slice(0, -8))}</span><span class="ca-t">${caHtml(m).slice(esc(m.slice(0, -8)).length)}</span></code><span>${esc(t("copy", "COPY"))}</span></button>
-    <p class="mc-p">${esc(tf("mcP1", "{p}% of the creator fees of every coin launched on the platform buys ${sym}.", { p: CFG.split.buyer / 100, sym }))} ${esc(t("mcP2", "The main coin is the dev's own: its creator fees go 100% to the dev."))}</p>
+    <p class="mc-p">${esc(tf("mcP3", "Every platform launch buys it with {p}% of its fees. Its own creator fees go 100% to the dev.", { p: CFG.split.buyer / 100 }))}</p>
     <div class="mc-a"><a class="btn hot" href="${buy}" target="_blank" rel="noopener">${esc(t("buy", "Buy"))} $${esc(sym)}</a><a class="btn ghost" href="https://dexscreener.com/solana/${esc(m)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a class="btn ghost" href="${city}">${esc(t("cGame", "Game"))}</a></div>`;
   el.classList.toggle("open", UI.mcOpen);
   $("mc-ca").onclick = async () => { try { await navigator.clipboard.writeText(m); note(t("copied", "Address copied.")); } catch { note(m, 6000); } };
   $("mc-more").onclick = () => { UI.mcOpen = !UI.mcOpen; paintMain(); };
+  readSpark(m);
+}
+/// the main coin's last 24 h (?spark=, the server reads Dexscreener + GeckoTerminal): a line and the 24 h change
+let SPARK = null, sparkAt = 0;
+async function readSpark(m) {
+  if (Date.now() - sparkAt < 5 * 60e3) return; sparkAt = Date.now();
+  try { const r = await getJ("?spark=" + encodeURIComponent(m)); if (r && r.ok && r.pts && r.pts.length >= 2) { SPARK = r; const el = $("mc-sp"); if (el) el.innerHTML = sparkHtml(); } } catch {}
+}
+function sparkHtml() {
+  const r = SPARK; if (!r) return "";
+  const p = r.pts, lo = Math.min(...p), hi = Math.max(...p), W = 240, H = 44, span = hi - lo || hi || 1;
+  const xy = p.map((v, i) => [(i / (p.length - 1)) * W, H - 3 - ((v - lo) / span) * (H - 8)]);
+  const line = xy.map(([x, y], i) => (i ? "L" : "M") + x.toFixed(1) + " " + y.toFixed(1)).join(" ");
+  const ch = r.ch && r.ch.h24, up = ch != null && ch >= 0, [lx, ly] = xy[xy.length - 1];
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="mcsg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff2e88" stop-opacity=".35"/><stop offset="1" stop-color="#ff2e88" stop-opacity="0"/></linearGradient></defs><path class="sp-a" d="${line} L${W} ${H} L0 ${H} Z" fill="url(#mcsg)"/><path class="sp-l" d="${line}" pathLength="1"/><circle class="sp-d" cx="${lx.toFixed(1)}" cy="${ly.toFixed(1)}" r="3"/></svg><span class="sp-c${ch == null ? "" : up ? " up" : " dn"}"><b>${ch == null ? "–" : (up ? "▲ " : "▼ ") + Math.abs(ch).toFixed(1) + "%"}</b><small>${esc(t("sp24", "24h"))}</small></span>`;
 }
 
 // ---------------- the hour
