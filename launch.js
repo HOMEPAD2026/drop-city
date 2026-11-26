@@ -3,6 +3,7 @@
 import { $, esc, sleep, post, note, DEMO, sol, kit, conn } from "/common.js";
 import { t } from "/i18n.js";
 import { openWallet } from "/wallet.js";
+import { tm } from "/msgs.js";
 // the crew's shares: the same rule as the server's (lib/_pad.mjs crewBps) — equal parts, the launcher keeps the odd bps
 export const CREW_MAX = 4;
 export const crewBps = (n, total) => { n = Math.max(1, Math.min(CREW_MAX, n | 0)); const each = Math.floor(total / n); return Array.from({ length: n }, (_, i) => (i === 0 ? total - each * (n - 1) : each)); };
@@ -63,7 +64,7 @@ export function openDrop(o = {}) {
   const tower = () => { const v = (k) => String((q(k) && q(k).value) || "").trim(), done = [!!f.logoData, !!v("name"), !!v("symbol"), !!v("description"), !!(v("twitter") || v("telegram") || v("website"))];
     q("tw").querySelectorAll(".tw-b i").forEach((x, i) => x.classList.toggle("on", done[i])); q("twl").textContent = `$${v("symbol") || "TICKER"}${CFG.suffix ? " · CA …" + CFG.suffix : ""} · ${done.filter(Boolean).length}/5`; };
   sh.addEventListener("input", tower); setTimeout(tower, 0);
-  const err = (s, k) => { const e = q("err"); e.hidden = !s; e.textContent = s || ""; sh.querySelectorAll(".bad-f").forEach((x) => x.classList.remove("bad-f"));
+  const err = (s, k) => { const e = q("err"); e.hidden = !s; e.textContent = tm(s || ""); sh.querySelectorAll(".bad-f").forEach((x) => x.classList.remove("bad-f"));
     if (!s) return; const fld = k && q(k), at = fld && fld.closest("label") ? fld : e;
     if (fld) { fld.classList.add("bad-f"); try { fld.focus({ preventScroll: true }); } catch {} }
     requestAnimationFrame(() => { try { at.scrollIntoView({ block: "center", behavior: "smooth" }); } catch {} }); };

@@ -136,6 +136,11 @@ export async function GET(req) {
   if (!blobEnabled()) return json(503, { error: "the store isn't connected yet" });
   try {
     if (q.has("list")) return json(200, await pad().list(), "public, max-age=10, s-maxage=20");
+    if (q.has("sitemap")) { // every page a search engine should know: home, NFT, LP and each coin's own page
+      const L = await pad().list().catch(() => ({ items: [] })), o = new URL(req.url).origin, x = (u) => `<url><loc>${o}${u}</loc></url>`;
+      const body = `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${["/", "/nft", "/lp", "/city"].map(x).join("")}${(L.items || []).map((c) => x("/coin/" + c.mint)).join("")}</urlset>`;
+      return new Response(body, { headers: { "content-type": "application/xml; charset=utf-8", "cache-control": "public, max-age=600, s-maxage=3600" } });
+    }
     if (q.has("slot")) return json(200, { ...(await pad().slot()), cfg: publicCfg() }, "no-store");
     if (q.has("agent")) { const [st, tk, pl] = await Promise.all([agent().status(), pad().store.get("beat/tick.json").catch(() => null), pad().store.get("beat/poll.json").catch(() => null)]); return json(200, { ...st, lastTick: tk, lastPoll: pl }, "public, max-age=10"); }
     if (q.has("verify")) { if (limited("v:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); const r = await extra().verify(q.get("verify")); return json(r.status, r.body, "public, max-age=15"); }

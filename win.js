@@ -17,6 +17,17 @@ function clickOr(el, sel, fb) { const b = el.querySelector(sel); if (b) b.click(
 const openNow = () => { const out = []; for (const w of WINS) for (const el of document.querySelectorAll(w.sel)) if (el.isConnected && w.open(el)) out.push({ w, el }); return out; };
 
 let stack = [], ignore = 0, base = null;
+const cardOf = (el) => el.querySelector(":scope > .cm-card, :scope > .wm-card, :scope > div[role=dialog], :scope > .sl-card, :scope > .srch-in") || null;
+const FOC = 'a[href], button:not([disabled]), input:not([disabled]), select, textarea, [tabindex]:not([tabindex="-1"])';
+// Tab stays inside the top window
+addEventListener("keydown", (e) => {
+  if (e.key !== "Tab" || !stack.length) return; const top = stack[stack.length - 1].el;
+  const f = [...top.querySelectorAll(FOC)].filter((x) => x.offsetParent !== null); if (!f.length) return;
+  const first = f[0], last = f[f.length - 1];
+  if (!top.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+  else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+});
 function sync() {
   const now = openNow();
   html.classList.toggle("win-open", now.length > 0);
@@ -25,12 +36,17 @@ function sync() {
     const url = (o.w.url && o.w.url(o.el)) || null;
     if (!stack.length) base = location.pathname + location.search + location.hash;
     try { history.pushState({ dcWin: stack.length + 1 }, "", url || location.href); } catch {}
+    // keyboard: the window is a modal dialog, focus moves into it (its close button — no keyboard popping up on a phone)
+    o.prev = document.activeElement; const card = cardOf(o.el);
+    if (card) { if (!card.getAttribute("role")) card.setAttribute("role", "dialog"); card.setAttribute("aria-modal", "true"); }
+    requestAnimationFrame(() => { const f = (card || o.el).querySelector(".wm-x, .sheet-x, .srch-x, .sl-x, button, [href]"); if (f && !o.el.contains(document.activeElement)) try { f.focus({ preventScroll: true }); } catch {} });
     stack.push(o);
   }
   // closed by its own × / backdrop / Esc → take its entry back off the history
   const gone = stack.filter((s) => !now.some((o) => o.el === s.el));
   if (gone.length) {
     stack = stack.filter((s) => !gone.includes(s));
+    const back = gone[gone.length - 1].prev; if (back && back.isConnected && back.focus) try { back.focus({ preventScroll: true }); } catch {}
     if (history.state && history.state.dcWin) { ignore += gone.length; history.go(-gone.length); }
     else if (!stack.length && base) { try { history.replaceState(null, "", base); } catch {} }
   }

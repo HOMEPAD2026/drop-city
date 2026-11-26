@@ -224,3 +224,7 @@ html[data-tab="now"] #t-now, html[data-tab="ranks"] #t-ranks, html[data-tab="lau
 .cotdsec .sec-h h2 { font-size: clamp(20px, 2.2vw, 24px) !important; display: flex; align-items: center; gap: 0; margin: 0; }
 /* phones: a third card always peeks, so the rows read as rows you can swipe */
 @media (max-width: 760px) { .hot-list .hc { flex: 0 0 43% !important; min-width: 0 !important; scroll-snap-align: start; } .hot-list { scroll-snap-type: x proximity; -webkit-mask: linear-gradient(90deg, #000 88%, transparent); mask: linear-gradient(90deg, #000 88%, transparent); } }
+
+/* ---- L1 ---- */
+.ptr.done i { animation: none !important; border-color: #7dffb4 !important; border-top-color: #7dffb4 !important; border-width: 0 2px 2px 0 !important; border-radius: 0 !important; width: 8px !important; height: 14px !important; transform: rotate(45deg) translate(-1px, -2px) !important; }
+:focus-visible { outline: 2px solid var(--v-pink2, #ff8ab8); outline-offset: 2px; }

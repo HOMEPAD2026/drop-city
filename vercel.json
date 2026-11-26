@@ -60,6 +60,10 @@
       "destination": "/api/pad?page=lp"
     },
     {
+      "source": "/sitemap.xml",
+      "destination": "/api/pad?sitemap=1"
+    },
+    {
       "source": "/w/:wallet",
       "destination": "/api/pad?page=w&w=:wallet"
     }

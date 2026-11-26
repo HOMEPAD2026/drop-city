@@ -2,7 +2,7 @@
   "name": "drop-city",
   "private": true,
   "type": "module",
-  "scripts": { "test": "node tests/pad.test.mjs && node tests/extra.test.mjs && node tests/tg.test.mjs && node tests/lp.test.mjs && node tests/cards.test.mjs && node tests/cashback.test.mjs && node tests/i18n.test.mjs && node tests/flows.test.mjs && node tests/slot.test.mjs && node tests/profile.test.mjs && node tests/css.test.mjs && node tests/slots.test.mjs && node tests/spark.test.mjs && node tests/bag.test.mjs && node --test tests/street.test.mjs tests/jobs.test.mjs tests/music.test.mjs tests/diag.test.mjs tests/perf.test.mjs tests/vault.test.mjs" },
+  "scripts": { "test": "node tests/pad.test.mjs && node tests/extra.test.mjs && node tests/tg.test.mjs && node tests/lp.test.mjs && node tests/cards.test.mjs && node tests/cashback.test.mjs && node tests/i18n.test.mjs && node tests/flows.test.mjs && node tests/slot.test.mjs && node tests/profile.test.mjs && node tests/css.test.mjs && node tests/slots.test.mjs && node tests/spark.test.mjs && node tests/bag.test.mjs && node tests/msgs.test.mjs && node --test tests/street.test.mjs tests/jobs.test.mjs tests/music.test.mjs tests/diag.test.mjs tests/perf.test.mjs tests/vault.test.mjs" },
   "dependencies": {
     "@noble/curves": "2.4.0",
     "@noble/hashes": "2.4.0",

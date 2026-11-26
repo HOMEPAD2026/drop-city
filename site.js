@@ -547,4 +547,4 @@ function openCoinNow(mint) {
 }
 // a coin watched / unwatched in its window: Explore's ★ marks and the Watching filter follow
 addEventListener("watch:change", () => { try { paintGrid(); paintCorner({ coins, CFG, openCoin, openSlot }).catch(() => {}); } catch {} });
-addEventListener("dc:refresh", () => { refresh().catch(() => {}); });
+addEventListener("dc:refresh", (e) => { const p = refresh().catch(() => {}); if (e && e.detail) e.detail.p = p; });

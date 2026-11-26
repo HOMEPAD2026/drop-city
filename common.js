@@ -1,4 +1,5 @@
 // common.js — what the website and the city share: the API, formatting, the wallet, the pump.fun kit, demo coins.
+import { tm } from "/msgs.js";
 export const API = "/api/pad";
 export const $ = (id) => document.getElementById(id);
 export const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
@@ -10,7 +11,7 @@ export const getJ = (q) => fetch(API + q, { cache: "no-store" }).then((r) => r.j
 export const post = (b) => fetch(API, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(b) }).then(async (r) => ({ ok: r.ok, status: r.status, j: await r.json().catch(() => ({})) }));
 const B58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 export const b58 = (u8) => { let n = 0n; for (const b of u8) n = n * 256n + BigInt(b); let s = ""; while (n > 0n) { s = B58[Number(n % 58n)] + s; n /= 58n; } for (const b of u8) { if (b) break; s = "1" + s; } return s; };
-export const note = (s, ms = 3200) => { const t = $("toast"); t.textContent = s; t.hidden = false; clearTimeout(note.t); note.t = setTimeout(() => (t.hidden = true), ms); };
+export const note = (s, ms = 3200) => { const t = $("toast"); t.textContent = tm(s); t.hidden = false; clearTimeout(note.t); note.t = setTimeout(() => (t.hidden = true), ms); };
 /// the hour's drop in words: [text, class]
 export function dropState(slot, cfg) {
   if (!cfg.open && !DEMO) return ["THE CITY OPENS SOON", ""];
