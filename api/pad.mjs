@@ -21,6 +21,7 @@ import { makeFlows } from "../lib/_flows.mjs";
 import { makeProfile } from "../lib/_profile.mjs";
 import { makeBag } from "../lib/_bag.mjs";
 import { makeClean } from "../lib/_clean.mjs";
+import { makeCreator } from "../lib/_creator.mjs";
 import { makeSlots } from "../lib/_slots.mjs";
 import { makeCards } from "../lib/_cards.mjs";
 import { makeExtra } from "../lib/_extra.mjs";
@@ -42,6 +43,7 @@ let CBX = null; const cb = () => (CBX = CBX || makeCashback({ store: pad().store
 // the platform wallets whose moves the transparency list reads (2026-11-26)
 let FLX = null; const flows = () => (FLX = FLX || makeFlows({ store: pad().store, wallets: () => { const c = publicCfg(), e = (k) => String(process.env[k] || "").trim(); return [["vault", c.vault || e("PAD_VAULT")], ["buyer", c.buyer || e("PAD_BUYER")], ["agent", c.agent], ["rewards", e("PAD_LP_WALLET")], ["cards", e("PAD_CARDS_WALLET")]].filter((x) => x[1]); } }));
 let SLX = null; const slots = () => (SLX = SLX || makeSlots({ store: pad().store, pad: pad() }));
+let CRX = null; const creator = () => (CRX = CRX || makeCreator({ store: blobStore(), list: () => pad().list() }));
 let CLX = null; const clean = () => (CLX = CLX || makeClean({ rpc: C.rpc, store: blobStore(), list: () => pad().list() }));
 let BGX = null; const bag = () => (BGX = BGX || makeBag({ rpc: C.rpc, list: () => pad().list() }));
 let PFX = null; const prof = () => (PFX = PFX || makeProfile({ pad: pad(), cashback: cb(), lp: lp(), cards: cards() }));
@@ -201,6 +203,7 @@ export async function POST(req) {
   if (b.action === "slot-start" || b.action === "slot-spin") { if (limited("sl:" + ip, b.action === "slot-spin" ? 40 : 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await (b.action === "slot-spin" ? slots().spin(b) : slots().start(b)); return json(r.status, r.body); } catch (e) { return json(500, { error: "the slots didn't answer" }); } }
   if (b.action === "cb-ref") { if (limited("cbr:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await cb().ref(b); return json(r.status, r.body); } catch (e) { return json(500, { error: "couldn't link the invite" }); } }
   if (b.action === "lp-paid") { if (limited("lpp:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await lp().paid(b); return json(r.status, r.body); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 160) }); } }
+  if (b.action === "coin-page") { if (limited("cpage:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await creator().save(b); if (r.status === 200) pad().list && pad().bust && pad().bust(); return json(r.status, r.body); } catch (e) { return json(500, { error: "couldn't save the page" }); } }
   if (b.action === "cotd-vote") { if (limited("cotd:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await extra().cotdVote(b); return json(r.status, r.body); } catch { return json(500, { error: "couldn't count the vote" }); } }
   if (b.action === "score") { if (limited("score:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); const r = await street().score(b); return json(r.status, r.body); }
   const lim = { register: 30, meta: 20, logo: 20, vote: 10 }[b.action];

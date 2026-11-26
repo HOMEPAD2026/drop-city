@@ -6,8 +6,10 @@ import { t, tf } from "/i18n.js";
 import { watched, myBag } from "/coin-x.js";
 import { today } from "/slot-data.js";
 import { tile, medal } from "/icons.js";
+import { plusFly } from "/moments.js";
 
 const fmt = (x) => (x >= 1e6 ? (x / 1e6).toFixed(2) + "M" : x >= 1e3 ? (x / 1e3).toFixed(1) + "K" : Math.round(x || 0).toString());
+const lastEarned = {};
 let ME = "", CB = null, cbAt = 0, SL = null, slAt = 0;
 
 /// My corner: shown only with a wallet; every number is the server's (?cb=&w=) or this device's (watchlist, slot spins)
@@ -18,6 +20,7 @@ export async function paintCorner({ key, coins, CFG, openCoin, openSlot }) {
   if (!ME) { box.innerHTML = ""; return; }
   if (Date.now() - cbAt > 60e3 || !CB || CB._w !== ME) { cbAt = Date.now(); CB = await getJ("?cb=1&w=" + encodeURIComponent(ME)).catch(() => null); if (CB) CB._w = ME; }
   const S = "$" + (CFG.ticker || "GTAFUN"), me = (CB && CB.me) || null;
+  const grew = me && lastEarned[ME] != null && me.earned > lastEarned[ME] ? me.earned - lastEarned[ME] : 0; if (me) lastEarned[ME] = me.earned;
   const w = watched(), wl = Object.keys(w).map((m) => coins.find((c) => c.mint === m)).filter(Boolean);
   const mine = coins.filter((c) => c.creator === ME);
   const bag = await myBag(ME).catch(() => null), held = ((bag && bag.items) || []).map((h) => coins.find((c) => c.mint === h.mint)).filter(Boolean);
@@ -31,6 +34,7 @@ export async function paintCorner({ key, coins, CFG, openCoin, openSlot }) {
       <div class="cn-t"><small>${tile("rocket", "peach", "sm")}${esc(t("cnMine", "My coins"))} · ${mine.length}</small>${mine.length ? `<div class="cn-chips">${chips(mine)}</div>` : `<a class="cn-go" href="#launch">${esc(t("cnLaunch", "Launch your first coin"))} ›</a>`}</div>
       <button type="button" class="cn-t cn-slot"><small>${tile("slot", "rose", "sm")}${esc(t("cnSlot", "City Slots today"))}</small><b>${sl.spins ?? 10} <i>${esc(t("cnSpins", "spins left"))}</i></b><span>${esc(tf("cnStreak", "{n}-day streak · play ›", { n: sl.streak || 1 }))}</span></button>
     </div>`;
+  if (grew > 0) requestAnimationFrame(() => plusFly(box.querySelector(".cn-t"), `+${fmt(grew)} ${S}`));
   box.onclick = (e) => { const c = e.target.closest("[data-m]"); if (c) { e.preventDefault(); openCoin(c.dataset.m); return; } if (e.target.closest(".cn-slot")) openSlot(); };
 }
 

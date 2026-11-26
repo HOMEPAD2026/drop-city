@@ -34,6 +34,8 @@ const M = {
   "the Solana kit didn't load": ["솔라나 도구를 불러오지 못했어요", "Solana 工具没有加载", "Solana kiti yüklenmedi"],
   "the cards kit didn't load": ["카드 도구를 불러오지 못했어요", "卡牌工具没有加载", "kart kiti yüklenmedi"],
   "not an image": ["이미지 파일이 아니에요", "不是图片", "bir görsel değil"],
+  "Couldn't save.": ["저장하지 못했어요.", "无法保存。", "Kaydedilemedi."],
+  "Couldn't open the editor.": ["편집기를 열지 못했어요.", "无法打开编辑器。", "Düzenleyici açılamadı."],
   "Link copied.": ["링크를 복사했어요.", "链接已复制。", "Bağlantı kopyalandı."],
 };
 const P = [

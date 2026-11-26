@@ -10,6 +10,8 @@ const WINS = [
   { sel: "#wmodal", open: (el) => !el.hidden, close: (el) => clickOr(el, ".wm-x", () => (el.hidden = true)) },
   { sel: ".srch-o:not(.bye)", open: () => true, close: (el) => clickOr(el, ".srch-x", () => el.remove()) },
   { sel: ".sl-wrap", open: () => true, close: (el) => clickOr(el, ".sl-x", () => el.remove()) },
+  { sel: ".ce-pop:not(.bye)", open: () => true, close: (el) => clickOr(el, ".wm-x", () => el.remove()) },
+  { sel: ".inv-pop", open: () => true, close: (el) => clickOr(el, ".wm-x", () => el.remove()) },
   { sel: ".cd-zoom", open: () => true, close: (el) => el.remove() },
   { sel: ".cd-rev", open: () => true, close: (el) => el.remove() },
 ];

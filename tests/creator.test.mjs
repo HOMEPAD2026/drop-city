@@ -1,0 +1,24 @@
+// The creator's coin page: one signed message sets links, a note and the big link-card picture
+import { ed25519 } from "@noble/curves/ed25519.js";
+import * as C from "../lib/_chain.mjs";
+import { makeCreator, pageMessage } from "../lib/_creator.mjs";
+import { createHash } from "node:crypto";
+let pass = 0, fail = 0; const ok = (c, m) => (c ? pass++ : (fail++, console.log("FAIL", m)));
+const kp = () => { const sk = ed25519.utils.randomSecretKey(); return { sk, pub: C.b58enc(ed25519.getPublicKey(sk)) }; };
+const DEV = kp(), OTHER = kp(), MINT = kp().pub, SUP = kp().pub;
+const docs = new Map(), store = { get: async (k) => (docs.has(k) ? JSON.parse(JSON.stringify(docs.get(k))) : null), put: async (k, v, o = {}) => { if (o.create && docs.has(k)) { const e = new Error("x"); e.exists = true; throw e; } docs.set(k, Buffer.isBuffer(v) ? v : JSON.parse(JSON.stringify(v))); return { url: "https://blob.test/" + k }; } };
+let clock = Date.UTC(2026, 10, 26, 12);
+const items = [{ mint: MINT, kind: "user", creator: DEV.pub }, { mint: SUP, kind: "partner" }];
+const X = makeCreator({ store, list: async () => ({ items }), now: () => clock });
+const png = "data:image/png;base64," + Buffer.from("fakepng").toString("base64");
+const sign = (w, b) => { const issued = new Date(clock).toISOString(), posterSha = b.poster ? createHash("sha256").update(Buffer.from(b.poster.split(",")[1], "base64")).digest("hex") : ""; const body = { ...b, wallet: w.pub, issued }; return { ...body, sig: C.b58enc(ed25519.sign(new TextEncoder().encode(pageMessage({ ...body, posterSha })), w.sk)) }; };
+const r = await X.save(sign(DEV, { mint: MINT, twitter: "https://x.com/owl", note: "Hoot hoot — first raid at 9 UTC", poster: png }));
+ok(r.status === 200 && r.body.page.twitter === "https://x.com/owl" && /posters\//.test(r.body.page.poster), "the creator saves links, a note and the poster with one signature");
+ok(docs.get("creator.json")[MINT].note.startsWith("Hoot"), "kept for the list to merge");
+ok((await X.save(sign(OTHER, { mint: MINT, note: "rug" }))).status === 403, "another wallet can't change it");
+ok((await X.save(sign(DEV, { mint: SUP, note: "x" }))).status !== 200, "a supported coin can't be edited");
+ok((await X.save(sign(DEV, { mint: MINT, website: "http://plain.example" }))).status === 400, "links must be https");
+ok((await X.save(sign(DEV, { mint: MINT, note: "x".repeat(141) }))).status === 400, "the note is 140 at most");
+const s = sign(DEV, { mint: MINT, note: "a" }); ok((await X.save({ ...s, note: "b" })).status === 403, "the signed text must match what's saved");
+clock += 11 * 60e3; ok((await X.save({ ...s })).status === 400, "an old signature is refused");
+console.log(`creator: ${pass} passed, ${fail} failed`); if (fail) process.exit(1);
