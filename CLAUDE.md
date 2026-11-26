@@ -181,3 +181,8 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   a star bursts, the camera flies non-stop through painted tableaux (images/intro, sources in its README), rushes out in a
   pink blur into a star, and the star becomes the badge with the name. Words live in i18n.js (en in the code, ko / zh / tr
   there).
+- **The home page, round J (the owner, 2026-11-26: "다 진행"):** J1 — 🔥 Trending now + 🆕 Just launched rows (#hot, class
+  hotsec — never `.hot`: that's the pink button) right under the hero. J2 — home-x.js: "Right now in the city" (#cityrn —
+  never `#city`: pad.css fixes it to the screen) = trades + launches in the last day + cashback credits, newest 8; the
+  trust tiles read ?cb=1 / ?flows=1 (no number made up; "–" until read); a notice bar under the ticker, closed for good
+  once closed (dc.notice = its id).

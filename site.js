@@ -4,6 +4,7 @@ import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot
 import { walletButton } from "/wallet.js";
 import { extrasHtml, wireExtras, isWatched, checkAlerts, chartInto, holdersHtml } from "/coin-x.js";
 import { keepRef } from "/cb-ui.js";
+import { paintCity, notice } from "/home-x.js";
 keepRef(); // an invite link (?ref=<wallet>) is kept on this device until its wallet is linked
 import { openDrop, finishSplit, why, logsBox } from "/launch.js";
 import { feeBox, wireFees } from "/fees.js";
@@ -65,7 +66,7 @@ function flashTrade(x) {
 function paintAll() {
   dropsUi();
   paintHour(); paintMain(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker();
-  paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot();
+  paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot(); paintCity({ coins, trades: lastTrades(30), CFG, openCoin }).catch(() => {}); notice();
   const sl = $("suffixline"); if (CFG.suffix) { sl.hidden = false; sl.innerHTML = `${esc(t("caEnds", "Every coin's CA ends in"))} <b>${esc(CFG.suffix)}</b>`; const kk = document.querySelector(".hero .kicker"); if (kk) kk.dataset.sfx = "CA …" + CFG.suffix; }
 }
 

@@ -350,3 +350,27 @@ html.js:not([data-page="home"]) #hot { display: none !important; }
   .hero h1 { margin-bottom: 10px !important; }
 }
 #hot, .hot-row, .hot-h { min-width: 0; max-width: 100%; } #hot { grid-template-columns: minmax(0, 1fr); } .hot-list { max-width: 100%; }
+
+/* J2: the city right now · out in the open · the notice bar */
+html.js:not([data-page="home"]) #cityrn, html.js:not([data-page="home"]) .notice { display: none !important; }
+#cityrn { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; }
+@media (max-width: 900px) { #cityrn { grid-template-columns: minmax(0, 1fr); } }
+.cityfeed { display: grid; gap: 6px; }
+.cf { display: grid; grid-template-columns: 6px 36px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 12px; border-radius: 14px; background: #111116; border: 1px solid rgba(255, 255, 255, 0.06); font-size: 14px; color: #d4d4d8; cursor: default; }
+.cf[data-m] { cursor: pointer; } .cf[data-m]:hover { border-color: rgba(255, 46, 136, 0.45); }
+.cf-ic { width: 6px; height: 28px; border-radius: 3px; background: #8d8d93; } .cf.k-buy .cf-ic { background: #ff2e88; } .cf.k-new .cf-ic { background: #fff; } .cf.k-cb .cf-ic { background: #ff7ab8; }
+.cf img, .cf .ini { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; display: grid; place-items: center; font-size: 11px; font-weight: 800; background: radial-gradient(70% 70% at 30% 25%, #ff5fa6, #b3125f); }
+.cf .cf-w { width: 36px; font: 600 10px "JetBrains Mono", monospace; color: #9b9ba5; overflow: hidden; }
+.cf-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .cf-t b { color: #fff; } .cf small { color: #9b9ba5; font-size: 12px; }
+.cf.big { border-color: rgba(255, 46, 136, 0.5); background: linear-gradient(90deg, rgba(255, 46, 136, 0.14), #111116 60%); }
+.cf.new { animation: trin 0.5s cubic-bezier(0.2, 0.9, 0.2, 1) both, trflash 1.4s ease-out; }
+.citytrust { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.ts { display: grid; gap: 2px; padding: 16px; border-radius: 16px; background: #111116; border: 1px solid rgba(255, 255, 255, 0.08); text-decoration: none; transition: border-color 0.2s, transform 0.2s; }
+.ts:hover { border-color: rgba(255, 46, 136, 0.5); transform: translateY(-2px); }
+.ts b { font-size: 22px; font-weight: 800; color: #fff; } .ts small { font-size: 12.5px; color: #9b9ba5; font-weight: 600; }
+.cityr .fine { margin: 10px 2px 0; font-size: 12px; }
+.notice { display: flex; align-items: center; gap: 10px; padding: 9px 16px; background: linear-gradient(90deg, rgba(255, 46, 136, 0.22), rgba(255, 46, 136, 0.06)); border-bottom: 1px solid rgba(255, 46, 136, 0.35); font-size: 13.5px; transition: opacity 0.3s, transform 0.3s; }
+.notice a { flex: 1; color: #fff; text-decoration: none; font-weight: 600; } .notice a:hover { text-decoration: underline; }
+.notice button { border: 0; background: transparent; color: #fff; font-size: 20px; line-height: 1; cursor: pointer; padding: 2px 6px; }
+.notice .nt-dot { width: 8px; height: 8px; border-radius: 50%; background: #ff2e88; box-shadow: 0 0 0 4px rgba(255, 46, 136, 0.25); flex: 0 0 8px; }
+.notice.bye { opacity: 0; transform: translateY(-6px); }
