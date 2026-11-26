@@ -103,7 +103,7 @@ main { position: relative; background: radial-gradient(900px 600px at 8% 6%, rgb
 
 /* ---- the desk and its tabs ---- */
 .dk-tabs a.on, .seg button.on, .rseg button.on { background: var(--v-sun-soft) !important; color: #fff !important; box-shadow: inset 0 0 0 1px rgba(255, 140, 190, 0.45) !important; }
-.sheet, .cmodal > *, .wpop, .wmodal { background-color: var(--v-bg2) !important; }
+.sheet > div, .cmodal > *, .wpop, .wm-card { background-color: var(--v-bg2) !important; }
 .lp-nav { background: transparent !important; box-shadow: none !important; border: 0 !important; }
 
 /* ---- GTAFUN's own icons (icons.js, the owner 2026-11-26: "아이콘도 고급을 써") ---- */

@@ -29,20 +29,21 @@ export function grind(suffix, onTries) {
 
 
 // ---------------- the drop window; o: { cfg, onDone(), paintWallet() }
+const DRAFT = { logo: "" };
 export function openDrop(o = {}) {
   const CFG = o.cfg || {};
   const sh = $("sheet"); sh.hidden = false;
   const f = { dev: 0, logo: "", logoData: "", quote: null };
   const QS = (CFG.quotes || []).filter((x) => x && x.mint && x.live !== false);
   sh.innerHTML = `<div role="dialog" aria-label="Launch a coin" class="wide"><button type="button" class="sheet-x" data-f="x" aria-label="Close">×</button><h2>${esc(t("lsH", "LAUNCH A COIN"))}</h2><p class="sub">${esc(t("lsSub", "Any time, as many as you like. On pump.fun, from your own wallet."))}</p>
-    <div class="lf"><div class="form">
+    <div class="ls-nowal" data-f="nowal" hidden></div><div class="lf"><div class="form">
       <label class="w logo-pick"><input type="file" accept="image/png,image/jpeg,image/webp,image/gif" hidden data-f="file"><span class="pv" data-f="pv">+</span><span>${esc(t("lsLogo", "Logo"))}<br><small data-f="lmsg">${esc(t("lsLogoP", "square image, 512 px is plenty"))}</small></span></label>
       <label>${esc(t("lsName", "Name"))}<input data-f="name" maxlength="32" placeholder="Night Owl"></label>
-      <label>${esc(t("lsTicker", "Ticker"))}<input data-f="symbol" maxlength="13" placeholder="OWL"></label>
+      <label>${esc(t("lsTicker", "Ticker"))}<input data-f="symbol" maxlength="13" placeholder="OWL" autocapitalize="characters" autocorrect="off" spellcheck="false"></label>
       <label class="w">${esc(t("lsStory", "Story"))}<textarea data-f="description" rows="2" maxlength="500" placeholder="${esc(t("lsStoryP", "What's the coin about?"))}"></textarea></label>
-      <label>${esc(t("lsX", "X link"))}<input data-f="twitter" placeholder="https://x.com/…"></label>
-      <label>Telegram<input data-f="telegram" placeholder="https://t.me/…"></label>
-      <label class="w">${esc(t("lsWeb", "Website"))}<input data-f="website" placeholder="https://…"></label>
+      <label>${esc(t("lsX", "X link"))}<input data-f="twitter" type="url" inputmode="url" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="https://x.com/…"></label>
+      <label>Telegram<input data-f="telegram" type="url" inputmode="url" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="https://t.me/…"></label>
+      <label class="w">${esc(t("lsWeb", "Website"))}<input data-f="website" type="url" inputmode="url" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="https://…"></label>
       ${QS.length ? `<div class="w pairset"><span class="lbl">${esc(t("lsPair", "Pair — what your coin trades against"))}</span><div class="seg pairs" data-f="pairs"><button type="button" class="on" data-q="">SOL</button>${QS.map((x) => `<button type="button" data-q="${esc(x.id)}">${esc(x.id)}</button>`).join("")}</div><small class="pairline" data-f="pairline">${esc(t("lsPairSol", "Bought and sold with SOL — the usual pump.fun coin."))}</small></div>` : ""}
       <div class="w crewset"><span class="lbl">${esc(t("lsCrew", "Crew (optional) — split your share with up to 3 more wallets"))} (${(CFG.split.creator / 100)}%)</span>
         <div class="crew" data-f="crew"></div><button type="button" class="btn ghost addcrew" data-f="addcrew">+ ${esc(t("lsCrewAdd", "Add a crew wallet"))}</button><small class="crewline" data-f="crewline">${esc(t("lsJustYou", "Just you: your whole share is yours."))} (${(CFG.split.creator / 100)}%)</small></div>
@@ -57,10 +58,34 @@ export function openDrop(o = {}) {
   const prev = () => { const v = (k) => String((q(k) && q(k).value) || "").trim(), sym = v("symbol") || "TICKER", nm = v("name") || "Your coin";
     q("prev").innerHTML = `<article class="cc"><div class="poster"><span class="tag">WANTED</span><span class="badge new">NEW</span>${f.logoData ? `<img src="${f.logoData}" alt="">` : `<span class="ini">${esc(sym.slice(0, 3))}</span>`}<span class="bounty">BOUNTY $0</span></div><div class="body"><h3>${esc(nm)}</h3><span class="sym">$${esc(sym)}</span> <span class="stars">★☆☆☆☆</span><div class="bar"><i style="width:2%"></i></div><small style="color:var(--dim)">${CFG.suffix ? `CA …${esc(CFG.suffix)}` : "curve 0%"}${f.quote ? ` · ${esc(f.quote.id)} pair` : ""}</small></div></article>`; };
   sh.addEventListener("input", prev); prev();
-  const err = (s) => { q("err").hidden = !s; q("err").textContent = s || ""; };
+  const err = (s, k) => { const e = q("err"); e.hidden = !s; e.textContent = s || ""; sh.querySelectorAll(".bad-f").forEach((x) => x.classList.remove("bad-f"));
+    if (!s) return; const fld = k && q(k), at = fld && fld.closest("label") ? fld : e;
+    if (fld) { fld.classList.add("bad-f"); try { fld.focus({ preventScroll: true }); } catch {} }
+    requestAnimationFrame(() => { try { at.scrollIntoView({ block: "center", behavior: "smooth" }); } catch {} }); };
+  // the draft: text fields kept for this tab (a stray tap or a reload doesn't eat them); the logo stays in memory
+  const DKEY = "dc.draft", FIELDS = ["name", "symbol", "description", "twitter", "telegram", "website"];
+  const dirty = () => !!f.logoData || FIELDS.some((k) => String(q(k).value || "").trim());
+  try { const u = new URLSearchParams(location.search), from = u.get("launch") ? { name: u.get("n"), symbol: u.get("s"), description: u.get("d"), twitter: u.get("x"), telegram: u.get("tg"), website: u.get("w") } : null;
+    const d = from || JSON.parse(sessionStorage.getItem(DKEY) || "null"); let any = false;
+    if (d) for (const k of FIELDS) if (d[k]) { q(k).value = String(d[k]).slice(0, k === "description" ? 500 : 200); any = true; }
+    if (DRAFT.logo) { f.logoData = DRAFT.logo; q("pv").innerHTML = `<img src="${DRAFT.logo}" alt="">`; any = true; }
+    if (any) { const r = document.createElement("p"); r.className = "ls-draft"; r.innerHTML = `${esc(t("lsDraft", "Draft restored"))} · <button type="button">${esc(t("lsClear", "Clear"))}</button>`; q("nowal").after(r);
+      r.querySelector("button").onclick = () => { FIELDS.forEach((k) => (q(k).value = "")); f.logoData = DRAFT.logo = ""; q("pv").textContent = "+"; try { sessionStorage.removeItem(DKEY); } catch {} r.remove(); prev(); }; }
+  } catch {}
+  sh.addEventListener("input", () => { try { const d = {}; FIELDS.forEach((k) => (d[k] = q(k).value)); sessionStorage.setItem(DKEY, JSON.stringify(d)); } catch {} });
+  // links: "Https://X.com/me" or "x.com/me" both become https://x.com/me
+  for (const k of ["twitter", "telegram", "website"]) q(k).addEventListener("blur", () => { const v = q(k).value.trim(); if (!v) return; q(k).value = /^https?:\/\//i.test(v) ? v.replace(/^https?:\/\//i, "https://") : "https://" + v.replace(/^\/+/, ""); });
+  sol().then((S) => { if (!S || S.key || !S.mobile() || (S.providers && S.providers().length)) return; const box = q("nowal"); if (!box) return;
+    const go = (n) => { const u = new URLSearchParams({ launch: "1" }); const vals = { n: "name", s: "symbol", d: "description", x: "twitter", tg: "telegram", w: "website" };
+      for (const [a, k] of Object.entries(vals)) { const v = String(q(k).value || "").trim(); if (v) u.set(a, v.slice(0, 300)); }
+      const here = encodeURIComponent(location.origin + "/?" + u.toString()), ref = encodeURIComponent(location.origin);
+      return n === "Solflare" ? `https://solflare.com/ul/v1/browse/${here}?ref=${ref}` : `https://phantom.app/ul/browse/${here}?ref=${ref}`; };
+    box.innerHTML = `<b>${esc(t("lsNoWalH", "To sign, open this page in your wallet app"))}</b><small>${esc(t("lsNoWalP", "Your phone's browser has no Solana wallet. What you type here comes along (add the logo there)."))}</small><div>${["Phantom", "Solflare"].map((n) => `<a class="btn ghost" data-open="${n}" href="#">${n} ↗</a>`).join("")}</div>`;
+    box.hidden = false; box.onclick = (e) => { const a = e.target.closest("[data-open]"); if (!a) return; e.preventDefault(); location.href = go(a.dataset.open); };
+  }).catch(() => {});
   q("close").onclick = q("x").onclick = () => { try { grind.stop && grind.stop(); } catch {} sh.hidden = true; document.removeEventListener("keydown", esc0); };
   const esc0 = (e) => { if (e.key === "Escape" && !busy) q("close").onclick(); }; document.addEventListener("keydown", esc0);
-  sh.onclick = (e) => { if (e.target === sh && !busy) q("close").onclick(); };
+  sh.onclick = (e) => { if (e.target === sh && !busy && !dirty()) q("close").onclick(); };
   const buyline = () => { const u = f.quote ? f.quote.id : "SOL";
     q("buyline").textContent = f.dev > 0 ? (f.quote ? `Buys your coin with ${f.dev} ${u} in the very next transaction — you sign both at once.` : `≈ ${pctForSol(f.dev).toFixed(2)}% ${t("lsBuyPct", "of the supply for")} ${f.dev} SOL`) : t("lsBuyNone", "Leave it empty for no first buy."); };
   q("devsol").oninput = (e) => { const v = Math.max(0, Math.min(f.quote ? 1000 : 50, parseFloat(e.target.value) || 0)); f.dev = Math.round(v * 1e6) / 1e6; buyline(); };
@@ -85,7 +110,7 @@ export function openDrop(o = {}) {
       const m = Math.min(img.width, img.height), d = Math.min(512, m), c = document.createElement("canvas"); c.width = c.height = d;
       c.getContext("2d").drawImage(img, (img.width - m) / 2, (img.height - m) / 2, m, m, 0, 0, d, d);
       let data = c.toDataURL("image/webp", 0.86); if (!data.startsWith("data:image/webp")) data = c.toDataURL("image/png");
-      f.logoData = data; q("pv").innerHTML = `<img src="${data}" alt="">`; q("lmsg").textContent = t("lsReady", "ready"); err(""); prev();
+      f.logoData = DRAFT.logo = data; q("pv").innerHTML = `<img src="${data}" alt="">`; q("lmsg").textContent = t("lsReady", "ready"); err(""); prev();
     } catch (x) { err(String((x && x.message) || x)); }
   };
   const STEPS = [["find", CFG.suffix ? `${t("stFind", "Find an address ending in")} ${CFG.suffix}` : t("stMake", "Make the coin's address")], ["host", t("stHost", "Host the logo and details")], ["sign", t("stSign", "Sign the launch")], ["launch", t("lsGo", "Launch on pump.fun")], ["split", t("stSplit", "Lock the fee split")], ["list", t("stList", "Move into the city")]];
@@ -96,12 +121,13 @@ export function openDrop(o = {}) {
     if (busy) return;
     const v = (k) => String(q(k).value || "").trim();
     const F = { name: v("name"), symbol: v("symbol"), description: v("description"), twitter: v("twitter"), telegram: v("telegram"), website: v("website") };
-    if (!F.name || !F.symbol) return err("A name and a ticker are needed.");
-    if (!f.logoData) return err("Add a logo.");
-    for (const k of ["twitter", "telegram", "website"]) if (F[k] && !/^https:\/\/\S+$/.test(F[k])) return err("Links must start with https://");
+    if (!F.name) return err(t("lsErrName", "A name is needed."), "name");
+    if (!F.symbol) return err(t("lsErrTick", "A ticker is needed."), "symbol");
+    if (!f.logoData) return err(t("lsErrLogo", "Add a logo."), "file");
+    for (const k of ["twitter", "telegram", "website"]) if (F[k] && !/^https:\/\/\S+$/.test(F[k])) return err(t("lsErrLink", "Links must start with https://"), k);
     if (!CFG.open && !DEMO) return err(CFG.why || "The city isn't open yet.");
-    const S = await sol(); if (!S) return err("No Solana wallet found — open this page in Phantom or Solflare.");
-    if (!S.key) { await openWallet(); o.paintWallet && o.paintWallet(); if (!S.key) return err("Connect a wallet to launch."); }
+    const S = await sol(); if (!S) return err(t("lsErrNoWal", "No Solana wallet found — open this page in Phantom or Solflare."));
+    if (!S.key) { await openWallet(); o.paintWallet && o.paintWallet(); if (!S.key) return err(t("lsErrConn", "Connect a wallet to launch.")); }
     // pump.fun's fee split can't hold one wallet twice: the vault, the buyer and the agent can't be a coin's creator
     const role = S.key === CFG.vault ? "THE VAULT's wallet" : S.key === CFG.buyer ? `the wallet that buys $${CFG.ticker}` : S.key === CFG.agent ? "the agent's wallet" : "";
     if (role) return err(`This is ${role} — it already gets a share of every coin, so it can't be the creator too. Switch to another wallet (a new account in Phantom works) and launch from there.`);
@@ -110,6 +136,7 @@ export function openDrop(o = {}) {
     if (new Set([S.key, ...crew]).size !== crew.length + 1) return err("Each crew wallet must be different (and not your own).");
     if (crew.some((a) => a === CFG.vault || a === CFG.buyer || a === CFG.agent)) return err("THE VAULT, the buyer and the agent can't be in a crew — they already get their share.");
     busy = true; err(""); q("go").disabled = true; q("steps").hidden = false;
+    requestAnimationFrame(() => { try { q("steps").scrollIntoView({ block: "center", behavior: "smooth" }); } catch {} });
     q("steps").innerHTML = STEPS.map(([k, t]) => `<li data-s="${k}"><i></i><span>${esc(t)}<small></small></span></li>`).join("");
     let cur = "find", g0 = null;
     try {
@@ -180,7 +207,7 @@ export function openDrop(o = {}) {
         if (k === "ca" || k === "link") { const v = k === "ca" ? g.pub : `${location.origin}/coin/${g.pub}`; try { await navigator.clipboard.writeText(v); note(t("kitCopied", "Copied.")); } catch { note(v, 6000); } }
         if (k === "mug") { b.disabled = true; try { const r = await (await import("/mugshot.js")).shareMugshot(coinNow, CFG); if (r === "downloaded") note(t("kitMugSaved", "Mugshot saved.")); } catch { note("Couldn't make the mugshot."); } b.disabled = false; } };
       sh.querySelector(".sub").innerHTML = `<b style="color:var(--lime)">$${esc(F.symbol)} is live.</b> Its tower is going up in the city.`; burst(sh.firstChild);
-      note(`$${F.symbol} launched — welcome to the city.`, 5000); o.onDone && o.onDone();
+      note(`$${F.symbol} launched — welcome to the city.`, 5000); o.onDone && o.onDone(); try { sessionStorage.removeItem(DKEY); } catch {} DRAFT.logo = "";
     } catch (x) {
       step(cur, "bad"); err(why(x)); logsBox(q("err"), x);
       busy = false; q("go").disabled = false;

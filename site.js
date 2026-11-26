@@ -57,8 +57,9 @@ async function start() {
   if (location.hash.length > 1) route(location.hash, false);
   afterIntro(() => { if (location.hash.length > 1 && !touched) route(location.hash, false); });
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { if (location.hash.length > 1 && !touched && introGone()) route(location.hash, false); });
-  if (window.__COIN) setTimeout(() => openCoin(window.__COIN), 300);
-  const q = new URLSearchParams(location.search).get("coin"); if (q) setTimeout(() => openCoin(q), 300);
+  if (new URLSearchParams(location.search).get("launch")) setTimeout(drop, 400);
+  const want = window.__COIN || new URLSearchParams(location.search).get("coin");
+  if (want) setTimeout(() => { if (coins.some((x) => x.mint === want)) return openCoin(want); setTimeout(async () => { await refresh().catch(() => {}); if (coins.some((x) => x.mint === want)) openCoin(want); else notListed(want); }, 4000); }, 300);
 }
 setInterval(refresh, 20e3); setInterval(() => { paintHour(); tickVote(); takeoverTick(slot, coins); }, 1000);
 /// a trade lands: its card pulses, and the THIS HOUR tab shows a dot while another tab is open
@@ -100,14 +101,14 @@ function paintMain() {
     <div class="mc-h">${c ? pic(c) : `<span class="ini">${esc(String(sym).slice(0, 3))}</span>`}<div class="mc-id"><b>$${esc(sym)}</b><small>${esc(c ? c.name : CFG.name)}</small></div>
       <a class="btn hot mc-buy" href="${buy}" target="_blank" rel="noopener">${esc(t("buy", "Buy"))}</a>
       <button type="button" class="mc-more" id="mc-more" aria-controls="mainc" aria-expanded="${UI.mcOpen}" aria-label="${esc(UI.mcOpen ? t("mcLess", "Less") : t("mcMore", "More about the main coin"))}"><i aria-hidden="true"></i></button></div>
-    <div class="mc-n"><div><b>${usd(c && c.mcapUsd)}</b><small>${esc(t("lMcap", "Market cap"))}</small></div><div><b>${c && c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>${esc(t("lPrice", "Price"))}</small></div><div><b>${c ? (isSup(c) ? esc(t("lSup", "Supported")) : c.graduated ? esc(t("lMade", "MADE")) : prog.toFixed(1) + "%") : "–"}</b><small>${esc(isSup(c) ? t("lNotHere", "Not launched here") : c && c.graduated ? t("lGrad", "Graduated") : t("lCurve", "Bonding curve"))}</small></div></div>
+    <div class="mc-n"><div><b>${usd(c && c.mcapUsd)}</b><small>${esc(t("lMcap", "Market cap"))}</small></div><div><b>${pxFmt(c && c.priceUsd)}</b><small>${esc(t("lPrice", "Price"))}</small></div><div><b>${c ? (isSup(c) ? esc(t("lSup", "Supported")) : c.graduated ? esc(t("lMade", "MADE")) : prog.toFixed(1) + "%") : "–"}</b><small>${esc(isSup(c) ? t("lNotHere", "Not launched here") : c && c.graduated ? t("lGrad", "Graduated") : t("lCurve", "Bonding curve"))}</small></div></div>
     <div class="mc-sp" id="mc-sp">${sparkHtml()}</div>
     <div class="bar mc-bar"><i style="width:${Math.max(2, prog)}%"></i></div>
     <button type="button" class="mc-ca" id="mc-ca" title="${esc(t("copyCa", "Copy the address"))}"><code><span class="ca-h">${esc(m.slice(0, -8))}</span><span class="ca-t">${caHtml(m).slice(esc(m.slice(0, -8)).length)}</span></code><span>${esc(t("copy", "COPY"))}</span></button>
     <p class="mc-p">${esc(tf("mcP3", "Every platform launch buys it with {p}% of its fees. Its own creator fees go 100% to the dev.", { p: CFG.split.buyer / 100 }))}</p>
     <div class="mc-a"><a class="btn hot" href="${buy}" target="_blank" rel="noopener">${esc(t("buy", "Buy"))} $${esc(sym)}</a><a class="btn ghost" href="https://dexscreener.com/solana/${esc(m)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a class="btn ghost" href="${city}">${esc(t("cGame", "Game"))}</a></div>`;
   el.classList.toggle("open", UI.mcOpen);
-  $("mc-ca").onclick = async () => { try { await navigator.clipboard.writeText(m); note(t("copied", "Address copied.")); } catch { note(m, 6000); } };
+  $("mc-ca").onclick = () => copyCA($("mc-ca"), m, false);
   $("mc-more").onclick = () => { UI.mcOpen = !UI.mcOpen; paintMain(); };
   readSpark(m);
 }
@@ -188,7 +189,7 @@ $("gmore").onclick = () => {
   if (!UI.all) { const ex = $("explore"); if (ex.getBoundingClientRect().top < 0) jump(ex, false); } // folding up shouldn't leave the visitor in the footer
 };
 /// how many cards show before "Show all": two rows, three on a two-column phone grid
-function capNow() { const cols = getComputedStyle($("grid")).gridTemplateColumns.split(" ").filter(Boolean).length || 2; return cols * (cols <= 2 ? 3 : 2); }
+function capNow() { const cols = getComputedStyle($("grid")).gridTemplateColumns.split(" ").filter(Boolean).length || 2; return document.documentElement.dataset.page === "explore" ? (cols <= 2 ? 12 : cols * 4) : cols * (cols <= 2 ? 3 : 2); }
 function paintGrid() {
   let list = coins.filter((c) => !S.q || [c.name, c.symbol, c.mint].some((v) => String(v || "").toLowerCase().includes(S.q)));
   if (S.filt === "drops") list = list.filter((c) => c.kind === "drop");
@@ -251,15 +252,15 @@ function paintFees() {
 
 // ---------------- CREATORS: your drops and their fees
 let paintWallet = async () => {};
-walletButton($("wallet"), (key) => { paintMe(); paintVote(CFG); paintCorner({ key, coins, CFG, openCoin, openSlot }).catch(() => {}); }).then((f) => (paintWallet = f));
+walletButton($("wallet"), (key) => { paintMe(); paintVote(CFG); paintCorner({ key, coins, CFG, openCoin, openSlot }).catch(() => {}); const pg = document.documentElement.dataset.page; if (pg === "nft" || pg === "lp" || pg === "prof") paintPage(pg); }).then((f) => (paintWallet = f));
 async function paintMe() {
   const W = await sol(), el = $("me");
   if (!W || !W.key) { el.innerHTML = `<div class="me-box"><p class="me-p">${esc(t("meConnectP", "Connect the wallet you launch from to see your drops and the fees they've earned."))}</p><button type="button" class="btn hot" id="me-c">${esc(t("connect", "Connect wallet"))}</button></div>`; $("me-c").onclick = () => $("wallet").click(); return; }
   const mine = coins.filter((c) => c.creator === W.key);
   const earned = mine.reduce((a, c) => a + (c.feesWaitingSol || 0), 0);
   const keep = document.activeElement && document.activeElement.id === "fix-m" ? $("fix-m").value : null; // a repaint never eats an address being typed
-  el.innerHTML = `<div class="me-box"><div class="me-n"><div><b>${mine.length}</b><small>${esc(t("meDrops", "your drops"))}</small></div><div><b>${earned.toFixed(4)} SOL</b><small>${esc(t("meFees", "fees waiting (all shares)"))}</small></div><div><b>${(CFG.split.creator / 100)}%</b><small>${esc(t("meShare", "your share"))}</small></div><div><b>${esc(t("meOpen", "OPEN"))}</b><small>${esc(t("meLaunching", "launching"))}</small></div></div>
-    ${mine.length ? `<div class="my">${mine.map((c) => `<div class="r">${pic(c)}<span><b>$${esc(c.symbol)}</b> ${esc(c.name)}<br><small>${usd(c.mcapUsd)} · ${c.graduated ? "made" : `curve ${(c.progress || 0).toFixed(0)}%`} · ${(c.quote ? c.feesWaiting || 0 : c.feesWaitingSol || 0).toFixed(4)} ${c.quote ? esc(c.quote.id) : "SOL"} waiting</small></span><button type="button" class="btn cy" data-pay="${esc(c.mint)}" ${!c.noSplit && (c.quote ? c.feesWaiting || 0 : c.feesWaitingSol || 0) > 0.0001 ? "" : "disabled"}>${esc(t("payOut", "Pay out fees"))}</button><a class="btn ghost" href="/city?coin=${esc(c.mint)}">${esc(t("inCity", "In the city"))}</a></div>`).join("")}</div>` : `<p class="me-p">${esc(t("meNone", "No coins from this wallet yet. Launch one any time."))}</p><button type="button" class="btn hot" data-drop2>${esc(t("dropCoin", "Drop a coin"))}</button>`}
+  el.innerHTML = `<div class="me-box"><div class="me-n"><div class="me-lead"><b>${(earned * CFG.split.creator / 10000).toFixed(4)} <i>SOL</i></b><small>${esc(t("meMine", "your share waiting"))} · ${esc(tf("meAll", "{v} SOL for every share", { v: earned.toFixed(4) }))}</small></div><div><b>${mine.length}</b><small>${esc(t("meCoins", "your coins"))}</small></div><div><b>${(CFG.split.creator / 100)}%</b><small>${esc(t("meShare", "your share"))}</small></div></div>
+    ${mine.length ? `<div class="my">${mine.map((c) => `<div class="r">${pic(c)}<span><b>$${esc(c.symbol)}</b> ${esc(c.name)}<br><small>${usd(c.mcapUsd)} · ${c.graduated ? esc(t("lMade", "MADE")) : `${esc(t("cCurve", "curve"))} ${(c.progress || 0).toFixed(0)}%`} · ${(c.quote ? c.feesWaiting || 0 : c.feesWaitingSol || 0).toFixed(4)} ${c.quote ? esc(c.quote.id) : "SOL"} ${esc(t("meWait", "waiting"))}</small></span><button type="button" class="btn cy" data-pay="${esc(c.mint)}" ${!c.noSplit && (c.quote ? c.feesWaiting || 0 : c.feesWaitingSol || 0) > 0.0001 ? "" : "disabled"}>${esc(t("payOut", "Pay out fees"))}</button><a class="btn ghost" href="/city?coin=${esc(c.mint)}">${esc(t("inCity", "In the city"))}</a></div>`).join("")}</div>` : `<p class="me-p">${esc(t("meNone", "No coins from this wallet yet. Launch one any time."))}</p><button type="button" class="btn hot" data-drop2>${esc(t("dropCoin", "Drop a coin"))}</button>`}
     <div class="fix"><b>${esc(t("fixH", "Launched but not in the city?"))}</b> ${esc(t("fixP", "If the page closed or the fee split didn't lock, paste the coin's address — the wallet that launched it finishes the split and lists it."))}<div class="fix-row"><input id="fix-m" placeholder="${esc(t("caPh", "Coin address"))}" aria-label="${esc(t("caPh", "Coin address"))}" autocomplete="off"><button type="button" class="btn ghost" id="fix-go">${esc(t("fixGo", "Check & finish"))}</button></div><p class="err" id="fix-err" hidden></p></div>
     <p class="fine">${esc(tf("meFine", "Paying out sends every share at once — {c}% to you, {v}% to the vault, {b}% to the buyer — straight from pump.fun's fee program. Anyone may press it; the split can't change.", { c: CFG.split.creator / 100, v: CFG.split.vault / 100, b: CFG.split.buyer / 100 }))}</p></div>`;
   if (keep != null) { const i = $("fix-m"); i.value = keep; i.focus(); }
@@ -467,13 +468,30 @@ $("grid").addEventListener("click", (e) => { if (e.target.closest("a")) return; 
 // a nav at a different height (bigger text, a wrap) moves the sticky ticker with it
 const navH = () => html.style.setProperty("--navh", $("nav").offsetHeight + "px");
 navH(); addEventListener("resize", navH); if (document.fonts && document.fonts.ready) document.fonts.ready.then(navH);
+/// a tiny price the way traders write it: $0.0₅840 (five zeros after the point)
+function pxFmt(p) { if (!p) return "–"; if (p >= 0.0001) return "$" + p.toPrecision(3); const z = Math.floor(-Math.log10(p)), sub = String(z).split("").map((d) => "₀₁₂₃₄₅₆₇₈₉"[d]).join(""); return "$0.0" + sub + String(Math.floor(p * 10 ** (z + 3))).slice(0, 3); }
+/// copy a CA: the button itself answers (a check + Copied), and where the clipboard is blocked the address shows to copy by hand
+async function copyCA(btn, text, swap = true) { let ok = false; try { await navigator.clipboard.writeText(text); ok = true; } catch { try { const ta = document.createElement("textarea"); ta.value = text; ta.setAttribute("readonly", ""); ta.style.cssText = "position:fixed;opacity:0"; document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); ta.parentNode.removeChild(ta); } catch {} }
+  if (!ok) return note(text, 8000); note(t("copied", "Address copied."));
+  if (btn && !swap) { btn.classList.remove("copied"); void btn.offsetWidth; btn.classList.add("copied"); setTimeout(() => btn.classList.remove("copied"), 900); }
+  else if (btn) { if (!btn.dataset.lbl) btn.dataset.lbl = btn.innerHTML; btn.classList.add("copied"); btn.innerHTML = ic("check") + " " + esc(t("copiedS", "Copied")); clearTimeout(btn._ct); btn._ct = setTimeout(() => { btn.innerHTML = btn.dataset.lbl; btn.classList.remove("copied"); }, 1400); } }
+/// "3h ago" in the reader's words
+function agoTxt(s) { const m = Math.max(1, Math.round((Date.now() / 1000 - s) / 60)); return m < 60 ? tf("agoM", "{n}m ago", { n: m }) : m < 1440 ? tf("agoH", "{n}h ago", { n: Math.round(m / 60) }) : tf("agoD", "{n}d ago", { n: Math.round(m / 1440) }); }
+/// a shared link to a coin the city doesn't list (yet): say so, and offer the CA check / pump.fun
+function notListed(m) {
+  const el = $("cmodal");
+  el.innerHTML = `<div class="cm-card cm-miss"><button type="button" class="wm-x" aria-label="Close">×</button><div class="cm-in"><h2>${esc(t("nlH", "This coin isn't in the city (yet)"))}</h2><p class="addr"><code>${esc(m)}</code></p><p class="fine">${esc(t("nlP", "It may have just launched, or it was launched somewhere else. Check it here, or look it up on pump.fun."))}</p><div class="nl-a"><a class="btn hot" href="#check" data-nl>${esc(t("nlCheck", "Check this CA"))}</a><a class="btn ghost" href="https://pump.fun/coin/${esc(m)}" target="_blank" rel="noopener">pump.fun ↗</a></div></div></div>`;
+  el.hidden = false;
+  el.onclick = (e) => { if (e.target === el || e.target.closest(".wm-x")) { el.hidden = true; return; } if (e.target.closest("[data-nl]")) { el.hidden = true; setTimeout(() => { const i = $("ck-m"); if (i) { i.value = m; const g = $("ck-go"); if (g) g.click(); } }, 150); } };
+}
 function openCoin(mint) {
   const c = coins.find((x) => x.mint === mint); if (!c) return;
-  const el = $("cmodal"), share = encodeURIComponent(`$${c.symbol} — ${c.kind === "drop" ? `the ${c.hour.slice(11, 13)}:00 drop` : "launched"} in the city. CA ends in ${CFG.suffix || ""}.\n`), link = encodeURIComponent(`${location.origin}/coin/${c.mint}`);
+  const sup = c.kind === "partner", sfx = CFG.suffix && c.mint.endsWith(CFG.suffix) ? ` CA ends in ${CFG.suffix}.` : "";
+  const share = encodeURIComponent(sup ? `$${c.symbol} — supported by ${CFG.name || "GTAFUN"}.\n` : `$${c.symbol} — ${c.kind === "drop" ? `the ${c.hour.slice(11, 13)}:00 drop` : "launched"} in ${CFG.name || "the city"}.${sfx}\n`), el = $("cmodal"), link = encodeURIComponent(`${location.origin}/coin/${c.mint}`);
   el.innerHTML = `<div class="cm-card"><button type="button" class="wm-x" aria-label="Close">×</button><div class="poster"><span class="tag">${esc(c.mint === CFG.main ? t("mcTag", "THE MAIN COIN") : c.kind === "drop" ? t("tagDrop", "HOURLY DROP") : c.kind === "partner" ? t("tagSup", "SUPPORTED") : t("tagUser", "WANTED"))}</span>${pic(c)}</div><div class="cm-in">
     <h2>${esc(c.name)}</h2><span class="sym" style="color:var(--hot);font:700 13px var(--mono)">$${esc(c.symbol)}</span>${c.quote ? `<span class="qtag">${esc(c.quote.id)} PAIR</span>` : ""} <span class="stars">${stars(c)}</span>
     <p class="addr">${caHtml(c.mint)}</p>
-    <div class="kv"><div><b>${usd(c.mcapUsd)}</b><small>${esc(t("lMcap", "Market cap"))}</small></div><div><b>${c.priceUsd ? "$" + c.priceUsd.toPrecision(3) : "–"}</b><small>${esc(t("lPrice", "Price"))}</small></div><div><b>${c.hour ? c.hour.slice(5, 10).replace("-", "/") + " " + c.hour.slice(11, 13) + ":00" : "–"}</b><small>${esc(t("cmWhen", "Dropped (UTC)"))}</small></div><div><b>${c.kind === "drop" ? "AGENT" : c.creator ? `<button type="button" class="creator-link" data-creator="${esc(c.creator)}">${esc(short(c.creator))}</button>` : "–"}</b><small>${esc(c.kind === "drop" ? t("cmDrop", "The hourly drop") : t("cmCre", "Creator"))}</small></div></div>
+    <div class="kv${sup ? " kv3" : ""}"><div><b>${usd(c.mcapUsd)}</b><small>${esc(t("lMcap", "Market cap"))}</small></div><div><b>${pxFmt(c.priceUsd)}</b><small>${esc(t("lPrice", "Price"))}</small></div>${sup ? `<div><b>${esc(t("lSup", "Supported"))}</b><small>${esc(t("cmNotHere", "not launched here"))}</small></div>` : c.hour ? `<div><b>${c.hour.slice(5, 10).replace("-", "/") + " " + c.hour.slice(11, 13) + ":00"}</b><small>${esc(t("cmWhen", "Dropped (UTC)"))}</small></div>` : `<div title="${c.launchedAt ? esc(new Date(c.launchedAt * 1000).toISOString().slice(0, 16).replace("T", " ") + " UTC") : ""}"><b>${c.launchedAt ? esc(agoTxt(c.launchedAt)) : "–"}</b><small>${esc(t("cmLaunched", "Launched"))}</small></div>`}${sup ? "" : `<div><b>${c.kind === "drop" ? "AGENT" : c.creator ? `<button type="button" class="creator-link" data-creator="${esc(c.creator)}">${esc(short(c.creator))}</button>` : "–"}</b><small>${esc(c.kind === "drop" ? t("cmDrop", "The hourly drop") : t("cmCre", "Creator"))}</small></div>`}</div>
     ${c.kind === "partner" ? `<small style="color:var(--dim)">${esc(t("cSupLine", "Supported by the city · not launched here"))}</small>` : `<div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small style="color:var(--dim)">${c.graduated ? esc(t("cGradTo", "graduated to PumpSwap")) : `${esc(t("cmCurve", "bonding curve"))} ${(c.progress || 0).toFixed(1)}%`}</small>`}
     <div class="cm-tabs" role="tablist"><button type="button" class="on" data-ct="ov">${esc(t("ctOv", "Overview"))}</button><button type="button" data-ct="chart">${esc(t("cxChart", "Chart"))}</button><button type="button" data-ct="safe">${esc(t("ctSafe", "Safety"))}</button><button type="button" data-ct="tr">${esc(t("ctTr", "Trades"))}</button></div>
     <div class="cm-pane" data-pane="chart" hidden><div class="cx-chart"></div></div>
@@ -481,15 +499,15 @@ function openCoin(mint) {
     <div class="cm-pane" data-pane="tr" hidden><div id="cm-trd"><p class="fine">${esc(t("ctLoading", "Reading the chain…"))}</p></div></div>
     <div class="cm-pane" data-pane="ov">${extrasHtml(c)}
     ${c.raid ? `<div class="raid"><b>${ic("siren")} ${esc(t("raidH", "POLICE RAID"))}</b><span>${esc(tf("raidP", "Its creator sold {s} SOL of it {h} h ago — seen on chain. The tape comes down after a day without another sale.", { s: Number(c.raid.sol).toFixed(c.raid.sol < 1 ? 3 : 2), h: Math.max(1, Math.round((Date.now() - c.raid.at) / 3600e3)) }))}</span></div>` : ""}
-    ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}${feeBox(c, CFG)}
-    <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cmTower", "Tower"))}</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">${esc(t("cmShare", "Share"))}</a><button type="button" data-copy>${esc(t("cmCopy", "Copy CA"))}</button><button type="button" data-mug>📸 ${esc(t("cmMug", "Mugshot"))}</button></div>
+    ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}${sup ? `<p class="fine">${esc(t("cmSupFees", "No creator fees flow to the city from this coin — it's on our reels and pinned in Explore because the city supports it."))}</p>` : feeBox(c, CFG)}
+    <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cmTower", "Tower"))}</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">${esc(t("cmShare", "Share"))}</a><button type="button" data-copy>${esc(t("cmCopy", "Copy CA"))}</button><button type="button" data-mug>${ic("camera")} ${esc(t("cmMug", "Mugshot"))}</button></div>
     ${[c.twitter, c.telegram, c.website].filter(Boolean).length ? `<p style="margin:12px 0 0;font-size:13px">${[["X", c.twitter], ["Telegram", c.telegram], ["Website", c.website]].filter((x) => x[1]).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n} ↗</a>`).join(" · ")}</p>` : ""}</div></div></div>`;
   el.hidden = false;
   const close = () => { el.hidden = true; document.removeEventListener("keydown", k); }, k = (e) => { if (e.key === "Escape") close(); };
   document.addEventListener("keydown", k);
-  el.onclick = async (e) => { if (e.target === el || e.target.closest(".wm-x")) return close(); const cr = e.target.closest("[data-creator]"); if (cr) return openCreator(cr.dataset.creator, coins, openCoin); if (e.target.closest("[data-copy]")) { try { await navigator.clipboard.writeText(c.mint); note("Address copied"); } catch {} }
+  el.onclick = async (e) => { if (e.target === el || e.target.closest(".wm-x")) return close(); const cr = e.target.closest("[data-creator]"); if (cr) return openCreator(cr.dataset.creator, coins, openCoin); if (e.target.closest("[data-copy]")) { copyCA(e.target.closest("[data-copy]"), c.mint); }
     const mg = e.target.closest("[data-mug]"); if (mg) { mg.disabled = true; try { const r = await (await import("/mugshot.js")).shareMugshot(c, CFG); if (r === "downloaded") note("Mugshot saved."); } catch { note("Couldn't make the mugshot."); } mg.disabled = false; } };
-  wireFees(el, c, CFG, refresh); wireExtras(el, c);
+  if (!sup) wireFees(el, c, CFG, refresh); wireExtras(el, c);
   // the tabs: Overview · Chart (made on first open) · Safety (grade + holders) · Trades
   el.querySelector(".cm-tabs").onclick = (e) => { const b = e.target.closest("[data-ct]"); if (!b) return; e.stopPropagation(); const k = b.dataset.ct;
     el.querySelectorAll("[data-ct]").forEach((x) => x.classList.toggle("on", x === b)); el.querySelectorAll(".cm-pane").forEach((p) => (p.hidden = p.dataset.pane !== k));

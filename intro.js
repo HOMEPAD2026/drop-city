@@ -31,7 +31,7 @@ const clamp = (x, a = 0, b = 1) => Math.max(a, Math.min(b, x));
 const ease = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
 const img = (src) => new Promise((res) => { const i = new Image(); i.decoding = "async"; i.onload = () => res(i); i.onerror = () => res(null); i.src = src; });
 // a shared link goes straight to what it points at (the owner, 2026-11-26)
-const DEEP = location.hash.length > 1 || /[?&]coin=/.test(location.search) || /^\/(coin|w)\//.test(location.pathname) || /^\/(nft|lp)\/?$/.test(location.pathname);
+const DEEP = location.hash.length > 1 || /[?&](coin|launch)=/.test(location.search) || /^\/(coin|w)\//.test(location.pathname) || /^\/(nft|lp)\/?$/.test(location.pathname);
 
 
 // ---- sound: off unless the visitor turns it on here (or did before on this site: dc.snd = "1")
