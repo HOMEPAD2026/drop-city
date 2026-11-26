@@ -138,6 +138,10 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   + rank + invites, LP rewards, cards, and the badges BADGES — first launch, five launches, made it, cashback, top 10,
   recruiter, crew boss, liquidity, collector, full set; nothing new stored). The wallet window links My profile; the creator
   window links the profile; your own profile shows the slot title kept on the device.
+- **ONE stylesheet (2026-11-26):** the home page loads site.min.css, built by `node tools/build-css.mjs` from pad.css +
+  site → game → premium → cards → street → clean → motion (that cascade order, comments out, whitespace squeezed); the
+  script also stamps index.html's ?v= hash. Edit the source sheets, then rebuild — tests/css.test.mjs fails on a stale
+  build. city.html still loads its own sheets.
 - **Speed (2026-11-25):** the home page never loads the 1 MB Solana kit (vendor/pump-kit.js) — balances on first paint go
   through common.js rpc1 (one JSON-RPC call through ?solrpc); kit() loads only when a wallet action needs it. Inter is
   gone (Barlow Condensed reads everywhere).
