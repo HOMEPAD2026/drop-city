@@ -2,9 +2,10 @@
 // pays it out. A coin launched on the platform pays out to every shareholder at once (anyone may press it — pump.fun's
 // fee program sends each share where the locked split says). A coin without a split (the main coin) is claimed by its
 // creator's own wallet. Used by the website's coin window and the city's coin card.
-import { $, esc, short, sleep, note, DEMO, sol, kit, conn } from "/common.js";
+import { $, esc, short, sleep, note, DEMO, sol, kit, conn, rpc1 } from "/common.js";
 import { t } from "/i18n.js";
 import { openWallet } from "/wallet.js";
+import { ic } from "/icons.js";
 
 const RENT = 890880; // lamports a vault keeps
 const fmt = (x) => (x >= 1 ? x.toFixed(3) : x >= 0.001 ? x.toFixed(4) : x > 0 ? x.toFixed(6) : "0");
@@ -13,7 +14,7 @@ export function feeBox(c, CFG) {
   const s = CFG.split || { creator: 6000, vault: 3000, buyer: 1000 }, main = c.mint === CFG.main;
   const rows = c.noSplit || main ? `<div class="fb-r"><span>${main ? esc(t("fbDev", "The dev (100%)")) : esc(t("fbCre", "The creator (100%)"))}</span><b data-fb="all">…</b></div>`
     : [...(c.crew ? c.crew.map((m, i) => [`${i === 0 && m.address === c.creator ? "Crew lead" : "Crew"} ${esc(short(m.address))}`, m.bps]) : [[c.kind === "drop" ? "The agent → THE VAULT" : "The creator", s.creator]]), ["THE VAULT", s.vault], [`Buys $${esc(CFG.ticker || "")}`, s.buyer]].map(([n, b], i) => `<div class="fb-r"><span>${n} <small>${b / 100}%</small></span><b data-fb="p${i}">…</b></div>`).join("");
-  return `<div class="fbox" data-fbox><div class="fb-h"><span class="mc-k">${esc(t("fbK", "CREATOR FEES"))}</span><button type="button" class="fb-re" data-fb="re" title="${esc(t("fbRe", "Read again"))}">↻</button></div>
+  return `<div class="fbox" data-fbox><div class="fb-h"><span class="mc-k">${esc(t("fbK", "CREATOR FEES"))}</span><button type="button" class="fb-re" data-fb="re" title="${esc(t("fbRe", "Read again"))}" aria-label="${esc(t("fbRe", "Read again"))}">${ic("refresh")}</button></div>
     <div class="fb-big"><b data-fb="sum">…</b> <small>${c.quote ? esc(c.quote.id) : "SOL"} ${esc(t("fbWait", "waiting"))}</small></div>
     <div class="fb-rows">${rows}</div>
     <button type="button" class="btn hot fb-go" data-fb="go" disabled>${c.noSplit || main ? esc(t("fbClaim", "Claim (creator only)")) : esc(t("fbPay", "Pay out to every share"))}</button>
@@ -34,8 +35,8 @@ export async function wireFees(root, c, CFG, onDone) {
   };
   const read = async () => {
     if (DEMO) return paint(Math.round(((c.quote ? c.feesWaiting : c.feesWaitingSol) || 0.0123) * D));
-    try { const K = await kit(), cn = await conn(), v = new K.PublicKey(c.vault);
-      paint(c.quote ? await cn.getTokenAccountBalance(v).then((r) => Number(r.value.amount)).catch(() => 0) : (await cn.getBalance(v)) - RENT); }
+    // one JSON-RPC call through the relay — the 1 MB Solana kit loads only when Pay out is pressed
+    try { paint(c.quote ? Number((await rpc1("getTokenAccountBalance", [c.vault, { commitment: "confirmed" }]).catch(() => ({ value: { amount: 0 } }))).value.amount) : (await rpc1("getBalance", [c.vault, { commitment: "confirmed" }])).value - RENT); }
     catch { paint(Math.round(((c.quote ? c.feesWaiting : c.feesWaitingSol) || 0) * D)); }
   };
   q("re").onclick = read;

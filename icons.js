@@ -23,6 +23,7 @@ const P = {
   up: '<path d="M6.5 14.5 12 9l5.5 5.5"/>',
   down: '<path d="M6.5 9.5 12 15l5.5-5.5"/>',
   bolt: '<path d="M13 2.8 5.5 13.2h5.2L10 21.2l7.5-10.4h-5.2Z"/>',
+  refresh: '<path d="M19.5 12a7.5 7.5 0 1 1-2.2-5.3"/><path d="M19.5 4.5v4.2h-4.2"/>',
   wallet: '<path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3"/><rect x="4" y="7.5" width="16.5" height="11.5" rx="2.5"/><circle cx="16.3" cy="13.2" r="1.2"/>',
 };
 const KINDS = { sun: 1, violet: 1, peach: 1, rose: 1, steel: 1 };

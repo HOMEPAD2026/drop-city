@@ -5,6 +5,7 @@ import { openWallet } from "/wallet.js";
 
 // ---------------- languages (the static page: data-i18n keys; the code: t(key, fallback) — the dictionary is /i18n.js)
 import { t, tf, lang, setLang } from "/i18n.js";
+import { medal } from "/icons.js";
 export { t, tf };
 // the English of each key is read from the page once (the first time it's seen), so switching back to English works
 const EN = {}, LANG_SELS = ["lang", "lang2", "lang3"];
@@ -109,10 +110,10 @@ export function paintRanks(coins, openCoin, openCreator) {
   const wanted = coins.slice().sort((a, b) => (b.mcapUsd || 0) - (a.mcapUsd || 0)).slice(0, 7);
   const by = new Map(); for (const c of coins) { if (c.kind === "drop" || c.kind === "partner") continue; const k = c.creator; const v = by.get(k) || { w: k, n: 0, mc: 0, made: 0, top: c }; v.n++; v.mc += c.mcapUsd || 0; v.made += c.graduated ? 1 : 0; if ((c.mcapUsd || 0) > (v.top.mcapUsd || 0)) v.top = c; by.set(k, v); }
   const creators = [...by.values()].sort((a, b) => b.mc - a.mc).slice(0, 7), made = coins.filter((c) => c.graduated && c.kind !== "partner").slice(0, 7);
-  const li = (c, i, right) => `<li data-m="${esc(c.mint)}"><span class="n">${i + 1}</span>${pic(c)}<span><b>$${esc(c.symbol)}</b></span><small>${right}</small></li>`;
+  const li = (c, i, right) => `<li data-m="${esc(c.mint)}">${i < 3 ? medal(i + 1) : `<span class="n">${i + 1}</span>`}${pic(c)}<span><b>$${esc(c.symbol)}</b></span><small>${right}</small></li>`;
   el.innerHTML = `<div class="rk-col"><h3>${t("rWanted", "MOST WANTED")}</h3><ol>${wanted.map((c, i) => li(c, i, usd(c.mcapUsd))).join("") || `<li>${t("rNone", "none yet")}</li>`}</ol></div>
-    <div class="rk-col"><h3>${t("rCreators", "TOP CREATORS")}</h3><ol>${creators.map((v, i) => `<li data-w="${esc(v.w)}"><span class="n">${i + 1}</span>${pic(v.top)}<span><b>${esc(short(v.w))}</b><br><small>${v.n} coins${v.made ? " · " + v.made + " made" : ""}</small></span><small>${usd(v.mc)}</small></li>`).join("") || `<li>${t("rNone", "none yet")}</li>`}</ol></div>
-    <div class="rk-col"><h3>${t("rMade", "HALL OF FAME")}</h3><ol>${made.map((c, i) => li(c, i, usd(c.mcapUsd))).join("") || `<li>${t("rNone", "none yet")}</li>`}</ol></div>`;
+    <div class="rk-col"><h3>${t("rCreators", "TOP CREATORS")}</h3><ol>${creators.map((v, i) => `<li data-w="${esc(v.w)}">${i < 3 ? medal(i + 1) : `<span class="n">${i + 1}</span>`}${pic(v.top)}<span><b>${esc(short(v.w))}</b><br><small>${esc(tf("rCoinsN", "{n} coins", { n: v.n }))}${v.made ? " · " + esc(tf("rMadeN", "{n} made", { n: v.made })) : ""}</small></span><small>${usd(v.mc)}</small></li>`).join("") || `<li>${t("rNone", "none yet")}</li>`}</ol></div>
+    <div class="rk-col"><h3>${t("rMade", "HALL OF FAME")}</h3><ol>${made.map((c, i) => li(c, i, usd(c.mcapUsd))).join("") || `<li class="rk-empty"><span>${esc(t("rFameNo", "No coin has graduated here yet — be the first."))}</span><a class="btn ghost" href="#launch">${esc(t("rFameGo", "Launch a coin ›"))}</a></li>`}</ol></div>`;
   el.querySelectorAll("[data-m]").forEach((x) => (x.onclick = () => openCoin(x.dataset.m)));
   el.querySelectorAll("[data-w]").forEach((x) => (x.onclick = () => openCreator(x.dataset.w)));
 }

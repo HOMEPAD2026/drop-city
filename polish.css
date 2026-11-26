@@ -118,3 +118,42 @@ html.win-open body { overflow: hidden !important; }
 @media (max-width: 760px) { .ct-g { grid-template-columns: 1fr; } }
 .cotd-b { position: absolute; left: 8px; bottom: 8px; z-index: 3; display: inline-flex; align-items: center; gap: 4px; padding: 4px 9px; border-radius: 999px; font-size: 10.5px; font-weight: 800; color: #2b1400; background: linear-gradient(135deg, #ffe08a, #ffb35c); box-shadow: 0 4px 14px rgba(255, 170, 70, 0.45); }
 .cotd-b .gi { width: 12px; height: 12px; }
+
+/* ---- K4: one design language ---- */
+/* the older sheets' names that VICE NIGHT never pointed at its colours */
+:root { --dim: var(--v-dim); --ink: var(--v-ink); --hair: var(--v-line); --line: var(--v-line2); --hot2: var(--v-pink2); --glass: rgba(18, 13, 30, 0.94); --st-gold: var(--v-pink); --st-gold2: var(--v-pink2);
+  --r-card: 20px; --r-in: 14px; --r-pill: 999px; }
+/* the main actions: the sunset, a touch deeper at its end so white reads on it */
+.btn.hot, .acts a.pri, .cx-buy, .bb-plus, .mc-buy { background: linear-gradient(100deg, #ee2f7d 0%, #f0446c 52%, #ef6550 100%) !important; color: #fff !important; text-shadow: 0 1px 2px rgba(90, 0, 30, 0.35); font-weight: 800 !important; border: 0 !important; }
+.cx-buy { border-radius: var(--r-pill) !important; box-shadow: 0 10px 26px rgba(255, 61, 139, 0.32) !important; }
+/* every chosen pill looks the same */
+.cm-tabs button.on, .sl-modes button.on, .lp-nav a.on, .lp-nav button.on, .cd-tabs button.on, #filt button.on, #sort button.on { background: var(--v-sun-soft) !important; color: #fff !important; box-shadow: inset 0 0 0 1px rgba(255, 140, 190, 0.45) !important; border-color: transparent !important; }
+/* the coin window: the secondary links as one row of quiet pills */
+.cm-in .links a, .cm-in .links button { border-radius: var(--r-pill) !important; background: rgba(255, 255, 255, 0.05) !important; border: 1px solid var(--v-line2) !important; color: var(--v-ink) !important; }
+.cm-in .links .gi { margin-right: 4px; }
+.fb-fold { margin-top: 14px; border-radius: var(--r-in); border: 1px solid var(--v-line2); background: rgba(255, 255, 255, 0.03); }
+.fb-fold > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 10px; align-items: center; padding: 12px 40px 12px 14px; position: relative; }
+.fb-fold > summary::-webkit-details-marker { display: none; }
+.fb-fold > summary::after { content: ""; position: absolute; right: 16px; top: 50%; width: 8px; height: 8px; border-right: 2px solid var(--v-dim); border-bottom: 2px solid var(--v-dim); transform: translateY(-70%) rotate(45deg); transition: transform 0.2s; }
+.fb-fold[open] > summary::after { transform: translateY(-30%) rotate(225deg); }
+.fb-fold > summary .gi { grid-row: 1 / 3; width: 20px; height: 20px; color: #7dffb4; }
+.fb-fold > summary small { color: var(--v-dim); font-size: 12.5px; }
+.fb-fold > .fbox { margin: 0 10px 10px !important; }
+.fb-re .gi { width: 16px; height: 16px; }
+/* ranks: medals, an inviting empty Hall of Fame */
+.rk-col li .gm2 { width: 26px; height: 26px; flex: 0 0 26px; font-size: 12px; }
+.rk-empty { display: grid !important; gap: 10px; justify-items: start; color: var(--v-dim); padding: 6px 0 !important; }
+.rk-col, .cbd-board, .cbd-inv, .pf-head, .pf-stats > div, .pf-c, .pf-b, #flows, .how li, .me-box, .lp-paid, .lp-stats > div, .lp-coin, .wl, #feecards > div { background: var(--v-surf) !important; border-color: var(--v-line2) !important; box-shadow: var(--v-lift); }
+.lp-paid { padding: 16px 18px !important; } .lp-paid a { border-radius: var(--r-in); padding: 10px 12px; }
+/* the last square corners from the street look */
+.tag, .badge, .qtag, .cx-row button, .wm-acts > *, .fix-row input, .fix-row button, .ck-row input, .ck-row button, .sortsel, .qchip { border-radius: var(--r-pill) !important; }
+.wm-row, .fbox, .raid, .cm-tr .tr, .ch-r { border-radius: var(--r-in) !important; }
+/* desktop: the hero lanes get two lines, the main coin card stays inside the grid, the NFT set in two full rows */
+@media (min-width: 1101px) { .lane p { -webkit-line-clamp: 2 !important; } .hero-side { grid-template-columns: minmax(0, 1fr) !important; } }
+@media (min-width: 1000px) { .cd-grid { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; } }
+/* phones: no label under 11 px */
+@media (max-width: 760px) { .tag, .badge, .qtag, .bbar a small, .bbar a span, .cd-stock, .kv small, .ct-k { font-size: max(11px, 0.72rem) !important; } }
+/* home-only sections stay on the home page */
+html.js:not([data-page="home"]) #cotd { display: none !important; }
+/* the desk's chosen tab in the same tint as every other chosen pill */
+html[data-tab="now"] #t-now, html[data-tab="ranks"] #t-ranks, html[data-tab="launch"] #t-launch, html[data-tab="fees"] #t-fees, html[data-tab="wallets"] #t-wallets, html[data-tab="check"] #t-check, html[data-tab="mine"] #t-mine, html[data-tab="about"] #t-about, html[data-tab="live"] #t-live, html[data-tab="creators"] #t-creators { background: var(--v-sun-soft) !important; color: #fff !important; box-shadow: inset 0 0 0 1px rgba(255, 140, 190, 0.45) !important; }
