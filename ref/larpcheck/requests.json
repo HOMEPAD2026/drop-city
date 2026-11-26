@@ -1,0 +1,16 @@
+{
+  "note": "larpcheck.app never served its own page to this environment: every load returned Cloudflare's managed challenge (HTTP 403, cf-mitigated: challenge). These are the only requests the page made: the challenge's, none of the app's.",
+  "captured": "2026-11-26T09:33Z",
+  "requests": [
+    {"method": "GET",  "host": "larpcheck.app", "path": "/", "status": 403},
+    {"method": "GET",  "host": "larpcheck.app", "path": "/cdn-cgi/challenge-platform/h/g/orchestrate/chl_page/v1"},
+    {"method": "GET",  "host": "challenges.cloudflare.com", "path": "/turnstile/v0/g/<id>/api.js"},
+    {"method": "POST", "host": "larpcheck.app", "path": "/cdn-cgi/challenge-platform/h/g/fo/<token>"},
+    {"method": "GET",  "host": "challenges.cloudflare.com", "path": "/cdn-cgi/challenge-platform/h/g/turnstile/..."},
+    {"method": "POST", "host": "challenges.cloudflare.com", "path": "/cdn-cgi/challenge-platform/h/g/fo/<token>"},
+    {"method": "GET",  "host": "brunhild.challenges.cloudflare.com", "path": "/cdn-cgi/challenge-platform/h/g/i/..."},
+    {"method": "GET",  "host": "challenges.cloudflare.com", "path": "/cdn-cgi/challenge-platform/h/g/pat/..."},
+    {"method": "GET",  "host": "challenges.cloudflare.com", "path": "/cdn-cgi/challenge-platform/h/g/ci/..."}
+  ],
+  "app_requests": []
+}
