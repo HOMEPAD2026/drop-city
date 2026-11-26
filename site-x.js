@@ -183,8 +183,8 @@ async function paintFlows(CFG, coins) {
 // ---------------- a creator's window
 export function openCreator(w, coins, openCoin) {
   const el = $("cmodal"), mine = coins.filter((c) => c.creator === w), mc = mine.reduce((a, c) => a + (c.mcapUsd || 0), 0);
-  el.innerHTML = `<div class="cm-card"><button type="button" class="wm-x" aria-label="Close">×</button><div class="cm-in" style="grid-column:1/-1"><span class="mc-k">CREATOR</span><h2 style="word-break:break-all">${esc(short(w))}</h2>
-    <div class="kv"><div><b>${mine.length}</b><small>Coins</small></div><div><b>${usd(mc)}</b><small>Market cap</small></div><div><b>${mine.filter((c) => c.graduated).length}</b><small>Made it</small></div></div>
+  el.innerHTML = `<div class="cm-card"><button type="button" class="wm-x" aria-label="Close">×</button><div class="cm-in" style="grid-column:1/-1"><span class="mc-k">${esc(t("crK", "CREATOR"))}</span><h2 style="word-break:break-all">${esc(short(w))}</h2>
+    <div class="kv"><div><b>${mine.length}</b><small>${esc(t("crCoins", "Coins"))}</small></div><div><b>${usd(mc)}</b><small>${esc(t("lMcap", "Market cap"))}</small></div><div><b>${mine.filter((c) => c.graduated && c.kind !== "partner").length}</b><small>${esc(t("crMade", "Made it"))}</small></div></div><a class="btn ghost cr-prof" href="/w/${esc(w)}">${esc(t("crProfile", "Open the profile"))}</a>
     <div class="rk-col" style="padding:0;border:0;background:none"><ol>${mine.map((c, i) => `<li data-m="${esc(c.mint)}"><span class="n">${i + 1}</span>${pic(c)}<span><b>$${esc(c.symbol)}</b> ${esc(c.name)}</span><small>${usd(c.mcapUsd)}</small></li>`).join("")}</ol></div>
     <p style="margin-top:12px"><a href="https://solscan.io/account/${esc(w)}" target="_blank" rel="noopener">Solscan ↗</a></p></div></div>`;
   el.hidden = false;

@@ -5,7 +5,7 @@ const W = 1200, H = 630;
 const loadImg = (src) => new Promise((res) => { if (!src) return res(null); const i = new Image(); i.crossOrigin = "anonymous"; i.onload = () => res(i); i.onerror = () => res(null); i.src = src; setTimeout(() => res(null), 6000); });
 const money = (n) => (n == null ? "–" : n >= 1e6 ? "$" + (n / 1e6).toFixed(2) + "M" : n >= 1e3 ? "$" + (n / 1e3).toFixed(1) + "K" : "$" + Math.round(n));
 export async function mugshotCanvas(c, cfg = {}) {
-  try { await Promise.all(["400 80px Anton", "800 20px Inter", "700 20px 'JetBrains Mono'"].map((f) => document.fonts.load(f))); } catch { /* */ }
+  try { await Promise.all(["400 80px Anton", "800 20px 'Pretendard Variable'", "700 20px 'JetBrains Mono'"].map((f) => document.fonts.load(f))); } catch { /* */ }
   const cv = document.createElement("canvas"); cv.width = W; cv.height = H; const x = cv.getContext("2d");
   // the room
   const bg = x.createLinearGradient(0, 0, W, H); bg.addColorStop(0, "#141015"); bg.addColorStop(1, "#070708"); x.fillStyle = bg; x.fillRect(0, 0, W, H);
@@ -33,13 +33,13 @@ export async function mugshotCanvas(c, cfg = {}) {
   const RX = 590;
   x.fillStyle = "#ff2e88"; x.font = "800 16px 'JetBrains Mono', monospace"; x.fillText(`${String(cfg.name || "THE CITY").toUpperCase()} · CITY RECORDS`, RX, 92);
   x.fillStyle = "#fff"; x.font = "400 92px Anton, Impact, sans-serif"; x.fillText("WANTED", RX, 190);
-  x.font = "800 34px Inter, system-ui, sans-serif"; let nm = String(c.name || ""); while (x.measureText(nm).width > 560 && nm.length > 3) nm = nm.slice(0, -2) + "…"; x.fillText(nm, RX, 244);
-  x.fillStyle = "#ffd36b"; x.font = "400 34px Inter, sans-serif"; const st = Math.max(1, Math.min(5, Math.round(((c.graduated ? 100 : c.progress || 0) / 100) * 4) + 1)); x.fillText("★".repeat(st) + "☆".repeat(5 - st), RX, 292);
+  x.font = "800 34px 'Pretendard Variable', Pretendard, system-ui, sans-serif"; let nm = String(c.name || ""); while (x.measureText(nm).width > 560 && nm.length > 3) nm = nm.slice(0, -2) + "…"; x.fillText(nm, RX, 244);
+  x.fillStyle = "#ff2e88"; x.font = "400 34px 'Pretendard Variable', Pretendard, sans-serif"; const st = Math.max(1, Math.min(5, Math.round(((c.graduated ? 100 : c.progress || 0) / 100) * 4) + 1)); x.fillText("★".repeat(st) + "☆".repeat(5 - st), RX, 292);
   const rows = [["MARKET CAP", money(c.mcapUsd)], ["BONDING CURVE", c.graduated ? "GRADUATED" : `${(c.progress || 0).toFixed(1)}%`], ["DROPPED", c.hour ? `${c.hour.slice(11, 13)}:00 UTC` : "a launch"], ["CA", `…${String(c.mint || "").slice(-6)}`]];
   rows.forEach(([k, v], i) => { const y = 350 + i * 52; x.fillStyle = "rgba(255,255,255,0.08)"; x.fillRect(RX, y - 32, 540, 44); x.fillStyle = "#9a9498"; x.font = "800 14px 'JetBrains Mono', monospace"; x.fillText(k, RX + 14, y - 4);
     x.fillStyle = "#fff"; x.font = "700 24px 'JetBrains Mono', monospace"; x.textAlign = "right"; x.fillText(v, RX + 526, y - 2); x.textAlign = "left"; });
   if (cfg.suffix) { x.fillStyle = "#ff2e88"; x.font = "800 18px 'JetBrains Mono', monospace"; x.fillText(`EVERY CA ENDS IN ${cfg.suffix}`, RX, 578); }
-  x.fillStyle = "#9a9498"; x.font = "600 16px Inter, sans-serif"; x.textAlign = "right"; x.fillText(location.host, W - 60, 578); x.textAlign = "left";
+  x.fillStyle = "#9a9498"; x.font = "600 16px 'Pretendard Variable', Pretendard, sans-serif"; x.textAlign = "right"; x.fillText(location.host, W - 60, 578); x.textAlign = "left";
   // the raid stamp
   if (c.raid) { x.save(); x.translate(L + MW - 150, T + 90); x.rotate(-0.22); x.strokeStyle = "#ffd21f"; x.lineWidth = 6; x.strokeRect(-170, -48, 340, 96); x.fillStyle = "#ffd21f"; x.font = "400 60px Anton, Impact, sans-serif"; x.textAlign = "center"; x.fillText("RAIDED", 0, 22); x.restore(); }
   return cv;

@@ -19,7 +19,7 @@ export async function paintLp(box, { coins, CFG }) {
   let CB = null;
   try { const W = await sol().catch(() => null), q = W && W.key ? "&w=" + W.key : ""; [V, CB] = await Promise.all([getJ(`?lp=1${q}`), getJ(`?cb=1${q}`).catch(() => null)]); }
   catch { V = null; }
-  if (!V || !V.pools) { box.innerHTML = `<p class="fine">${esc(t("lpErr", "The LP rewards couldn't be read right now — try again in a moment."))}</p>`; return; }
+  if (!V || !V.pools) { box.innerHTML = `<div class="empty err"><p>${esc(t("lpErr", "The LP rewards couldn't be read right now — try again in a moment."))}</p><button type="button" class="btn hot" data-retry>${esc(t("retry", "Try again"))}</button></div>`; box.querySelector("[data-retry]").onclick = () => paintLp(box, { coins, CFG }); return; }
   const main = coins.find((c) => c.mint === CFG.main), mainSym = main ? main.symbol : CFG.ticker || "MAIN";
   const sup = coins.filter((c) => c.kind === "partner");
   const pool = (coin, kind) => V.pools.filter((p) => p.coin === coin && p.kind === kind).sort((a, b) => b.tvl - a.tvl)[0];

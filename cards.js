@@ -31,7 +31,7 @@ export async function paintCards(box, { CFG }) {
   if (!box) return;
   const W = await sol().catch(() => null);
   let V = null; try { V = await getJ(`?cards=1${W && W.key ? "&w=" + W.key : ""}`); } catch {}
-  if (!V || V.season == null) { box.innerHTML = `<p class="fine">${esc(t("cdErr", "The cards couldn't be read right now — try again in a moment."))}</p>`; return; }
+  if (!V || V.season == null) { box.innerHTML = `<div class="empty err"><p>${esc(t("cdErr", "The cards couldn't be read right now — try again in a moment."))}</p><button type="button" class="btn hot" data-retry>${esc(t("retry", "Try again"))}</button></div>`; box.querySelector("[data-retry]").onclick = () => paintCards(box, { CFG }); return; }
   const own = {}; for (const m of V.mine || []) own[m.card] = (own[m.card] || 0) + 1;
   const left = V.available != null ? Math.floor((V.available - V.redeemed) / SEASON.pack) : null, od = odds();
   box.innerHTML = `
