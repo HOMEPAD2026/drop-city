@@ -6,6 +6,7 @@ import { extrasHtml, wireExtras, isWatched, checkAlerts, chartInto, holdersHtml 
 import { keepRef } from "/cb-ui.js";
 import { paintCity, notice, paintFoot } from "/home-x.js";
 import { paintCorner, paintBoards, initSearch } from "/home-me.js";
+import { ic } from "/icons.js";
 import { paintBand, shineMain, startFx, headline } from "/home-fx.js";
 keepRef(); // an invite link (?ref=<wallet>) is kept on this device until its wallet is linked
 import { openDrop, finishSplit, why, logsBox } from "/launch.js";
@@ -81,7 +82,7 @@ function paintHot() {
   const fresh = coins.filter((c) => c.kind !== "partner" && c.launchedAt).sort((a, b) => b.launchedAt - a.launchedAt).slice(0, 10);
   const ago = (s) => { const m = Math.max(1, Math.round((Date.now() / 1000 - s) / 60)); return m < 60 ? m + "m" : m < 1440 ? Math.round(m / 60) + "h" : Math.round(m / 1440) + "d"; };
   const hc = (c, i, side) => `<button type="button" class="hc${isSup(c) ? " sup" : ""}" data-m="${esc(c.mint)}" style="--i:${i}">${pic(c)}<span><b>$${esc(c.symbol)}</b><small>${usd(c.mcapUsd)}</small></span><em>${side}</em></button>`;
-  tr.innerHTML = hot.map((c, i) => hc(c, i, vol.get(c.mint) ? `🔥 ${vol.get(c.mint).toFixed(2)} SOL` : `#${i + 1}`)).join("");
+  tr.innerHTML = hot.map((c, i) => hc(c, i, vol.get(c.mint) ? `${ic("flame", "hc-fl")}${vol.get(c.mint).toFixed(2)} SOL` : `#${i + 1}`)).join("");
   nw.innerHTML = fresh.map((c, i) => hc(c, i, ago(c.launchedAt))).join("") || `<p class="fine">${esc(t("newNone", "No launches yet — be the first."))}</p>`;
   for (const el of [tr, nw]) el.onclick = (e) => { const b = e.target.closest("[data-m]"); if (b) openCoin(b.dataset.m); };
 }
@@ -217,11 +218,11 @@ function card(c, i) {
   const fresh = c.launchedAt && Date.now() / 1000 - c.launchedAt < 3600;
   const st = stars(c), was = tiers.get(c.mint), up = was != null && was !== st && st.indexOf("☆") > was.indexOf("☆"); tiers.set(c.mint, st);
   const when = c.hour ? t("cDropped", "dropped") + " " + esc(c.hour.slice(5, 10).replace("-", "/")) + " " + esc(c.hour.slice(11, 13)) + ":00" : c.launchedAt ? t("cLaunched", "launched") + " " + esc(new Date(c.launchedAt * 1000).toISOString().slice(5, 16).replace("-", "/").replace("T", " ")) : "";
-  return `<article class="cc${isMade(c) ? " made" : ""}${c.mint === CFG.main ? " main" : ""}${c.kind === "partner" ? " sup" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">${esc(c.mint === CFG.main ? t("mcTag", "THE MAIN COIN") : c.kind === "partner" ? t("tagSup", "SUPPORTED") : c.kind === "drop" ? t("tagDrop", "HOURLY DROP") : t("tagUser", "WANTED"))}</span>${isMade(c) ? `<span class="badge">${esc(t("lMade", "MADE"))}</span>` : fresh ? `<span class="badge new">${esc(t("bNew", "NEW"))}</span>` : ""}${isWatched(c.mint) ? `<span class="wstar" title="Watching">★</span>` : ""}${pic(c)}<span class="bounty">${esc(t("bounty", "BOUNTY"))} ${usd(c.mcapUsd)}</span></div>
+  return `<article class="cc${isMade(c) ? " made" : ""}${c.mint === CFG.main ? " main" : ""}${c.kind === "partner" ? " sup" : ""}" data-m="${esc(c.mint)}" style="--i:${Math.min(i, 16)}"><span class="glare"></span><div class="poster"><span class="tag">${esc(c.mint === CFG.main ? t("mcTag", "THE MAIN COIN") : c.kind === "partner" ? t("tagSup", "SUPPORTED") : c.kind === "drop" ? t("tagDrop", "HOURLY DROP") : t("tagUser", "WANTED"))}</span>${isMade(c) ? `<span class="badge">${esc(t("lMade", "MADE"))}</span>` : fresh ? `<span class="badge new">${esc(t("bNew", "NEW"))}</span>` : ""}${isWatched(c.mint) ? `<span class="wstar" title="Watching">${ic("star")}</span>` : ""}${pic(c)}<span class="bounty">${esc(t("bounty", "BOUNTY"))} ${usd(c.mcapUsd)}</span></div>
     <div class="body"><h3>${esc(c.name)}</h3><span class="sym">$${esc(c.symbol)}</span>${c.quote ? `<span class="qtag">${esc(c.quote.id)} ${esc(t("pair", "PAIR"))}</span>` : ""}${gradeChip(c.grade)} <span class="stars${up ? " up" : ""}">${st}</span>
       <div class="row"><b class="mcv${mcMove(c)}">${usd(c.mcapUsd)}</b><small>${when}</small></div>
       ${isSup(c) ? `<div class="bar sup"><i style="width:100%"></i></div><small class="cv">${esc(t("cSupLine", "Supported by the city · not launched here"))}</small>` : `<div class="bar"><i style="width:${c.graduated ? 100 : Math.max(2, c.progress || 0)}%"></i></div><small class="cv">${c.graduated ? esc(t("cGradTo", "graduated to PumpSwap")) : `${esc(t("cCurve", "curve"))} ${(c.progress || 0).toFixed(0)}%`}</small>`}
-      ${c.kind === "partner" ? `<p class="supn">🎰 ${esc(t("supNote2", "Supported coin · on the slot game's reels"))}</p>` : ""}<div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cGame", "Game"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a></div></div></article>`;
+      ${c.kind === "partner" ? `<p class="supn">${ic("slot")} ${esc(t("supNote2", "Supported coin · on the slot game's reels"))}</p>` : ""}<div class="acts"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cGame", "Game"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a></div></div></article>`;
 }
 
 // ---------------- TODAY'S 24 (a swipe row on phones: brought to the current hour on first paint and when the tab opens)
@@ -479,7 +480,7 @@ function openCoin(mint) {
     <div class="cm-pane" data-pane="safe" hidden><div id="cm-x"><p class="fine">${esc(t("ctLoading", "Reading the chain…"))}</p></div></div>
     <div class="cm-pane" data-pane="tr" hidden><div id="cm-trd"><p class="fine">${esc(t("ctLoading", "Reading the chain…"))}</p></div></div>
     <div class="cm-pane" data-pane="ov">${extrasHtml(c)}
-    ${c.raid ? `<div class="raid"><b>🚨 ${esc(t("raidH", "POLICE RAID"))}</b><span>${esc(tf("raidP", "Its creator sold {s} SOL of it {h} h ago — seen on chain. The tape comes down after a day without another sale.", { s: Number(c.raid.sol).toFixed(c.raid.sol < 1 ? 3 : 2), h: Math.max(1, Math.round((Date.now() - c.raid.at) / 3600e3)) }))}</span></div>` : ""}
+    ${c.raid ? `<div class="raid"><b>${ic("siren")} ${esc(t("raidH", "POLICE RAID"))}</b><span>${esc(tf("raidP", "Its creator sold {s} SOL of it {h} h ago — seen on chain. The tape comes down after a day without another sale.", { s: Number(c.raid.sol).toFixed(c.raid.sol < 1 ? 3 : 2), h: Math.max(1, Math.round((Date.now() - c.raid.at) / 3600e3)) }))}</span></div>` : ""}
     ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}${feeBox(c, CFG)}
     <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a class="pri" href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("trade", "Trade"))}</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cmTower", "Tower"))}</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">${esc(t("cmShare", "Share"))}</a><button type="button" data-copy>${esc(t("cmCopy", "Copy CA"))}</button><button type="button" data-mug>📸 ${esc(t("cmMug", "Mugshot"))}</button></div>
     ${[c.twitter, c.telegram, c.website].filter(Boolean).length ? `<p style="margin:12px 0 0;font-size:13px">${[["X", c.twitter], ["Telegram", c.telegram], ["Website", c.website]].filter((x) => x[1]).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n} ↗</a>`).join(" · ")}</p>` : ""}</div></div></div>`;

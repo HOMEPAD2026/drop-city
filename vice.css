@@ -105,3 +105,36 @@ main { position: relative; background: radial-gradient(900px 600px at 8% 6%, rgb
 .dk-tabs a.on, .seg button.on, .rseg button.on { background: var(--v-sun-soft) !important; color: #fff !important; box-shadow: inset 0 0 0 1px rgba(255, 140, 190, 0.45) !important; }
 .sheet, .cmodal > *, .wpop, .wmodal { background-color: var(--v-bg2) !important; }
 .lp-nav { background: transparent !important; box-shadow: none !important; border: 0 !important; }
+
+/* ---- GTAFUN's own icons (icons.js, the owner 2026-11-26: "아이콘도 고급을 써") ---- */
+.gi { width: 1.15em; height: 1.15em; display: inline-block; vertical-align: -0.2em; flex: 0 0 auto; }
+.gt { position: relative; display: inline-grid; place-items: center; width: 30px; height: 30px; flex: 0 0 30px; border-radius: 10px; color: #fff; margin-right: 10px; vertical-align: middle; overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45), inset 0 -2px 4px rgba(40, 0, 30, 0.25), 0 6px 16px var(--gt-sh, rgba(255, 61, 139, 0.35)); }
+.gt::after { content: ""; position: absolute; inset: 0 0 50% 0; background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0)); border-radius: 10px 10px 40% 40% / 10px 10px 8px 8px; pointer-events: none; }
+.gt .gi { width: 17px; height: 17px; vertical-align: 0; filter: drop-shadow(0 1px 1px rgba(60, 0, 30, 0.35)); position: relative; z-index: 1; }
+.gt-sun { background: linear-gradient(140deg, #ff5d9e 0%, #ff4d7a 45%, #ff9a5e 100%) !important; }
+.gt-violet { background: linear-gradient(140deg, #b69bff 0%, #8f6bff 45%, #5b3fd9 100%) !important; --gt-sh: rgba(143, 107, 255, 0.4); }
+.gt-peach { background: linear-gradient(140deg, #ffd0a3 0%, #ffa36e 45%, #ff6b6b 100%) !important; --gt-sh: rgba(255, 140, 100, 0.35); }
+.gt-rose { background: linear-gradient(140deg, #ff9ccb 0%, #ff5fa8 50%, #c42a86 100%) !important; --gt-sh: rgba(255, 95, 168, 0.35); }
+.gt-steel { background: linear-gradient(140deg, #4a4260 0%, #2c2540 60%, #1d182b 100%) !important; color: #9a90b3; --gt-sh: rgba(0, 0, 0, 0.3); }
+.gt.sm { width: 22px; height: 22px; flex-basis: 22px; border-radius: 7px; margin-right: 7px; vertical-align: -6px; } .gt.sm .gi { width: 13px; height: 13px; } .gt.sm::after { border-radius: 7px 7px 40% 40% / 7px 7px 5px 5px; }
+.hot-h h3, .cn-h h3, .lb-h h3 { display: inline-flex; align-items: center; }
+.cn-t small { display: inline-flex; align-items: center; }
+/* medals: metal coins with the place on them */
+.gm2 { position: relative; display: inline-grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; font-size: 12.5px; line-height: 1; font-weight: 900; color: #4a2a05;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.75), inset 0 -2px 3px rgba(0, 0, 0, 0.22), 0 0 0 2px rgba(0, 0, 0, 0.25), 0 4px 10px rgba(0, 0, 0, 0.4); }
+.gm2::before { content: ""; position: absolute; inset: 3px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.45); }
+.gm2 b { position: relative; z-index: 1; }
+.gm2-gold { background: radial-gradient(circle at 32% 28%, #fff6cf 0%, #ffd66b 35%, #e9a422 70%, #b97510 100%); }
+.gm2-silver { background: radial-gradient(circle at 32% 28%, #ffffff 0%, #e2e4ee 35%, #a9adc0 72%, #7b7f94 100%); color: #2c2f3d; }
+.gm2-bronze { background: radial-gradient(circle at 32% 28%, #ffe1c6 0%, #f0a76f 35%, #c46f3a 72%, #8a4520 100%); color: #3a1a06; }
+.lb-r { grid-template-columns: 30px minmax(0, 1fr) auto !important; }
+/* icons inside text */
+.hc em .gi.hc-fl { color: #ff8f6b; margin-right: 3px; }
+.supn .gi, .raid .gi { color: var(--v-pink2); margin-right: 2px; }
+.wstar .gi { width: 14px; height: 14px; color: #ffd27a; filter: drop-shadow(0 0 6px rgba(255, 190, 90, 0.6)); }
+.cx-star .gi { width: 16px; height: 16px; } .cx-w.on .cx-star .gi { color: #ffd27a; fill: rgba(255, 210, 122, 0.35); }
+#filt [data-f="watch"] { display: inline-flex; align-items: center; gap: 6px; } #filt [data-f="watch"] .gi { width: 14px; height: 14px; color: #ffd27a; }
+.pf-b span.gt { grid-row: 1 / 3; width: 40px; height: 40px; flex-basis: 40px; border-radius: 13px; margin: 0; } .pf-b .gt .gi { width: 22px; height: 22px; } .pf-b .gt::after { border-radius: 14px 14px 40% 40% / 14px 14px 10px 10px; }
+.pf-b:not(.on) .gt { opacity: 0.8; }
+.sl-modes .gi, [data-s="streak"] .gi, .pf-sub .gi { color: #ff8f6b; }

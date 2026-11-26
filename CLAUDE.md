@@ -209,3 +209,13 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   --v-faint #857c9b); every card shares one surface (--v-surf + a top light + shadow); the main coin card and THE GAME
   band have a gradient rim. The older sheets' variables (--cl-*, --st-pink, --hot, --pm-*) point at these, so other pages
   follow. No backdrop blur over the hero's moving sky.
+- **Our own icons, no emoji (the owner, 2026-11-26: "아이콘도 고급을 써"):** icons.js — hand-drawn 24 px line icons in one
+  SVG sprite; ic(name) in the text's colour, tile(name, kind) a glossy rounded tile (sun · violet · peach · rose · steel),
+  medal(n) metal coins for 1st / 2nd / 3rd; index.html's [data-ic="name:kind"] / [data-gi] placeholders are filled on load.
+  Used for the home heads, My corner, the leaderboards, the watch star, trending's flame, the supported coin's slot mark,
+  the police raid, the profile badges and the slot window. Section-head words in i18n.js carry no emoji any more (the icon
+  sits beside the text span). Emoji stay only in text posted to X / Telegram.
+- **Phone fixes (2026-11-26, the owner's screenshots):** CITY SLOTS' rows are a third of the reel window (--cell on
+  .sl-machine; slot.js reads the window's height for the stop): on a short screen the window was 240 px with 96 px rows and
+  the middle row sat below the pay line. The search list's grid is minmax(0, 1fr): its rows were wider than the box and
+  the list slid sideways.

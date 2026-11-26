@@ -4,6 +4,7 @@
 // plugin can't load, jup.ag's swap page opens with the coin already picked).
 import { esc, note, usd } from "/common.js";
 import { t } from "/i18n.js";
+import { ic } from "/icons.js";
 
 const KEY = "dc.watch", STEP = 0.2, SOL = "So11111111111111111111111111111111111111112";
 export const watched = () => { try { return JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch { return {}; } };
@@ -35,7 +36,7 @@ export function checkAlerts(coins) {
 /// the window's extra row: watch · chart · buy here
 export function extrasHtml(c) {
   const on = isWatched(c.mint);
-  return `<div class="cx-row two"><button type="button" class="cx-w${on ? " on" : ""}" data-cx="watch" aria-pressed="${on}"><span class="cx-star">★</span><span>${esc(on ? t("cxWatching", "Watching") : t("cxWatch", "Watch"))}</span></button>
+  return `<div class="cx-row two"><button type="button" class="cx-w${on ? " on" : ""}" data-cx="watch" aria-pressed="${on}"><span class="cx-star">${ic("star")}</span><span>${esc(on ? t("cxWatching", "Watching") : t("cxWatch", "Watch"))}</span></button>
     <button type="button" class="cx-buy" data-cx="buy">${esc(t("cxBuy", "Buy here"))}</button></div>
     <p class="cx-note">${esc(t("cxWatchN", "Watching tells you when it moves 20% — while this page is open."))}</p>`;
 }

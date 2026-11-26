@@ -6,6 +6,7 @@
 // coins rain on a big win.
 import { esc, note, short, sol, post, getJ, b58, DEMO } from "/common.js";
 import { t } from "/i18n.js";
+import { ic } from "/icons.js";
 import { today, titleOf, payOf, bagOf, slotMessage } from "/slot-data.js";
 
 const KEY = "dc.slot", TOK = "dc.slotTok", ROWS = 3, CELL = 96, LEN = 30;
@@ -26,8 +27,8 @@ export function openSlot(coins, CFG) {
   const el = document.createElement("div"); el.className = "sl-wrap"; el.setAttribute("role", "dialog"); el.setAttribute("aria-label", "City Slots");
   el.innerHTML = `<div class="sl-card"><button type="button" class="wm-x sl-x" aria-label="Close">×</button>
     <div class="sl-top"><span class="sl-k">${esc(t("slotK", "CITY SLOTS"))}</span><b class="sl-h">${esc(t("slotHead", "Spin the city's coins"))}</b></div>
-    <div class="sl-modes" role="tablist"><button type="button" class="on" data-m="practice">${esc(t("slotPractice", "Practice"))}</button><button type="button" data-m="board">🏆 ${esc(t("slotBoardTab", "Weekly board"))}</button></div>
-    <div class="sl-hud"><div><b data-s="pts">0</b><small data-s="ptsl">${esc(t("slotPts", "points"))}</small></div><div><b data-s="spins">0</b><small>${esc(t("slotSpins", "spins today"))}</small></div><div><b data-s="streak">🔥 1</b><small data-s="title"></small></div></div>
+    <div class="sl-modes" role="tablist"><button type="button" class="on" data-m="practice">${esc(t("slotPractice", "Practice"))}</button><button type="button" data-m="board">${ic("trophy")} ${esc(t("slotBoardTab", "Weekly board"))}</button></div>
+    <div class="sl-hud"><div><b data-s="pts">0</b><small data-s="ptsl">${esc(t("slotPts", "points"))}</small></div><div><b data-s="spins">0</b><small>${esc(t("slotSpins", "spins today"))}</small></div><div><b data-s="streak">${ic("flame")} 1</b><small data-s="title"></small></div></div>
     <div class="sl-machine"><div class="sl-reels">${[0, 1, 2].map((i) => `<div class="sl-reel" data-r="${i}"><div class="sl-strip">${Array.from({ length: ROWS }, () => face(pick())).join("")}</div></div>`).join("")}</div><i class="sl-line" aria-hidden="true"></i>
       <button type="button" class="sl-lever" aria-label="Pull"><i></i><b></b></button></div>
     <div class="sl-rain" aria-hidden="true"></div>
@@ -48,7 +49,7 @@ export function openSlot(coins, CFG) {
   const paintHud = () => {
     const s = st(), x = titleOf(s.streak);
     $s("pts").textContent = (mode === "board" ? s.week || 0 : s.pts || 0).toLocaleString("en-US"); $s("ptsl").textContent = mode === "board" ? t("slotWeekPts", "points this week") : t("slotPts", "points");
-    $s("spins").textContent = s.spins; $s("streak").textContent = "🔥 " + s.streak; $s("title").textContent = t(x[1], x[2]);
+    $s("spins").textContent = s.spins; $s("streak").innerHTML = ic("flame") + " " + s.streak; $s("title").textContent = t(x[1], x[2]);
     const need = mode === "board" && !B; signBox.hidden = !need; go.hidden = need; go.style.display = need ? "none" : "";
     go.disabled = s.spins <= 0 || busy; go.textContent = s.spins <= 0 ? t("slotOut", "Back tomorrow") : t("slotSpin", "SPIN");
   };
@@ -91,7 +92,7 @@ export function openSlot(coins, CFG) {
       const strip = r.querySelector(".sl-strip"), cells = Array.from({ length: LEN }, () => pick()); cells[LEN - 2] = out[i];
       strip.style.transition = "none"; strip.style.transform = "translateY(0)"; strip.innerHTML = [...Array.from({ length: ROWS }, (_, k) => strip.children[k] ? strip.children[k].outerHTML : face(pick())), ...cells.map(face)].join("");
       void strip.offsetHeight;
-      const y = -(LEN + ROWS - 3) * CELL, ms = calm ? 0 : 1100 + i * 380 + (i === 2 && near ? 900 : 0);
+      const cell = (strip.parentElement && strip.parentElement.clientHeight / ROWS) || CELL, y = -(LEN + ROWS - 3) * cell, ms = calm ? 0 : 1100 + i * 380 + (i === 2 && near ? 900 : 0);
       if (i === 2 && near && !calm) setTimeout(() => r.classList.add("tense"), 1100 + 2 * 380 - 200);
       strip.style.transition = calm ? "none" : `transform ${ms}ms cubic-bezier(0.15, 0.85, 0.25, 1.04)`; strip.style.transform = `translateY(${y}px)`;
       setTimeout(() => { const keep = [...strip.children].slice(LEN, LEN + 3).map((x) => x.outerHTML).join(""); strip.style.transition = "none"; strip.innerHTML = keep; strip.style.transform = "translateY(0)"; r.classList.remove("stop", "tense"); void r.offsetWidth; r.classList.add("stop"); done(); }, ms + 20);
@@ -129,5 +130,5 @@ export function openSlot(coins, CFG) {
     busy = false; paintHud();
   }
   go.onclick = spin; lever.onclick = (e) => { e.stopPropagation(); spin(); };
-  if (S.streak > 1 && S.seenStreak !== S.day) { note(t("slotStreak", "Streak") + ` 🔥 ${S.streak} · +${Math.min(5, S.streak - 1)} ${t("slotBonus", "bonus spins")}`, 3500); S.seenStreak = S.day; save(S); }
+  if (S.streak > 1 && S.seenStreak !== S.day) { note(t("slotStreak", "Streak") + ` ${S.streak} · +${Math.min(5, S.streak - 1)} ${t("slotBonus", "bonus spins")}`, 3500); S.seenStreak = S.day; save(S); }
 }

@@ -505,3 +505,14 @@ html.js[data-page="home"] main > section.rise.in { opacity: 1; transform: none; 
 .coast, .hero-bg { will-change: transform; }
 @media (prefers-reduced-motion: reduce) { .cband-in.live .cband-bg, .cb-lt, .cb-sg .sg, .cb-now i { animation: none; } html.js main > section.rise { opacity: 1; transform: none; } }
 @media (min-width: 1101px) { .cband-in.live .cband-t { max-width: min(520px, calc(100% - 640px)); } }
+
+/* the reels' rows are a third of the window, whatever its height (2026-11-26: on a short phone screen the window was 240 px
+   with 96 px rows, and the middle row sat below the pay line) */
+.sl-machine { --cell: 96px; } .sl-c { height: var(--cell) !important; } .sl-line { height: calc(var(--cell) + 4px) !important; }
+@media (max-height: 720px) { .sl-machine { --cell: 80px; } .sl-c img, .sl-c b { width: 58px !important; height: 58px !important; } .sl-c b.sv { font-size: 46px !important; } .sl-c b.st { font-size: 42px !important; } }
+
+/* search on phones: the list never wider than its box */
+.srch-in { grid-template-columns: minmax(0, 1fr) !important; }
+.srch-r { grid-template-columns: minmax(0, 1fr) !important; overflow-x: hidden !important; }
+.srch-i { width: 100%; min-width: 0; } .srch-i span { min-width: 0; } .srch-i b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 760px) { .srch-o { padding: 12px 12px 90px; } .srch-in { max-height: calc(100dvh - 120px); } }

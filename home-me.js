@@ -5,6 +5,7 @@ import { $, esc, short, usd, getJ, pic } from "/common.js";
 import { t, tf } from "/i18n.js";
 import { watched } from "/coin-x.js";
 import { today } from "/slot-data.js";
+import { tile, medal } from "/icons.js";
 
 const fmt = (x) => (x >= 1e6 ? (x / 1e6).toFixed(2) + "M" : x >= 1e3 ? (x / 1e3).toFixed(1) + "K" : Math.round(x || 0).toString());
 let ME = "", CB = null, cbAt = 0, SL = null, slAt = 0;
@@ -21,12 +22,12 @@ export async function paintCorner({ key, coins, CFG, openCoin, openSlot }) {
   const mine = coins.filter((c) => c.creator === ME);
   let sl = {}; try { sl = today(JSON.parse(localStorage.getItem("dc.slot") || "{}") || {}); } catch {}
   const chips = (l) => l.slice(0, 4).map((c) => `<button type="button" class="cn-chip" data-m="${esc(c.mint)}">${pic(c)}<span>$${esc(c.symbol)}</span></button>`).join("");
-  box.innerHTML = `<div class="cn-h"><h3>${esc(t("cnH", "My corner"))}</h3><a href="/w/${esc(ME)}" class="cn-prof">${esc(short(ME))} · ${esc(t("cnProf", "My profile"))} ›</a></div>
+  box.innerHTML = `<div class="cn-h"><h3>${tile("wallet", "peach")}${esc(t("cnH", "My corner"))}</h3><a href="/w/${esc(ME)}" class="cn-prof">${esc(short(ME))} · ${esc(t("cnProf", "My profile"))} ›</a></div>
     <div class="cn-g">
-      <a class="cn-t" href="#lp"><small>${esc(t("cnCb", "My cashback"))}</small><b>${me ? fmt(me.earned) : "–"} <i>${esc(S)}</i></b><span>${me ? esc(me.rank ? tf("cnRank", "today +{d} · rank #{r}", { d: fmt(me.today), r: me.rank }) : tf("cnToday", "today +{d}", { d: fmt(me.today) })) : esc(t("cnCbNo", "Trade a city coin to earn 0.3% back"))}</span></a>
-      <div class="cn-t"><small>${esc(t("cnWatch", "Watching"))} · ${wl.length}</small>${wl.length ? `<div class="cn-chips">${chips(wl)}</div>` : `<span>${esc(t("cnWatchNo", "Tap ★ Watch on a coin to follow it here"))}</span>`}</div>
-      <div class="cn-t"><small>${esc(t("cnMine", "My coins"))} · ${mine.length}</small>${mine.length ? `<div class="cn-chips">${chips(mine)}</div>` : `<a class="cn-go" href="#launch">${esc(t("cnLaunch", "Launch your first coin"))} ›</a>`}</div>
-      <button type="button" class="cn-t cn-slot"><small>${esc(t("cnSlot", "City Slots today"))}</small><b>${sl.spins ?? 10} <i>${esc(t("cnSpins", "spins left"))}</i></b><span>${esc(tf("cnStreak", "{n}-day streak · play ›", { n: sl.streak || 1 }))}</span></button>
+      <a class="cn-t" href="#lp"><small>${tile("cash", "sun", "sm")}${esc(t("cnCb", "My cashback"))}</small><b>${me ? fmt(me.earned) : "–"} <i>${esc(S)}</i></b><span>${me ? esc(me.rank ? tf("cnRank", "today +{d} · rank #{r}", { d: fmt(me.today), r: me.rank }) : tf("cnToday", "today +{d}", { d: fmt(me.today) })) : esc(t("cnCbNo", "Trade a city coin to earn 0.3% back"))}</span></a>
+      <div class="cn-t"><small>${tile("star", "violet", "sm")}${esc(t("cnWatch", "Watching"))} · ${wl.length}</small>${wl.length ? `<div class="cn-chips">${chips(wl)}</div>` : `<span>${esc(t("cnWatchNo", "Tap ★ Watch on a coin to follow it here"))}</span>`}</div>
+      <div class="cn-t"><small>${tile("rocket", "peach", "sm")}${esc(t("cnMine", "My coins"))} · ${mine.length}</small>${mine.length ? `<div class="cn-chips">${chips(mine)}</div>` : `<a class="cn-go" href="#launch">${esc(t("cnLaunch", "Launch your first coin"))} ›</a>`}</div>
+      <button type="button" class="cn-t cn-slot"><small>${tile("slot", "rose", "sm")}${esc(t("cnSlot", "City Slots today"))}</small><b>${sl.spins ?? 10} <i>${esc(t("cnSpins", "spins left"))}</i></b><span>${esc(tf("cnStreak", "{n}-day streak · play ›", { n: sl.streak || 1 }))}</span></button>
     </div>`;
   box.onclick = (e) => { const c = e.target.closest("[data-m]"); if (c) { e.preventDefault(); openCoin(c.dataset.m); return; } if (e.target.closest(".cn-slot")) openSlot(); };
 }
@@ -36,11 +37,11 @@ export async function paintBoards({ CFG, openSlot }) {
   const box = $("lbt"); if (!box) return;
   if (Date.now() - slAt > 60e3) { slAt = Date.now(); SL = await getJ("?slots=1").catch(() => SL); }
   if (!CB || Date.now() - cbAt > 60e3) { const r = await getJ("?cb=1" + (ME ? "&w=" + encodeURIComponent(ME) : "")).catch(() => null); if (r) { CB = r; CB._w = ME; cbAt = Date.now(); } }
-  const S = "$" + (CFG.ticker || "GTAFUN"), medal = ["🥇", "🥈", "🥉"];
-  const rows = (l, unit) => (l.length ? l.slice(0, 3).map((x, i) => `<a class="lb-r${x.w === ME ? " me" : ""}" href="/w/${esc(x.w)}"><span>${medal[i]}</span><code>${esc(short(x.w))}</code><b>${fmt(x.v)} <i>${esc(unit)}</i></b></a>`).join("") : `<p class="fine">${esc(t("lbNone", "No one yet — be first."))}</p>`);
+  const S = "$" + (CFG.ticker || "GTAFUN");
+  const rows = (l, unit) => (l.length ? l.slice(0, 3).map((x, i) => `<a class="lb-r${x.w === ME ? " me" : ""}" href="/w/${esc(x.w)}">${medal(i + 1)}<code>${esc(short(x.w))}</code><b>${fmt(x.v)} <i>${esc(unit)}</i></b></a>`).join("") : `<p class="fine">${esc(t("lbNone", "No one yet — be first."))}</p>`);
   const cbTop = ((CB && CB.top) || []).map((x) => ({ w: x.w, v: x.amt })), slTop = ((SL && SL.top) || []).map((x) => ({ w: x.w, v: x.pts }));
-  box.innerHTML = `<div class="lb-c"><div class="lb-h"><h3>${esc(t("lbCb", "Cashback leaders"))}</h3><a href="#lp">${esc(t("hotAll", "See all ›"))}</a></div>${rows(cbTop, S)}</div>
-    <div class="lb-c"><div class="lb-h"><h3>${esc(t("lbSlot", "City Slots · this week"))}</h3><button type="button" class="lb-play">${esc(t("lbPlay", "Play ›"))}</button></div>${rows(slTop, t("lbPts", "pts"))}<small class="lb-n">${esc(t("lbToy", "A toy score — never money or tokens."))}</small></div>`;
+  box.innerHTML = `<div class="lb-c"><div class="lb-h"><h3>${tile("trophy", "sun")}${esc(t("lbCb", "Cashback leaders"))}</h3><a href="#lp">${esc(t("hotAll", "See all ›"))}</a></div>${rows(cbTop, S)}</div>
+    <div class="lb-c"><div class="lb-h"><h3>${tile("slot", "violet")}${esc(t("lbSlot", "City Slots · this week"))}</h3><button type="button" class="lb-play">${esc(t("lbPlay", "Play ›"))}</button></div>${rows(slTop, t("lbPts", "pts"))}<small class="lb-n">${esc(t("lbToy", "A toy score — never money or tokens."))}</small></div>`;
   box.querySelector(".lb-play").onclick = openSlot;
 }
 
