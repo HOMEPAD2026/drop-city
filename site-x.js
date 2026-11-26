@@ -107,7 +107,7 @@ export function paintRanks(coins, openCoin, openCreator) {
   const el = $("ranksbox"); if (!el) return;
   const wanted = coins.slice().sort((a, b) => (b.mcapUsd || 0) - (a.mcapUsd || 0)).slice(0, 7);
   const by = new Map(); for (const c of coins) { if (c.kind === "drop" || c.kind === "partner") continue; const k = c.creator; const v = by.get(k) || { w: k, n: 0, mc: 0, made: 0, top: c }; v.n++; v.mc += c.mcapUsd || 0; v.made += c.graduated ? 1 : 0; if ((c.mcapUsd || 0) > (v.top.mcapUsd || 0)) v.top = c; by.set(k, v); }
-  const creators = [...by.values()].sort((a, b) => b.mc - a.mc).slice(0, 7), made = coins.filter((c) => c.graduated).slice(0, 7);
+  const creators = [...by.values()].sort((a, b) => b.mc - a.mc).slice(0, 7), made = coins.filter((c) => c.graduated && c.kind !== "partner").slice(0, 7);
   const li = (c, i, right) => `<li data-m="${esc(c.mint)}"><span class="n">${i + 1}</span>${pic(c)}<span><b>$${esc(c.symbol)}</b></span><small>${right}</small></li>`;
   el.innerHTML = `<div class="rk-col"><h3>${t("rWanted", "MOST WANTED")}</h3><ol>${wanted.map((c, i) => li(c, i, usd(c.mcapUsd))).join("") || `<li>${t("rNone", "none yet")}</li>`}</ol></div>
     <div class="rk-col"><h3>${t("rCreators", "TOP CREATORS")}</h3><ol>${creators.map((v, i) => `<li data-w="${esc(v.w)}"><span class="n">${i + 1}</span>${pic(v.top)}<span><b>${esc(short(v.w))}</b><br><small>${v.n} coins${v.made ? " · " + v.made + " made" : ""}</small></span><small>${usd(v.mc)}</small></li>`).join("") || `<li>${t("rNone", "none yet")}</li>`}</ol></div>

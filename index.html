@@ -18,13 +18,13 @@
 <link rel="stylesheet" href="/premium.css?v=2">
 <link rel="stylesheet" href="/cards.css?v=1">
 <link rel="stylesheet" href="/street.css?v=2">
-<link rel="stylesheet" href="/clean.css?v=7">
+<link rel="stylesheet" href="/clean.css?v=8">
 <link rel="stylesheet" href="/intro.css?v=8">
-<script>(function(){var d=document.documentElement,T={vote:"now",live:"now",today:"now",ranks:"ranks",launch:"launch",fees:"fees",lp:"lp",cards:"cards",wallets:"wallets",check:"check",creators:"mine",about:"about"},s="";
+<script>(function(){var d=document.documentElement,T={vote:"now",live:"now",today:"now",ranks:"ranks",launch:"launch",fees:"fees",wallets:"wallets",check:"check",creators:"mine",about:"about"},s="";
 d.classList.add("js","nodrops");
 try{if(sessionStorage.getItem("dc.intro")&&!/[?&]intro=1\b/.test(location.search))d.classList.add("nointro");s=sessionStorage.getItem("dc.tab")||""}catch(e){}
-var P=location.hash.slice(1);d.dataset.page=P==="explore"?"explore":T[P]||P==="desk"?"desk":"home";
-d.dataset.tab=T[location.hash.slice(1)]||(/^(now|cards|ranks|launch|fees|lp|wallets|check|mine|about)$/.test(s)?s:"now");
+var P=location.hash.slice(1);d.dataset.page=P==="explore"?"explore":P==="cards"||P==="nft"?"nft":P==="lp"?"lp":T[P]||P==="desk"?"desk":"home";
+d.dataset.tab=T[location.hash.slice(1)]||(/^(now|ranks|launch|fees|wallets|check|mine|about)$/.test(s)?s:"now");
 addEventListener("hashchange",function(){var k=T[location.hash.slice(1)];if(k)d.dataset.tab=k});
 setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on){i.remove();d.style.overflow="";window.__introDone=1;dispatchEvent(new Event("intro:done"))}},7000)})()</script>
 </head>
@@ -85,14 +85,26 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
     </a>
   </section>
 
+  <section id="pg-nft" class="sec pgsec">
+    <div class="dk-b" id="cards">
+      <div class="sec-h"><h2 data-k="// NEW DROP" data-i18n="hCards">GTAFUN CARDS</h2><p data-i18n="pCards">Season 1 — the 10 top meme characters as NFT cards. Packs of 3, 0.1 SOL, every card picked at random on chain.</p></div>
+      <div id="cardsbox" class="cardsbox"><p class="fine">…</p></div>
+    </div>
+  </section>
+
+  <section id="pg-lp" class="sec pgsec">
+    <div class="dk-b" id="lp">
+      <div class="sec-h"><h2 data-k="// SIDE HUSTLE" data-i18n="hLp">LP REWARDS</h2><p data-i18n="pLp">Add liquidity to the supported coins' Raydium pools — paired with SOL or with the main coin — and earn the main coin every hour you stay in.</p></div>
+      <div id="lpbox" class="lpbox"><p class="fine">…</p></div>
+    </div>
+  </section>
+
   <section id="desk" class="sec dk" data-rv>
     <div class="dk-tabs" id="dk-tabs" role="tablist" aria-label="Sections" data-i18n-al="aTabs">
       <a role="tab" id="t-now" href="#vote" aria-controls="p-now"><span data-i18n="tNow">This hour</span><i class="dk-dot" hidden></i></a>
-      <a role="tab" id="t-cards" href="#cards" aria-controls="p-cards"><span data-i18n="bNft">NFT</span><i class="cd-new">NEW</i></a>
       <a role="tab" id="t-ranks" href="#ranks" aria-controls="p-ranks" data-i18n="tRanks">Ranks</a>
       <a role="tab" id="t-launch" href="#launch" aria-controls="p-launch" data-i18n="nLaunch">Launch</a>
       <a role="tab" id="t-fees" href="#fees" aria-controls="p-fees" data-i18n="nFees">Fees</a>
-      <a role="tab" id="t-lp" href="#lp" aria-controls="p-lp" data-i18n="bLp">LP</a>
       <a role="tab" id="t-wallets" href="#wallets" aria-controls="p-wallets" data-i18n="nWallets">Wallets</a>
       <a role="tab" id="t-check" href="#check" aria-controls="p-check" data-i18n="nCheck">Check a CA</a>
       <a role="tab" id="t-mine" href="#creators" aria-controls="p-mine" data-i18n="tMine">My coins</a>
@@ -112,13 +124,6 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
         <div class="sec-h"><h2 data-k="// LIVE FEED" data-i18n="hLive">LIVE ON THE CURVES</h2><p data-i18n="pLive">Every buy and sell on the city's coins, as it lands.</p></div>
         <div id="livebox" class="livebox"></div>
         <button type="button" class="btn ghost live-more" id="live-more" aria-controls="livebox" aria-expanded="false" data-i18n="liveMore">More trades</button>
-      </div>
-    </div>
-
-    <div class="dk-p" id="p-cards" role="tabpanel" aria-labelledby="t-cards" tabindex="0">
-      <div class="dk-b" id="cards">
-        <div class="sec-h"><h2 data-k="// NEW DROP" data-i18n="hCards">GTAFUN CARDS</h2><p data-i18n="pCards">Season 1 — the 10 top meme characters as NFT cards. Packs of 3, 0.1 SOL, every card picked at random on chain.</p></div>
-        <div id="cardsbox" class="cardsbox"><p class="fine">…</p></div>
       </div>
     </div>
 
@@ -150,13 +155,6 @@ setTimeout(function(){var i=document.getElementById("intro");if(i&&!i.dataset.on
         <div class="fee-cards" id="feecards"></div>
         <p class="fine" data-i18n="feeFine">No launch fee from us — you pay about 0.03 SOL of Solana network and rent costs, plus any first buy you choose. pump.fun's own trading fees apply as on pump.fun.</p>
         <a class="dk-link" href="#wallets" data-i18n="seeWallets">See the wallets ▸</a>
-      </div>
-    </div>
-
-    <div class="dk-p" id="p-lp" role="tabpanel" aria-labelledby="t-lp" tabindex="0">
-      <div class="dk-b" id="lp">
-        <div class="sec-h"><h2 data-k="// SIDE HUSTLE" data-i18n="hLp">LP REWARDS</h2><p data-i18n="pLp">Add liquidity to the supported coins' Raydium pools — paired with SOL or with the main coin — and earn the main coin every hour you stay in.</p></div>
-        <div id="lpbox" class="lpbox"><p class="fine">…</p></div>
       </div>
     </div>
 

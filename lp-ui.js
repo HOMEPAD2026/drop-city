@@ -2,7 +2,7 @@
 // coin, how much of the day's main-coin reward each pool gets, an APR estimate, links to add liquidity (or create the pool),
 // the connected wallet's earned / paid / pending, and — for the rewards wallet only — "Pay everyone due": the transfers are
 // built here and signed in that wallet; the server then reads the transaction and marks the payouts (lib/_lp.mjs).
-import { $, esc, short, sleep, note, DEMO, sol, kit, conn, getJ, usd } from "/common.js";
+import { $, esc, short, sleep, note, DEMO, sol, kit, conn, getJ, usd, pic } from "/common.js";
 import { openWallet } from "/wallet.js";
 import { t } from "/i18n.js";
 
@@ -37,7 +37,7 @@ export async function paintLp(box, { coins, CFG }) {
     <div class="lp-stats"><div><b>${fmt(V.daily)}</b><small>$${esc(mainSym)} ${esc(t("lpPerDay", "a day to LPs"))}</small></div><div><b>${fmt(V.total)}</b><small>${esc(t("lpEarnedAll", "earned so far"))}</small></div><div><b>${fmt(V.paidTotal)}</b><small>${esc(t("lpPaidAll", "paid out"))}</small></div><div><b>${V.hours}</b><small>${esc(t("lpHours", "hours counted"))}</small></div></div>
     <div class="lp-me">${me ? `<div><span>${esc(t("lpEarned", "Earned"))}</span><b>${fmt(me.earned)}</b></div>${me.cashback ? `<div><span>${esc(t("cbMine", "Cashback"))}</span><b>${fmt(me.cashback)}</b></div>` : ""}<div><span>${esc(t("lpPaid", "Paid"))}</span><b>${fmt(me.paid)}</b></div><div class="hi"><span>${esc(t("lpPending", "Pending"))}</span><b>${fmt(me.pending)} $${esc(mainSym)}</b></div>`
       : `<p>${esc(t("lpConnect", "Connect your wallet to see what your liquidity has earned."))}</p><button type="button" class="btn ghost" data-lp="conn">${esc(t("connect", "Connect wallet"))}</button>`}</div>
-    <div class="lp-grid">${sup.map((c) => `<div class="lp-coin"><div class="lp-ch">${c.image ? `<img src="${esc(c.image)}" alt="" loading="lazy">` : ""}<b>$${esc(c.symbol)}</b><small>${esc(c.name || "")}</small></div>${cell(c, "sol")}${cell(c, "main")}</div>`).join("") || `<p class="fine">${esc(t("lpNoSup", "No supported coins yet."))}</p>`}</div>
+    <div class="lp-grid">${sup.map((c) => `<div class="lp-coin"><div class="lp-ch">${pic(c)}<b>$${esc(c.symbol)}</b><small>${esc(c.name || "")}</small></div>${cell(c, "sol")}${cell(c, "main")}</div>`).join("") || `<p class="fine">${esc(t("lpNoSup", "No supported coins yet."))}</p>`}</div>
     <details class="lp-how"><summary>${esc(t("lpHowH", "How the rewards work"))}</summary><ol>
       <li>${esc(t("lpHow1", "Add liquidity to a supported coin's Raydium pool — paired with SOL, or with the main coin (those pools weigh more)."))}</li>
       <li>${esc(t("lpHow2", "Every hour the city reads who holds each pool's LP tokens and splits that hour's reward: across the pools by their liquidity, inside a pool by the LP tokens you hold."))}</li>

@@ -44,6 +44,11 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   builds the transactions; the visitor's wallet signs. The operations wallet (PAD_CARDS_WALLET, else PAD_LP_WALLET) sets
   the machine up from the CARDS tab (collection + machine, then the item lines); the server (lib/_cards.mjs) only checks the
   machine's authority on chain and records each pack read back from the chain. It holds no key.
+- **Supported coins aren't "graduated" here (the owner, 2026-11-26):** they weren't launched or graduated through GTAFUN —
+  no MADE badge, no "graduated to PumpSwap" line, not in the Made filter / the graduated count / the hall of fame; their
+  card says "Supported by the city · not launched here" (site.js isSup / isMade). Their logo: Dexscreener's first, else
+  the metadata picture only if it still loads (lib/_pad.mjs imgAlive — Mandy's went 404); the LP page falls back to the
+  ticker badge (common.js pic).
 - **Supported coins (the owner, 2026-11-20):** pad-config.js `supported` — coins the city supports without launching them
   ($DCTY 9hjBLBrc7WZW2H8UQvBAvG5WiTZotXUv2Bdcn4f4pump first; 2026-11-24: + DKYcjob…pump, 2xCd5q…cJjX, 6MKD1N…pump, 9jhs5q…pump; a token without Metaplex metadata gets its card from Dexscreener, a partner off the pump.fun curve is priced there). The list carries them as kind "partner" (no creator, no
   fees, never in creator ranks), EXPLORE pins them after the main coin with a gold SUPPORTED tag, and they'll be on the
@@ -109,6 +114,9 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   gone (Barlow Condensed reads everywhere).
 - **Pages (the owner, 2026-11-20; order 2026-11-24):** the bottom bar by importance — Launch (a round key, never clipped) · NFT (#cards) · LP (#lp) · Game (/city — "the city" is called the Game everywhere a visitor reads it) · More (the desk: the rest); the top nav Launch · NFT · LP · Game · Explore · More and the nav switch pages
   (html[data-page] home / explore / desk) instead of scrolling; every old #link still lands on its page.
+  **NFT and LP are pages of their own (the owner, 2026-11-26: "NFT, LP는 따로 빼 MORE 이랑 똑같은 곳에 두지 말고"):**
+  #cards → html[data-page="nft"] (section #pg-nft), #lp → data-page "lp" (#pg-lp); they're no longer tabs in the desk
+  (TABS / HASH_TAB without them); site.js paintPage fills each when it opens. MORE (#desk) keeps the rest.
 - The agent's logos come from images/agent (the owner's mascot art); a drop's name is picked from those subjects.
 - **STREET mode (the owner, 2026-11-19):** the city always opens on foot (roam.js) with a random crime-flavoured handle and a
   realistic body (models/real: CC0 people on one Mixamo-named rig + Quaternius' animations; cars, palms, props, Poly Haven
