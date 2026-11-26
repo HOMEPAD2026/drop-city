@@ -128,6 +128,11 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   maps the path to the page); manifest.webmanifest + an "Install the app" button only when the browser offers it (fx.js;
   no service worker, so a deploy is never stuck behind a cache); after a launch the share kit (post on X with the CA +
   /coin/<mint>, copy CA / link, the mugshot card).
+- **Telegram bot, round 2 (the owner, 2026-11-26):** /watch <CA|$TICKER> (per chat, ≤ 10, tg/watch.json; the poll posts a
+  ±20 % move from the last alert into that chat), /unwatch, /watching, /cashback <wallet> (lib/_cashback.mjs view),
+  /invite <wallet> (the /?ref= link); anyone's new launch also goes to X when X's keys are set (lib/_extra.mjs announce
+  with no hour = "NEW LAUNCH ON GTAFUN"); the daily countdown no longer speaks of hourly drops. After changing the command
+  list, GET /api/tg?setup=1 re-registers it with Telegram.
 - **Speed (2026-11-25):** the home page never loads the 1 MB Solana kit (vendor/pump-kit.js) — balances on first paint go
   through common.js rpc1 (one JSON-RPC call through ?solrpc); kit() loads only when a wallet action needs it. Inter is
   gone (Barlow Condensed reads everywhere).

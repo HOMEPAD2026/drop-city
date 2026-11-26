@@ -62,4 +62,19 @@ ok(p2.countdown, "the daily countdown posts once after 12:00 UTC");
 sent.length = 0; clock += 31 * 60e3; const p3 = await T.poll(); ok(p3.launches === 0 && !p3.countdown && sent.length === 0, "nothing twice");
 const a = await T.announceDrop({ coin: { mint: items[0].mint, symbol: "OWL", name: "Neon Owl", description: "hoot", image: "https://img.test/o.webp" }, hour: "2026-11-18T10" });
 ok(a.length === 1 && sent.some((s) => /THE 10:00 DROP/.test(s.body.caption || "")), "the agent's drop is announced with its photo");
+// /watch, /watching, /unwatch, and the poll's alert after a 20 % move
+{ const CH = "555"; const c0 = items.find((x) => x.symbol === "CAT") || items[0];
+  const w1 = await T.reply("watch", "$" + c0.symbol, CH); ok(/Watching/.test(w1.text) && docs.get("tg/watch.json")[CH][c0.mint] === c0.mcapUsd, "/watch remembers the coin and its market cap for this chat");
+  ok(/Watching/.test((await T.reply("watching", "", CH)).text), "/watching lists it");
+  ok(/Send \/watch/.test((await T.reply("watch", "", CH)).text) && /chat with the bot/.test((await T.reply("watch", "$X")).text), "/watch needs a coin and a chat");
+  sent.length = 0; c0.mcapUsd = Math.round(c0.mcapUsd * 1.25); clock += 60e3; const pw = await T.poll();
+  ok(pw.watch === 1 && sent.some((x) => x.body.chat_id === CH && /▲ 25%/.test(x.body.text || "")), "a 25 % move alerts that chat");
+  sent.length = 0; clock += 60e3; const pw2 = await T.poll(); ok(pw2.watch === 0, "and only once until it moves again");
+  ok(/Stopped/.test((await T.reply("unwatch", "$" + c0.symbol, CH)).text) && !docs.get("tg/watch.json")[CH][c0.mint], "/unwatch stops it"); }
+// /cashback and /invite
+{ const W = kp(), cb = { view: async () => ({ bps: 30, refBps: 1000, earners: 9, me: { earned: 1500, today: 200, rank: 2, invited: 3, refEarned: 90 } }) };
+  const T2 = makeTg({ pad, now: () => clock, fetchImpl, cashback: cb });
+  const r = await T2.reply("cashback", W); ok(/1\.5K/.test(r.text) && /#2 of 9/.test(r.text) && /Invited: 3/.test(r.text), "/cashback shows the wallet's cashback, rank and invites");
+  ok(/Send \/cashback/.test((await T2.reply("cashback", "nope")).text), "/cashback needs a wallet");
+  const i = await T2.reply("invite", W); ok(i.text.includes("/?ref=" + W) && /10%/.test(i.text), "/invite gives the wallet's link"); }
 console.log(`tg: ${pass} passed, ${fail} failed`); if (fail) process.exit(1);

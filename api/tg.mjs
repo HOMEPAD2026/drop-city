@@ -5,11 +5,12 @@
 import { makePad } from "../lib/_pad.mjs";
 import { makeExtra } from "../lib/_extra.mjs";
 import { makeTg, on, secret } from "../lib/_tg.mjs";
+import { makeCashback } from "../lib/_cashback.mjs";
 import { blobStore, blobEnabled } from "../lib/_blob.mjs";
 
 const json = (status, body) => new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" } });
 let T = null;
-const tg = () => { if (T) return T; const pad = makePad({ store: blobStore() }); T = makeTg({ pad, extra: makeExtra({ pad }) }); return T; };
+const tg = () => { if (T) return T; const pad = makePad({ store: blobStore() }); T = makeTg({ pad, extra: makeExtra({ pad }), cashback: makeCashback({ store: pad.store, pad }) }); return T; };
 let lastPoll = 0;
 
 export async function GET(req) {
