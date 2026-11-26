@@ -311,3 +311,42 @@ html.js[data-page="prof"] :is(.hero, #play, #explore, #desk, #pg-nft, #pg-lp) { 
 :root { --cl-faint: #8f8f99 !important; }
 .fine, .cx-note, .cbd-today, .sl-board h5 small { color: #9b9ba5 !important; }
 @media (prefers-reduced-motion: reduce) { .tick2, .toast:not([hidden]), .steps li.ok i, .steps li.ok i::after, .hl, .cd-flip { animation: none !important; transition: none !important; } }
+
+/* J1 (2026-11-26): the home page */
+/* the game HUD's number ($000…) meant nothing on the home page */
+.gm-hud { display: none !important; }
+/* the coin rows: home only */
+html.js:not([data-page="home"]) #hot { display: none !important; }
+#hot { display: grid; gap: 18px; padding-top: 22px !important; }
+.hot-h { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+.hot-h h3 { margin: 0; font-size: 20px; font-weight: 800; color: #fff; } .hot-h a { color: #ff7ab8; font-weight: 700; font-size: 14px; text-decoration: none; }
+.hot-list { display: flex; gap: 10px; overflow-x: auto; scroll-snap-type: x proximity; padding: 2px 2px 8px; scrollbar-width: none; }
+.hot-list::-webkit-scrollbar { display: none; }
+.hc { flex: 0 0 auto; scroll-snap-align: start; display: grid; grid-template-columns: 44px auto; grid-template-rows: auto auto; column-gap: 10px; align-items: center; min-width: 170px; padding: 12px 14px; border-radius: 18px; background: #111116; border: 1px solid rgba(255, 255, 255, 0.08); color: #fff; text-align: left; cursor: pointer; font: inherit;
+  animation: hcin 0.45s cubic-bezier(0.2, 0.9, 0.2, 1) both; animation-delay: calc(var(--i) * 40ms); transition: transform 0.18s, border-color 0.18s; }
+.hc:hover { transform: translateY(-3px); border-color: rgba(255, 46, 136, 0.55); }
+.hc.sup { border-color: rgba(255, 46, 136, 0.35); }
+.hc img, .hc .ini { grid-row: 1 / 3; width: 44px; height: 44px; border-radius: 50%; object-fit: cover; display: grid; place-items: center; font-size: 13px; font-weight: 800; background: radial-gradient(70% 70% at 30% 25%, #ff5fa6, #b3125f); }
+.hc span { min-width: 0; } .hc b { display: block; font-size: 15px; font-weight: 800; } .hc small { display: block; font-size: 13px; color: #d4d4d8; font-weight: 700; }
+.hc em { grid-column: 2; font-style: normal; font-size: 11.5px; color: #9b9ba5; font-weight: 700; }
+@keyframes hcin { from { opacity: 0; transform: translateX(14px); } }
+.sk-hc { flex: 0 0 170px; min-height: 70px; }
+/* a slimmer hero on phones: the four doors as one row of chips, the CA line in the kicker, one big Launch */
+@media (max-width: 760px) {
+  .hero-in .lanes { display: flex !important; overflow-x: auto; gap: 6px !important; scrollbar-width: none; margin: 4px -16px 12px !important; padding: 0 16px; }
+  .hero-in .lanes::-webkit-scrollbar { display: none; }
+  .hero-in .lane { flex: 0 0 auto; display: flex !important; align-items: center; gap: 6px; padding: 9px 14px !important; border-radius: 999px !important; }
+  .hero-in .lane .ln-k { display: none !important; } .hero-in .lane b { font-size: 13.5px !important; white-space: nowrap; margin: 0 !important; }
+  .hero-in .lane::before { content: ""; width: 16px; height: 16px; flex: 0 0 16px; background: #ff2e88; -webkit-mask: var(--ic) center / contain no-repeat; mask: var(--ic) center / contain no-repeat; }
+  .lane.l1 { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2l2.9 6.3 6.9.6-5.2 4.6 1.6 6.8L12 16.9 5.8 20.3l1.6-6.8L2.2 8.9l6.9-.6z'/%3E%3C/svg%3E"); }
+  .lane.l2 { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2c3 2 5 6 5 10l-2 4H9l-2-4c0-4 2-8 5-10zm0 6a2 2 0 100 4 2 2 0 000-4zM9 18h6l-1 4h-4z'/%3E%3C/svg%3E"); }
+  .lane.l3 { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect x='5' y='2' width='14' height='20' rx='2'/%3E%3C/svg%3E"); }
+  .lane.l4 { --ic: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 2c4 5 7 9 7 12a7 7 0 01-14 0c0-3 3-7 7-12z'/%3E%3C/svg%3E"); }
+  .hero .suffixline { display: none !important; }
+  .hero .kicker[data-sfx]::after { content: " · " attr(data-sfx); }
+  .hero .cta { display: grid !important; grid-template-columns: 1fr 1fr; gap: 8px !important; }
+  .hero .cta .btn.hot { grid-column: 1 / -1; }
+  .hero .cta .btn:not(.hot) { min-height: 44px !important; font-size: 14px !important; padding: 10px !important; }
+  .hero h1 { margin-bottom: 10px !important; }
+}
+#hot, .hot-row, .hot-h { min-width: 0; max-width: 100%; } #hot { grid-template-columns: minmax(0, 1fr); } .hot-list { max-width: 100%; }

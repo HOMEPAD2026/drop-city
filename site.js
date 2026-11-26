@@ -65,8 +65,22 @@ function flashTrade(x) {
 function paintAll() {
   dropsUi();
   paintHour(); paintMain(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker();
-  paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin));
-  const sl = $("suffixline"); if (CFG.suffix) { sl.hidden = false; sl.innerHTML = `${esc(t("caEnds", "Every coin's CA ends in"))} <b>${esc(CFG.suffix)}</b>`; }
+  paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot();
+  const sl = $("suffixline"); if (CFG.suffix) { sl.hidden = false; sl.innerHTML = `${esc(t("caEnds", "Every coin's CA ends in"))} <b>${esc(CFG.suffix)}</b>`; const kk = document.querySelector(".hero .kicker"); if (kk) kk.dataset.sfx = "CA …" + CFG.suffix; }
+}
+
+// ---------------- the home page's coin rows (2026-11-26): 🔥 trending (SOL traded in the latest trades, then market cap)
+// and 🆕 just launched — small cards that open the coin's window
+function paintHot() {
+  const tr = $("hot-trend"), nw = $("hot-new"); if (!tr || !nw || !coins.length) return;
+  const vol = new Map(); for (const x of lastTrades(60)) vol.set(x.mint, (vol.get(x.mint) || 0) + (x.sol || 0));
+  const hot = coins.slice().sort((a, b) => (vol.get(b.mint) || 0) - (vol.get(a.mint) || 0) || (b.mcapUsd || 0) - (a.mcapUsd || 0)).slice(0, 10);
+  const fresh = coins.filter((c) => c.kind !== "partner" && c.launchedAt).sort((a, b) => b.launchedAt - a.launchedAt).slice(0, 10);
+  const ago = (s) => { const m = Math.max(1, Math.round((Date.now() / 1000 - s) / 60)); return m < 60 ? m + "m" : m < 1440 ? Math.round(m / 60) + "h" : Math.round(m / 1440) + "d"; };
+  const hc = (c, i, side) => `<button type="button" class="hc${isSup(c) ? " sup" : ""}" data-m="${esc(c.mint)}" style="--i:${i}">${pic(c)}<span><b>$${esc(c.symbol)}</b><small>${usd(c.mcapUsd)}</small></span><em>${side}</em></button>`;
+  tr.innerHTML = hot.map((c, i) => hc(c, i, vol.get(c.mint) ? `🔥 ${vol.get(c.mint).toFixed(2)} SOL` : `#${i + 1}`)).join("");
+  nw.innerHTML = fresh.map((c, i) => hc(c, i, ago(c.launchedAt))).join("") || `<p class="fine">${esc(t("newNone", "No launches yet — be the first."))}</p>`;
+  for (const el of [tr, nw]) el.onclick = (e) => { const b = e.target.closest("[data-m]"); if (b) openCoin(b.dataset.m); };
 }
 
 // ---------------- THE MAIN COIN (beside the hero): a full card on wide screens, a two-row strip that unfolds below 1100 px
