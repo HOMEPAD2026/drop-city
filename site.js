@@ -6,6 +6,7 @@ import { extrasHtml, wireExtras, isWatched, checkAlerts, chartInto, holdersHtml 
 import { keepRef } from "/cb-ui.js";
 import { paintCity, notice, paintFoot } from "/home-x.js";
 import { paintCorner, paintBoards, initSearch } from "/home-me.js";
+import { paintBand, shineMain, startFx, headline } from "/home-fx.js";
 keepRef(); // an invite link (?ref=<wallet>) is kept on this device until its wallet is linked
 import { openDrop, finishSplit, why, logsBox } from "/launch.js";
 import { feeBox, wireFees } from "/fees.js";
@@ -67,7 +68,7 @@ function flashTrade(x) {
 function paintAll() {
   dropsUi();
   paintHour(); paintMain(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker();
-  paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot(); paintCity({ coins, trades: lastTrades(30), CFG, openCoin }).catch(() => {}); notice(); paintCorner({ coins, CFG, openCoin, openSlot }).catch(() => {}); paintBoards({ CFG, openSlot }).catch(() => {});
+  paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot(); paintCity({ coins, trades: lastTrades(30), CFG, openCoin }).catch(() => {}); notice(); paintCorner({ coins, CFG, openCoin, openSlot }).catch(() => {}); paintBoards({ CFG, openSlot }).catch(() => {}); paintBand(coins).catch(() => {}); try { shineMain(coins.find((x) => x.mint === CFG.main)); } catch {}
   const sl = $("suffixline"); if (CFG.suffix) { sl.hidden = false; sl.innerHTML = `${esc(t("caEnds", "Every coin's CA ends in"))} <b>${esc(CFG.suffix)}</b>`; const kk = document.querySelector(".hero .kicker"); if (kk) kk.dataset.sfx = "CA …" + CFG.suffix; }
 }
 
@@ -440,6 +441,7 @@ mountCoast();
 function openSlot() { import("/slot.js").then((m) => m.openSlot(coins, CFG)).catch(() => note("The slots didn't load — try again.")); }
 $("slotbtn").onclick = openSlot;
 initSearch({ coins: () => coins, openCoin });
+startFx(); addEventListener("intro:done", (e) => { if (e.detail && e.detail.played) headline(); }, { once: true });
 { const dim = () => document.documentElement.style.setProperty("--gm-dim", Math.min(1, scrollY / 520).toFixed(3)); addEventListener("scroll", dim, { passive: true }); dim(); }
 
 start();

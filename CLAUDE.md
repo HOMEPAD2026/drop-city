@@ -195,3 +195,8 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   City Slots spins left from dc.slot, a link to /w/<me>), the leaderboard teasers (#lbt: cashback all-time top 3,
   City Slots' week top 3 — a toy score) and the search (the top bar's 🔍, "/" or Ctrl+K: ticker / name / CA; a CA not
   listed goes to Check a CA).
+  J5 — home-fx.js: THE GAME band alive (the picture drifts, two searchlights sweep, the three biggest coins float as
+  signs — hidden under 1,100 px —, "N in the city now" from ?street), the coin rows drift (≥ 700 px, paused on hover /
+  touch / wheel), the main coin card shines when its price moves, sections below the fold rise in, a pink glow follows
+  the pointer over cards, lanes lift on hover, the hero's sky lags the scroll (transform only), the headline rises once
+  only right after a played intro (never on a plain load — the no-flicker rule). Reduced motion turns all of it off.
