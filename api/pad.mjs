@@ -151,6 +151,7 @@ export async function GET(req) {
     if (q.has("coin")) { if (limited("c:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); const r = await extra().detail(q.get("coin")); return json(r.status, r.body, "public, max-age=30"); }
     if (q.has("trades")) return json(200, await extra().trades(), "public, max-age=6, s-maxage=8");
     if (q.has("vote")) return json(200, await extra().voteView(q.get("wallet") || ""), "no-store");
+    if (q.has("invites")) return json(200, await cb().invites(), "public, max-age=30, s-maxage=60");
     if (q.has("cotd")) { if (limited("cotd:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); return json(200, await extra().cotdView(q.get("w") || ""), q.get("w") ? "no-store" : "public, max-age=20, s-maxage=30"); }
     if (q.has("page")) {
       HTML = HTML || readFileSync(join(process.cwd(), "index.html"), "utf8");

@@ -252,6 +252,10 @@ export function makeCity(canvas, { onPick = () => {} } = {}) {
     if (coin.graduated) { const cr = new THREE.Mesh(new THREE.TorusGeometry(4 * scale, 0.7 * scale, 8, 24), crownMat); cr.rotation.x = Math.PI / 2; cr.position.y = h + 0.8; g.add(cr);
       const beamG = new THREE.CylinderGeometry(1.2, 3, 220, 16, 1, true); beamG.translate(0, 110, 0);
       g.add(new THREE.Mesh(beamG, new THREE.MeshBasicMaterial({ color: 0xff2e88, transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }))); }
+    if (coin.cotd) { // the coin of the day: a gold beam and a gold ring over the sign
+      const gb = new THREE.CylinderGeometry(1.6, 4, 260, 16, 1, true); gb.translate(0, 130, 0);
+      g.add(new THREE.Mesh(gb, new THREE.MeshBasicMaterial({ color: 0xffc44d, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false })));
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(6 * scale, 0.5 * scale, 8, 32), new THREE.MeshBasicMaterial({ color: 0xffd27a, toneMapped: false })); ring.rotation.x = Math.PI / 2; ring.position.y = h + 13 * scale; g.add(ring); }
     body.userData.mint = coin.mint; sign.userData.mint = coin.mint;
     // the police raided it (its creator sold in the last day): tape round the foot, red and blue lights on the roof
     let lights = null;

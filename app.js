@@ -1,7 +1,7 @@
 // app.js — the city (the web game): the 3D city, the phone (MOST WANTED · TODAY · THE VAULT · RULES), a coin's card,
 // the hour on the top bar, and the drop (launch.js). ?coin=<mint> opens that coin.
 import { makeCity } from "/city.js";
-import { $, esc, short, usd, hh, note, DEMO, loadCfg, loadCoins, loadSlot as getSlot, stars, ini, pic, sol, dropState, poke } from "/common.js";
+import { $, esc, short, usd, hh, note, DEMO, loadCfg, loadCoins, loadSlot as getSlot, stars, ini, pic, sol, dropState, poke, getJ } from "/common.js";
 import { walletButton } from "/wallet.js";
 import { openDrop as drop, grind } from "/launch.js";
 import { feeBox, wireFees } from "/fees.js";
@@ -73,7 +73,12 @@ async function load() {
   await setMode(/[?&]view=map\b/.test(location.search) ? "map" : "street");
   if (sel) { if (roam.active) roam.goTo(sel); else city.flyTo(sel); }
 }
-async function loadList() { coins = await loadCoins(); city.setCoins(coins, new Date().getUTCHours()); paintPhone(); if (sel && !$("card")?.hidden) openCard(sel, true); }
+let COTD = { at: 0, mint: "" };
+async function loadList() { coins = await loadCoins();
+  // the coin of the day (the site's daily vote) stands under a gold beam
+  if (Date.now() - COTD.at > 5 * 60e3) { COTD.at = Date.now(); try { const v = await getJ("?cotd=1"); COTD.mint = (v && v.winner && v.winner.mint) || ""; } catch {} }
+  if (COTD.mint) coins = coins.map((c) => (c.mint === COTD.mint ? { ...c, cotd: true } : c));
+  city.setCoins(coins, new Date().getUTCHours()); paintPhone(); if (sel && !$("card")?.hidden) openCard(sel, true); }
 async function loadSlot() {
   const was = slot; slot = await getSlot(); paintClock();
   // a new hourly drop while the city is open: fly there, fireworks, the takeover

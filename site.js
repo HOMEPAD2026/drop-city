@@ -1,6 +1,6 @@
 // site.js — the website: the hour, the numbers, EXPLORE (every drop as a card), the desk (this hour, ranks, the launch,
 // FEES, wallets, the CA check, the creators' space, about) and the deep links into it. The drop itself is launch.js.
-import { $, esc, short, usd, hh, sleep, note, DEMO, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, rpc1, dropState, poke, getJ } from "/common.js";
+import { $, esc, short, usd, hh, sleep, note, DEMO, shareOr, loadCfg, loadCoins, loadSlot, stars, pic, sol, kit, conn, rpc1, dropState, poke, getJ } from "/common.js";
 import { walletButton } from "/wallet.js";
 import { extrasHtml, wireExtras, isWatched, checkAlerts, chartInto, holdersHtml } from "/coin-x.js";
 import { keepRef } from "/cb-ui.js";
@@ -70,8 +70,15 @@ function flashTrade(x) {
   if (html.dataset.tab !== "now") { const d = document.querySelector("#t-now .dk-dot"); if (d) d.hidden = false; }
   for (const el of document.querySelectorAll(`.cc[data-m="${CSS.escape(x.mint)}"], .hc[data-m="${CSS.escape(x.mint)}"], .sk2-b[data-m="${CSS.escape(x.mint)}"]`)) { el.classList.remove("ping"); void el.offsetWidth; el.classList.add("ping"); }
 }
+function staleChip() {
+  let el = document.querySelector(".stale-chip"); const st = loadCoins.failed && loadCoins.stale;
+  if (!st) { if (el) el.remove(); return; }
+  if (!el) { el = document.createElement("div"); el.className = "stale-chip"; el.setAttribute("role", "status"); const tk = document.querySelector(".ticker"); if (tk) tk.after(el); }
+  el.innerHTML = `<i></i><span>${esc(tf("staleP", "Offline — showing the last read ({m} min ago)", { m: Math.max(1, Math.round((Date.now() - st) / 60e3)) }))}</span><button type="button">${esc(t("retry", "Try again"))}</button>`;
+  el.querySelector("button").onclick = () => refresh().catch(() => {});
+}
 function paintAll() {
-  dropsUi();
+  dropsUi(); staleChip();
   paintHour(); paintMain(); paintStats(); paintGrid(); paintHours(); paintLaunch(); paintMe(); paintTicker();
   paintRanks(coins, openCoin, (w) => openCreator(w, coins, openCoin)); paintHot(); paintCity({ coins, trades: lastTrades(30), CFG, openCoin }).catch(() => {}); paintCorner({ coins, CFG, openCoin, openSlot }).catch(() => {}); paintBoards({ CFG, openSlot }).catch(() => {}); moments({ coins, trades: lastTrades(60), isMade }).catch(() => {}); paintCotd({ coins, CFG, openCoin }).then(() => { if ((window.__dcCotd || "") !== (UI.cotd || "")) { UI.cotd = window.__dcCotd; paintGrid(); } }).catch(() => {}); paintBand(coins).catch(() => {}); try { shineMain(coins.find((x) => x.mint === CFG.main)); } catch {}
   const sl = $("suffixline"); if (CFG.suffix) { sl.hidden = false; sl.innerHTML = `${esc(t("caEnds", "Every coin's CA ends in"))} <b>${esc(CFG.suffix)}</b>`; const kk = document.querySelector(".hero .kicker"); if (kk) kk.dataset.sfx = "CA …" + CFG.suffix; }
@@ -528,12 +535,13 @@ function openCoinNow(mint) {
     <div class="cm-pane" data-pane="ov">${c.note ? `<p class="cnote">${ic("megaphone")}<span><small>${esc(t("ceFrom", "From the creator"))}</small>${esc(c.note)}</span></p>` : ""}${extrasHtml(c, CFG)}
     ${c.raid ? `<div class="raid"><b>${ic("siren")} ${esc(t("raidH", "POLICE RAID"))}</b><span>${esc(tf("raidP", "Its creator sold {s} SOL of it {h} h ago — seen on chain. The tape comes down after a day without another sale.", { s: Number(c.raid.sol).toFixed(c.raid.sol < 1 ? 3 : 2), h: Math.max(1, Math.round((Date.now() - c.raid.at) / 3600e3)) }))}</span></div>` : ""}
     ${c.description ? `<p style="color:var(--dim)">${esc(c.description)}</p>` : ""}${sup ? `<p class="fine">${esc(t("cmSupFees", "No creator fees flow to the city from this coin — it's on our reels and pinned in Explore because the city supports it."))}</p>` : `<details class="fb-fold"><summary>${ic("cash")}<span>${esc(t("fbFold", "Creator fees"))} · <b>${((c.quote ? c.feesWaiting : c.feesWaitingSol) || 0).toFixed(4)} ${c.quote ? esc(c.quote.id) : "SOL"}</b> ${esc(t("fbWait", "waiting"))}</span><small>${esc(c.noSplit || c.mint === CFG.main ? t("fbFoldSolo", "100% to the dev") : tf("fbFoldSplit", "{a} / {b} / {c} locked on chain", { a: CFG.split.creator / 100, b: CFG.split.vault / 100, c: CFG.split.buyer / 100 }))}</small></summary>${feeBox(c, CFG)}</details>`}
-    <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">pump.fun ↗</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cmTower", "Tower"))}</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener">${esc(t("cmShare", "Share"))}</a><button type="button" data-copy>${esc(t("cmCopy", "Copy CA"))}</button><button type="button" data-mug>${ic("camera")} ${esc(t("cmMug", "Mugshot"))}</button></div>
+    <div class="links" style="display:flex;flex-wrap:wrap;gap:6px;margin-top:14px"><a href="https://pump.fun/coin/${esc(c.mint)}" target="_blank" rel="noopener">pump.fun ↗</a><a href="https://dexscreener.com/solana/${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cChart", "Chart"))}</a><a href="/city?coin=${esc(c.mint)}${DEMO ? "&demo=1" : ""}">${esc(t("cmTower", "Tower"))}</a><a href="https://x.com/intent/tweet?text=${share}&url=${link}" target="_blank" rel="noopener" data-share>${esc(t("cmShare", "Share"))}</a><button type="button" data-copy>${esc(t("cmCopy", "Copy CA"))}</button><button type="button" data-mug>${ic("camera")} ${esc(t("cmMug", "Mugshot"))}</button></div>
     ${[c.twitter, c.telegram, c.website].filter(Boolean).length ? `<p style="margin:12px 0 0;font-size:13px">${[["X", c.twitter], ["Telegram", c.telegram], ["Website", c.website]].filter((x) => x[1]).map(([n, u]) => `<a href="${esc(u)}" target="_blank" rel="noopener">${n} ↗</a>`).join(" · ")}${c.byCreator ? ` <small class="byc">· ${esc(t("ceBy", "set by the creator on GTAFUN"))}</small>` : ""}</p>` : ""}</div></div></div>`;
   el.dataset.coin = c.mint; el.hidden = false;
   const close = () => { el.hidden = true; el.dataset.coin = ""; document.removeEventListener("keydown", k); }, k = (e) => { if (e.key === "Escape") close(); };
   document.addEventListener("keydown", k);
-  el.onclick = async (e) => { if (e.target === el || e.target.closest(".wm-x")) return close(); const cr = e.target.closest("[data-creator]"); if (cr) return openCreator(cr.dataset.creator, coins, openCoin); if (e.target.closest("[data-copy]")) { copyCA(e.target.closest("[data-copy]"), c.mint); }
+  el.onclick = async (e) => { if (e.target === el || e.target.closest(".wm-x")) return close();
+    const sh = e.target.closest("[data-share]"); if (sh && navigator.share && matchMedia("(pointer: coarse)").matches) { e.preventDefault(); shareOr({ title: "$" + c.symbol, text: decodeURIComponent(share), url: decodeURIComponent(link) }, sh.href); return; } const cr = e.target.closest("[data-creator]"); if (cr) return openCreator(cr.dataset.creator, coins, openCoin); if (e.target.closest("[data-copy]")) { copyCA(e.target.closest("[data-copy]"), c.mint); }
     const mg = e.target.closest("[data-mug]"); if (mg) { mg.disabled = true; try { const r = await (await import("/mugshot.js")).shareMugshot(c, CFG); if (r === "downloaded") note("Mugshot saved."); } catch { note("Couldn't make the mugshot."); } mg.disabled = false; } };
   if (!sup) wireFees(el, c, CFG, refresh); wireExtras(el, c);
   // the creator's own tools: edit the page (links, note, the big link card) and the share kit

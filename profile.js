@@ -2,12 +2,37 @@
 // LP rewards, GTAFUN cards, badges, and — on the visitor's own profile — the slot title kept on this device. Read from
 // ?profile=<wallet> (lib/_profile.mjs). Sharing copies the link or posts it.
 import { esc, short, usd, note, getJ, pic, sol } from "/common.js";
-import { t } from "/i18n.js";
+import { t, tf } from "/i18n.js";
 import { titleOf } from "/slot-data.js";
 import { tile, ic } from "/icons.js";
 
 const fmt = (x) => (x >= 1e6 ? (x / 1e6).toFixed(2) + "M" : x >= 1e3 ? (x / 1e3).toFixed(1) + "K" : x >= 1 ? x.toFixed(0) : x > 0 ? x.toFixed(2) : "0");
 // [id, icon, name, how it's earned]
+/// my GTAFUN card: the profile's numbers as a 1200×630 picture — shared through the phone's sheet, else downloaded
+async function shareCard(p, wallet, got, slot, CFG) {
+  const W = 1200, H = 630, cv = document.createElement("canvas"); cv.width = W; cv.height = H; const g = cv.getContext("2d");
+  const bg = g.createLinearGradient(0, 0, W, H); bg.addColorStop(0, "#1a0f2e"); bg.addColorStop(0.6, "#25102a"); bg.addColorStop(1, "#0b0913"); g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  const sun = g.createLinearGradient(0, 0, W, 0); sun.addColorStop(0, "#ff3d8b"); sun.addColorStop(0.5, "#ff5e74"); sun.addColorStop(1, "#ff9a62"); g.fillStyle = sun; g.fillRect(0, H - 12, W, 12);
+  const F = (w, s) => `${w} ${s}px Pretendard, system-ui, sans-serif`;
+  g.fillStyle = "#ff8ab8"; g.font = F(800, 30); g.fillText(String(CFG.name || "GTAFUN").toUpperCase() + " · " + t("pfCardK", "MY CARD"), 70, 90);
+  g.fillStyle = "#fff"; g.font = F(800, 76); g.fillText(short(wallet), 70, 175);
+  g.fillStyle = "#b9b0cc"; g.font = F(600, 28); g.fillText(`${got.size} / ${BADGES.length} ${t("pfBadges", "badges")}${slot && slot.streak ? " · " + slot.streak + "-day streak" : ""}`, 74, 225);
+  const S = "$" + (p.main || CFG.ticker || "GTAFUN"), fm = (x) => (x >= 1e6 ? (x / 1e6).toFixed(2) + "M" : x >= 1e3 ? (x / 1e3).toFixed(1) + "K" : String(Math.round(x || 0)));
+  const tiles = [[String(p.coins.length), t("pfCoins", "coins launched")], [fm(p.cashback.earned), S + " " + t("pfCash", "cashback")], [p.cashback.rank ? "#" + p.cashback.rank : "–", t("cbRank", "rank")], [fm(p.lp.earned), S + " " + t("pfLp", "LP rewards")], [`${p.cards.kinds} / ${p.cards.of || 10}`, t("pfCards", "cards")], [String(p.cashback.invited || 0), t("cbInvited", "Traders you invited")]];
+  tiles.forEach(([v, l], i) => { const x = 70 + (i % 3) * 360, y = 290 + Math.floor(i / 3) * 150;
+    g.fillStyle = "rgba(255,255,255,0.06)"; g.beginPath(); g.roundRect ? g.roundRect(x, y, 330, 124, 20) : g.rect(x, y, 330, 124); g.fill();
+    g.fillStyle = "#fff"; g.font = F(800, 46); g.fillText(v, x + 24, y + 62); g.fillStyle = "#b9b0cc"; g.font = F(600, 22); g.fillText(String(l).slice(0, 26), x + 24, y + 98); });
+  const blob = await new Promise((r) => cv.toBlob(r, "image/png")), file = new File([blob], "gtafun-card.png", { type: "image/png" });
+  const url = `${location.origin}/w/${wallet}`;
+  if (navigator.canShare && navigator.canShare({ files: [file] })) { try { await navigator.share({ files: [file], text: url }); return; } catch (e) { if (e && e.name === "AbortError") return; } }
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "gtafun-card.png"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.parentNode.removeChild(a); }, 500); note("Card saved.");
+}
+/// how far along a count badge is: [have, need] (null for yes / no badges)
+export function prog(id, p) {
+  const c = p.cashback || {}, k = p.cards || {};
+  const m = { launch5: [p.coins.length, 5], invite5: [c.invited || 0, 5], invite1: [c.invited || 0, 1], set: [k.kinds || 0, k.of || 10], launch1: [p.coins.length, 1], card1: [k.total || 0, 1] }[id];
+  return m && m[0] < m[1] ? m : null;
+}
 export const BADGES = [
   ["launch1", "rocket", ["bgLaunch1", "First launch"], ["bgLaunch1P", "Launched a coin on GTAFUN"]],
   ["launch5", "city", ["bgLaunch5", "Developer"], ["bgLaunch5P", "Five coins launched"]],
@@ -33,13 +58,15 @@ export async function paintProfile(box, wallet, CFG) {
   box.innerHTML = `<div class="pf">
     <div class="pf-head"><div class="pf-av" aria-hidden="true">${esc(wallet.slice(0, 2))}</div><div class="pf-id"><span class="pf-k">${esc(own ? t("pfMine", "YOUR PROFILE") : t("pfK", "PROFILE"))}</span><h3>${esc(short(wallet))}</h3>
       <p class="pf-sub">${slot && slot.streak ? `${ic("flame")} ${esc(t(titleOf(slot.streak)[1], titleOf(slot.streak)[2]))} · ` : ""}${got.size} / ${BADGES.length} ${esc(t("pfBadges", "badges"))}</p></div>
-      <div class="pf-acts"><button type="button" class="btn ghost" data-pf="copy">${esc(t("kitLink", "Copy link"))}</button><a class="btn hot" target="_blank" rel="noopener" href="https://x.com/intent/post?text=${encodeURIComponent(own ? "My GTAFUN profile 🏙️\n" : "A GTAFUN profile 🏙️\n")}&url=${encodeURIComponent(link)}">${esc(t("kitX", "Post on X"))}</a><a class="btn ghost" target="_blank" rel="noopener" href="https://solscan.io/account/${esc(wallet)}">Solscan ↗</a>${!own && p.coins.length && CFG.links && CFG.links.tg ? `<a class="btn ghost" target="_blank" rel="noopener" href="${esc(CFG.links.tg)}?start=f_${esc(wallet)}">${esc(t("pfFollow", "Follow on Telegram"))}</a>` : ""}</div></div>
+      <div class="pf-acts">${own ? `<button type="button" class="btn ghost" data-pf="card">${ic("camera")} ${esc(t("pfCard", "My GTAFUN card"))}</button>` : ""}<button type="button" class="btn ghost" data-pf="copy">${esc(t("kitLink", "Copy link"))}</button><a class="btn hot" target="_blank" rel="noopener" href="https://x.com/intent/post?text=${encodeURIComponent(own ? "My GTAFUN profile 🏙️\n" : "A GTAFUN profile 🏙️\n")}&url=${encodeURIComponent(link)}">${esc(t("kitX", "Post on X"))}</a><a class="btn ghost" target="_blank" rel="noopener" href="https://solscan.io/account/${esc(wallet)}">Solscan ↗</a>${!own && p.coins.length && CFG.links && CFG.links.tg ? `<a class="btn ghost" target="_blank" rel="noopener" href="${esc(CFG.links.tg)}?start=f_${esc(wallet)}">${esc(t("pfFollow", "Follow on Telegram"))}</a>` : ""}</div></div>
     <div class="pf-stats"><div><b>${p.coins.length}</b><small>${esc(t("pfCoins", "coins launched"))}</small></div><div><b>${usd(p.mcapUsd)}</b><small>${esc(t("pfMcap", "their market cap"))}</small></div><div><b>${fmt(p.cashback.earned)}</b><small>${esc(S)} ${esc(t("pfCash", "cashback"))}${p.cashback.rank ? ` · #${p.cashback.rank}` : ""}</small></div><div><b>${fmt(p.lp.earned)}</b><small>${esc(S)} ${esc(t("pfLp", "LP rewards"))}</small></div><div><b>${p.cards.kinds} / ${p.cards.of || 10}</b><small>${esc(t("pfCards", "cards collected"))}</small></div><div><b>${p.cashback.invited}</b><small>${esc(t("pfInvited", "traders invited"))}</small></div></div>
     <h4>${esc(t("pfBadgesH", "Badges"))}</h4>
-    <div class="pf-badges">${BADGES.map(([id, ic, n, how], i) => `<div class="pf-b${got.has(id) ? " on" : ""}" style="--i:${i}" title="${esc(t(how[0], how[1]))}">${tile(ic, got.has(id) ? "sun" : "steel")}<b>${esc(t(n[0], n[1]))}</b><small>${esc(t(how[0], how[1]))}</small></div>`).join("")}</div>
+    ${own ? (() => { const nx = BADGES.find(([id]) => !got.has(id) && prog(id, p)); return nx ? `<p class="pf-next">${tile(nx[1], "violet", "sm")}<span>${esc(tf("pfNext", "Next: {b} — {p}", { b: t(nx[2][0], nx[2][1]), p: prog(nx[0], p).join(" / ") }))}</span></p>` : ""; })() : ""}
+    <div class="pf-badges">${BADGES.map(([id, ic, n, how], i) => { const pr = !got.has(id) && prog(id, p); return `<div class="pf-b${got.has(id) ? " on" : ""}" style="--i:${i}" title="${esc(t(how[0], how[1]))}">${tile(ic, got.has(id) ? "sun" : "steel")}<b>${esc(t(n[0], n[1]))}</b><small>${esc(t(how[0], how[1]))}</small>${pr ? `<i class="pf-pr" style="--p:${Math.min(100, Math.round((pr[0] / pr[1]) * 100))}%"><em>${pr[0]} / ${pr[1]}</em></i>` : ""}</div>`; }).join("")}</div>
     <h4>${esc(t("pfCoinsH", "Coins launched"))}</h4>
     ${p.coins.length ? `<div class="pf-coins">${p.coins.slice(0, 24).map((c) => `<a class="pf-c" href="/coin/${esc(c.mint)}">${pic(c)}<span><b>$${esc(c.symbol)}</b><small>${esc(c.name || "")}</small></span><em>${usd(c.mcapUsd)}${c.graduated ? " · 🎓" : ""}</em></a>`).join("")}</div>` : `<p class="fine">${esc(t("pfNoCoins", "No coins launched from this wallet yet."))}</p>`}
     ${p.cards.total ? `<h4>${esc(t("pfCardsH", "Cards"))}</h4><div class="pf-cards">${Object.entries(p.cards.mine).map(([id, n]) => `<div class="pf-card"><img src="/nft/img/${esc(id)}-360.webp" alt="" loading="lazy">${n > 1 ? `<i>×${n}</i>` : ""}</div>`).join("")}</div>` : ""}
   </div>`;
+  const cb = box.querySelector('[data-pf="card"]'); if (cb) cb.onclick = async () => { cb.disabled = true; try { await shareCard(p, wallet, got, slot, CFG); } catch { note("Couldn't make the card."); } cb.disabled = false; };
   box.querySelector('[data-pf="copy"]').onclick = async () => { try { await navigator.clipboard.writeText(link); note(t("cbCopied", "Link copied.")); } catch { note(link, 6000); } };
 }

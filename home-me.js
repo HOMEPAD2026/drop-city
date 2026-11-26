@@ -10,6 +10,7 @@ import { plusFly } from "/moments.js";
 
 const fmt = (x) => (x >= 1e6 ? (x / 1e6).toFixed(2) + "M" : x >= 1e3 ? (x / 1e3).toFixed(1) + "K" : Math.round(x || 0).toString());
 const lastEarned = {};
+let INV = null, invAt = 0;
 let ME = "", CB = null, cbAt = 0, SL = null, slAt = 0;
 
 /// My corner: shown only with a wallet; every number is the server's (?cb=&w=) or this device's (watchlist, slot spins)
@@ -46,8 +47,11 @@ export async function paintBoards({ CFG, openSlot }) {
   const S = "$" + (CFG.ticker || "GTAFUN");
   const rows = (l, unit) => (l.length ? l.slice(0, 3).map((x, i) => `<a class="lb-r${x.w === ME ? " me" : ""}" href="/w/${esc(x.w)}">${medal(i + 1)}<code>${esc(short(x.w))}</code><b>${fmt(x.v)} <i>${esc(unit)}</i></b></a>`).join("") : `<p class="fine">${esc(t("lbNone", "No one yet — be first."))}</p>`);
   const cbTop = ((CB && CB.top) || []).map((x) => ({ w: x.w, v: x.amt })), slTop = ((SL && SL.top) || []).map((x) => ({ w: x.w, v: x.pts }));
+  if (!INV || Date.now() - invAt > 60e3) { invAt = Date.now(); INV = await getJ("?invites=1").catch(() => INV); }
+  const ivTop = ((INV && INV.top) || []).map((x) => ({ w: x.w, v: x.n }));
   box.innerHTML = `<div class="lb-c"><div class="lb-h"><h3>${tile("trophy", "sun")}${esc(t("lbCb", "Cashback leaders"))}</h3><a href="#lp">${esc(t("hotAll", "See all ›"))}</a></div>${rows(cbTop, S)}</div>
-    <div class="lb-c"><div class="lb-h"><h3>${tile("slot", "violet")}${esc(t("lbSlot", "City Slots · this week"))}</h3><button type="button" class="lb-play">${esc(t("lbPlay", "Play ›"))}</button></div>${rows(slTop, t("lbPts", "pts"))}<small class="lb-n">${esc(t("lbToy", "A toy score — never money or tokens."))}</small></div>`;
+    <div class="lb-c"><div class="lb-h"><h3>${tile("slot", "violet")}${esc(t("lbSlot", "City Slots · this week"))}</h3><button type="button" class="lb-play">${esc(t("lbPlay", "Play ›"))}</button></div>${rows(slTop, t("lbPts", "pts"))}<small class="lb-n">${esc(t("lbToy", "A toy score — never money or tokens."))}</small></div>
+    <div class="lb-c"><div class="lb-h"><h3>${tile("invite", "peach")}${esc(t("lbInv", "Invites · this week"))}</h3><a href="#lp">${esc(t("lbInvGo", "My link ›"))}</a></div>${rows(ivTop, t("lbInvU", "traders"))}<small class="lb-n">${esc(t("lbInvN", "Traders who linked their inviter this week (UTC Monday)."))}</small></div>`;
   box.querySelector(".lb-play").onclick = openSlot;
 }
 

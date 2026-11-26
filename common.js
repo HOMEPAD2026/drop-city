@@ -37,7 +37,17 @@ export function poke(slot) {
 export const DEMO = new URLSearchParams(location.search).get("demo") === "1";
 export const DEFAULT_CFG = { name: "DROP CITY", ticker: "DROP", suffix: "", split: { creator: 6000, vault: 3000, buyer: 1000 }, open: false, links: { x: "", tg: "https://t.me/GTAFUNbot" } };
 export async function loadCfg() { try { return { ...DEFAULT_CFG, ...(await getJ("?cfg")) }; } catch { return { ...DEFAULT_CFG }; } }
-export async function loadCoins() { if (DEMO) return demoCoins(); try { const j = await getJ("?list"); loadCoins.failed = !Array.isArray(j.items); return Array.isArray(j.items) ? j.items : []; } catch { loadCoins.failed = true; return []; } }
+export async function loadCoins() {
+  if (DEMO) return demoCoins();
+  const last = () => { try { const j = JSON.parse(localStorage.getItem("dc.lastList") || "null"); if (j && Array.isArray(j.items) && j.items.length) { loadCoins.stale = j.at; return j.items; } } catch {} return []; };
+  try { const j = await getJ("?list"); loadCoins.failed = !Array.isArray(j.items); if (loadCoins.failed) return last(); loadCoins.stale = 0; try { localStorage.setItem("dc.lastList", JSON.stringify({ at: Date.now(), items: j.items })); } catch {} return j.items; }
+  catch { loadCoins.failed = true; return last(); }
+}
+/// share on a phone through its own share sheet; elsewhere (or if it's refused) open the given fallback URL
+export async function shareOr(data, fallback) {
+  if (navigator.share && matchMedia("(pointer: coarse)").matches) { try { await navigator.share(data); return true; } catch (e) { if (e && e.name === "AbortError") return true; } }
+  if (fallback) window.open(fallback, "_blank", "noopener"); return false;
+}
 export async function loadSlot() { if (DEMO) return { hour: new Date().toISOString().slice(0, 13), next: Math.ceil(Date.now() / 3600e3) * 3600e3, state: "dropped", drop: { symbol: "OWL" } }; try { return await getJ("?slot"); } catch { return null; } }
 export const stars = (c) => { const m = c.mcapUsd || 0, n = m >= 1e6 ? 5 : m >= 250e3 ? 4 : m >= 50e3 ? 3 : m >= 10e3 ? 2 : 1; return "★".repeat(n) + "☆".repeat(5 - n); };
 export const ini = (c, cls = "ini") => `<span class="${cls}">${esc((c.symbol || "?").slice(0, 3))}</span>`;

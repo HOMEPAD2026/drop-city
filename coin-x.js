@@ -24,7 +24,7 @@ export function checkAlerts(coins) {
     const x = w[c.mint]; if (!x || !c.mcapUsd) continue;
     if (!x.ref) { x.ref = c.mcapUsd; dirty = true; continue; }
     const ch = c.mcapUsd / x.ref - 1;
-    if (Math.abs(ch) < STEP) continue;
+    if (Math.abs(ch) < (x.step || STEP)) continue;
     const msg = `★ $${c.symbol} ${ch > 0 ? "▲" : "▼"} ${Math.abs(ch * 100).toFixed(0)}% · ${usd(c.mcapUsd)}`;
     note(msg, 5000);
     try { if (document.hidden && "Notification" in window && Notification.permission === "granted") new Notification("GTAFUN", { body: msg, icon: "/images/icon-256.png", tag: "w-" + c.mint }); } catch {}
@@ -38,8 +38,9 @@ export function extrasHtml(c, CFG = {}) {
   const on = isWatched(c.mint), tg = CFG.links && CFG.links.tg, earns = c.kind !== "partner";
   return `<div class="cx-row two"><button type="button" class="cx-w${on ? " on" : ""}" data-cx="watch" aria-pressed="${on}"><span class="cx-star">${ic("star")}</span><span>${esc(on ? t("cxWatching", "Watching") : t("cxWatch", "Watch"))}</span></button>
     <button type="button" class="cx-buy" data-cx="buy">${esc(t("cxBuy", "Buy here"))}</button></div>
+    <div class="cx-step"${on ? "" : " hidden"}><span>${esc(t("cxStepL", "Alert me at"))}</span>${[10, 20, 50].map((p) => `<button type="button" data-step="${p}" class="${Math.round(((watched()[c.mint] || {}).step || STEP) * 100) === p ? "on" : ""}">${p}%</button>`).join("")}</div>
     ${earns ? `<p class="cx-cb">${ic("cash")} ${esc(tf("cxCb", "0.3% of every trade of this coin comes back to you in {s}", { s: "$" + (CFG.ticker || "GTAFUN") }))}</p>` : ""}
-    <p class="cx-note">${esc(t("cxWatchN", "Watching tells you when it moves 20% — while this page is open."))}${tg ? ` <a class="cx-tg" href="${esc(tg)}?start=w_${esc(c.mint)}" target="_blank" rel="noopener">${esc(t("cxTg", "Get its alerts on Telegram ›"))}</a>` : ""}</p>`;
+    <p class="cx-note">${esc(t("cxWatchN", "Watching tells you when it moves 20% — while this page is open."))}${tg ? ` <a class="cx-tg" href="${esc(tg)}?start=w_${esc(c.mint)}_${Math.round(((watched()[c.mint] || {}).step || STEP) * 100)}" target="_blank" rel="noopener">${esc(t("cxTg", "Get its alerts on Telegram ›"))}</a>` : ""}</p>`;
 }
 /// the chart tab: Dexscreener's embed, made when the tab first opens
 export function chartInto(box, c) { if (!box || box.firstChild) return; box.innerHTML = `<iframe title="Chart" loading="lazy" src="https://dexscreener.com/solana/${encodeURIComponent(c.mint)}?embed=1&loadChartSettings=0&trades=0&tabs=0&info=0&chartLeftToolbar=0&chartTheme=dark&theme=dark&chartStyle=1&chartType=usd&interval=15"></iframe>`; }
@@ -58,7 +59,10 @@ export function wireExtras(el, c) {
     if (k === "watch") { const on = toggleWatch(c); b.classList.toggle("on", on); b.setAttribute("aria-pressed", String(on)); b.querySelector("span:last-child").textContent = on ? t("cxWatching", "Watching") : t("cxWatch", "Watch"); b.classList.remove("pop"); void b.offsetWidth; b.classList.add("pop"); note(on ? t("cxAdded", "Added to your watchlist.") : t("cxRemoved", "Removed from your watchlist.")); }
     if (k === "buy") buyHere(c);
     if (k === "sell") sellHere(c);
+    const sp = row.parentNode && row.parentNode.querySelector(".cx-step"); if (sp && k === "watch") sp.hidden = !isWatched(c.mint);
   };
+  const sp = el.querySelector(".cx-step"); if (sp) sp.onclick = (e) => { const b = e.target.closest("[data-step]"); if (!b) return; e.stopPropagation(); const w = watched(); if (!w[c.mint]) return; w[c.mint].step = Number(b.dataset.step) / 100; save(w);
+    sp.querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); const a = el.querySelector(".cx-tg"); if (a) a.href = a.href.replace(/_(10|20|50)$/, "_" + b.dataset.step); note(tf("cxStepSet", "You'll hear when it moves {p}%.", { p: b.dataset.step })); };
   // you hold it: how much, what it's worth, and a Sell button (the server reads the wallet: ?bag=)
   sol().then((S) => S && S.key && myBag(S.key)).then((b) => {
     const h = b && b.items.find((x) => x.mint === c.mint); if (!h || !el.isConnected) return;

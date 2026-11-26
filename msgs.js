@@ -36,6 +36,8 @@ const M = {
   "not an image": ["이미지 파일이 아니에요", "不是图片", "bir görsel değil"],
   "Couldn't save.": ["저장하지 못했어요.", "无法保存。", "Kaydedilemedi."],
   "Couldn't open the editor.": ["편집기를 열지 못했어요.", "无法打开编辑器。", "Düzenleyici açılamadı."],
+  "Card saved.": ["카드를 저장했어요.", "卡片已保存。", "Kart kaydedildi."],
+  "Couldn't make the card.": ["카드를 만들지 못했어요.", "无法生成卡片。", "Kart oluşturulamadı."],
   "Link copied.": ["링크를 복사했어요.", "链接已复制。", "Bağlantı kopyalandı."],
 };
 const P = [
