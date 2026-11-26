@@ -135,8 +135,8 @@ html.fx-pill .bbar a.on { background: transparent !important; }
 .lp-paid h4 { font: 800 16px "Pretendard Variable", Pretendard, system-ui, sans-serif !important; letter-spacing: 0 !important; text-transform: none !important; margin: 18px 0 8px !important; }
 
 /* the Wallets tab's recent moves (lib/_flows.mjs) */
-.fl { grid-column: 1 / -1; margin-top: 8px; padding: 18px; border-radius: 20px; background: #111116; border: 1px solid rgba(255, 255, 255, 0.08); }
-.fl h4 { margin: 0 0 12px; font-size: 16px; font-weight: 800; color: #fff; }
+.flw { grid-column: 1 / -1; margin-top: 8px; padding: 18px; border-radius: 20px; background: #111116; border: 1px solid rgba(255, 255, 255, 0.08); }
+.flw h4 { margin: 0 0 12px; font-size: 16px; font-weight: 800; color: #fff; }
 .fl-sum { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin-bottom: 12px; }
 .fl-sum div { padding: 12px; border-radius: 14px; background: rgba(0, 0, 0, 0.35); border: 1px solid rgba(255, 255, 255, 0.06); }
 .fl-sum b { display: block; font-size: 17px; font-weight: 800; color: #fff; } .fl-sum small { font-size: 12px; color: #8d8d93; }
