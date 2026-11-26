@@ -250,3 +250,64 @@ html.js[data-page="prof"] :is(.hero, #play, #explore, #desk, #pg-nft, #pg-lp) { 
 @keyframes dropfill2 { from { width: 0; } }
 .ch-r .bar i { animation-name: dropfill2; }
 .fl-all { margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; background: rgba(255, 46, 136, 0.08); border: 1px solid rgba(255, 46, 136, 0.3); font-size: 13px; color: #d4d4d8; line-height: 1.6; } .fl-all b { color: #fff; }
+
+/* CITY SLOTS 2: practice / weekly board, the lever, a lingering last reel, coin rain, the board */
+.sl-modes { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; padding: 4px; border-radius: 999px; background: rgba(255, 255, 255, 0.05); }
+.sl-modes button { padding: 9px 10px; border-radius: 999px; border: 0; background: transparent; color: #a1a1aa; font: 700 13.5px "Pretendard Variable", Pretendard, system-ui, sans-serif; cursor: pointer; }
+.sl-modes button.on { background: #fff; color: #0a0a0c; }
+.sl-machine { margin-right: 26px; }
+.sl-lever { position: absolute; right: -30px; top: 40px; width: 22px; height: 150px; border: 0; background: none; padding: 0; cursor: pointer; transform-origin: 50% 100%; }
+.sl-lever i { position: absolute; left: 9px; top: 18px; width: 4px; bottom: 0; border-radius: 2px; background: linear-gradient(90deg, #8d8d93, #f4f1ee, #8d8d93); }
+.sl-lever b { position: absolute; left: 0; top: 0; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(60% 60% at 35% 30%, #ff9ccc, #ff2e88 55%, #a3104f); box-shadow: 0 4px 12px rgba(255, 46, 136, 0.5); }
+.sl-lever.pull { animation: slpull 0.6s cubic-bezier(0.3, 0.7, 0.3, 1); }
+@keyframes slpull { 35% { transform: scaleY(0.45); } 100% { transform: none; } }
+.sl-reel.tense { box-shadow: inset 0 0 0 3px #ff2e88, 0 0 24px rgba(255, 46, 136, 0.6); animation: sltense 0.18s linear infinite; }
+@keyframes sltense { 50% { transform: translateX(1px); } }
+.sl-rain { position: absolute; inset: 0; overflow: hidden; pointer-events: none; border-radius: 26px; }
+.sl-card { position: relative; }
+.sl-rain i { position: absolute; top: -40px; width: 30px; height: 30px; border-radius: 50%; background: radial-gradient(60% 60% at 35% 30%, #ffd1e6, #ff2e88 60%, #a3104f) center / cover; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4); animation: slrain 1.8s cubic-bezier(0.4, 0, 0.6, 1) forwards; }
+@keyframes slrain { to { transform: translateY(820px) rotate(540deg); } }
+.sl-sign { display: grid; gap: 10px; padding: 14px; border-radius: 16px; background: rgba(255, 46, 136, 0.08); border: 1px solid rgba(255, 46, 136, 0.35); text-align: left; }
+.sl-sign p { margin: 0; font-size: 13.5px; line-height: 1.5; color: #d4d4d8; }
+.sl-board { text-align: left; } .sl-board h5 { margin: 0 0 8px; font-size: 15px; font-weight: 800; color: #fff; } .sl-board h5 small { font-size: 11.5px; font-weight: 600; color: #8d8d93; }
+.sl-board ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 3px; }
+.sl-board li { display: grid; grid-template-columns: 24px 1fr auto; gap: 8px; padding: 7px 10px; border-radius: 10px; font-size: 13.5px; background: rgba(255, 255, 255, 0.03); }
+.sl-board li .n { font-weight: 800; color: #8d8d93; } .sl-board li:nth-child(-n + 3) .n { color: #ff2e88; } .sl-board li .w { font-family: "JetBrains Mono", monospace; font-size: 12px; color: #d4d4d8; } .sl-board li b { color: #fff; }
+.sl-board li.me { box-shadow: inset 0 0 0 1px rgba(255, 46, 136, 0.6); }
+@media (max-width: 420px) { .sl-machine { margin-right: 22px; } .sl-lever { right: -26px; height: 120px; } }
+@media (prefers-reduced-motion: reduce) { .sl-lever.pull, .sl-reel.tense, .sl-rain i { animation: none !important; } }
+
+/* H6 motion pass */
+/* a stat that changed ticks once */
+.tick2 { display: inline-block; animation: tick2 0.6s cubic-bezier(0.2, 0.9, 0.2, 1.3); }
+@keyframes tick2 { 0% { transform: translateY(60%); opacity: 0; color: #ff2e88; } 60% { color: #ff2e88; } 100% { transform: none; opacity: 1; } }
+/* the card zoom flips to its back */
+.cd-flip { position: relative; perspective: 1200px; cursor: pointer; width: min(320px, 78vw); aspect-ratio: 600 / 960; margin: 0 auto; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.cd-flip.back { transform: rotateY(180deg); }
+.cd-fr, .cd-bk { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: 16px; overflow: hidden; }
+.cd-fr img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.cd-bk { transform: rotateY(180deg); display: grid; align-content: center; justify-items: center; gap: 10px; padding: 24px; text-align: center; background: radial-gradient(90% 70% at 50% 20%, color-mix(in srgb, var(--r) 35%, transparent), #0b0b0e); border: 2px solid var(--r); }
+.cd-bk img { width: 110px; } .cd-bk b { font-size: 22px; font-weight: 900; color: #fff; } .cd-bk-r { font-size: 13px; font-weight: 800; padding: 4px 12px; border-radius: 999px; background: var(--r); color: #0a0a0c; }
+.cd-bk small { color: #d4d4d8; font-size: 13px; } .cd-bk p { margin: 0; color: #a1a1aa; font-size: 13.5px; line-height: 1.5; }
+.cd-hint { display: block; text-align: center; color: #8d8d93; font-size: 12px; margin-top: 6px; }
+/* toasts slide down from the top with a pink edge */
+.toast:not([hidden]) { animation: toastin 0.35s cubic-bezier(0.2, 0.9, 0.2, 1.2); border-left: 3px solid #ff2e88 !important; }
+@keyframes toastin { from { opacity: 0; transform: translate(-50%, 14px) scale(0.96); } }
+/* launch steps: the check draws in, the spinner is pink */
+.steps li.ok i { position: relative; animation: stepok 0.4s cubic-bezier(0.2, 0.9, 0.2, 1.5); }
+.steps li.ok i::after { content: ""; position: absolute; left: 5px; top: 2px; width: 5px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); animation: stepdraw 0.35s 0.1s ease both; }
+@keyframes stepok { from { transform: scale(0.4); } } @keyframes stepdraw { from { opacity: 0; transform: rotate(45deg) scale(0.3); } }
+.steps li.doing i { border-color: #ff2e88 !important; border-top-color: transparent !important; }
+/* pull to refresh */
+.ptr { position: fixed; left: 50%; top: 70px; z-index: 60; width: 38px; height: 38px; margin-left: -19px; border-radius: 50%; background: #111116; border: 1px solid rgba(255, 46, 136, 0.5); display: grid; place-items: center; opacity: 0; transform: translateY(calc(var(--p, 0) * 40px - 30px)) scale(calc(0.6 + var(--p, 0) * 0.4)); pointer-events: none; transition: opacity 0.15s; }
+.ptr.on { opacity: 1; } .ptr i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #ff2e88; border-top-color: transparent; transform: rotate(calc(var(--p, 0) * 360deg)); }
+.ptr.ready i { border-color: #fff; border-top-color: transparent; } .ptr.spin i { animation: spin 0.7s linear infinite; }
+/* LP: section tabs stick under the bar; the section you jump to glows once */
+.lp-nav { position: relative; z-index: 5; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 8px 0; margin-bottom: 8px; background: linear-gradient(180deg, #000 70%, transparent); }
+.lp-nav a { flex: 0 0 auto; padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.14); color: #d4d4d8; text-decoration: none; font-size: 13.5px; font-weight: 700; }
+.lp-nav a:hover { border-color: #ff2e88; color: #fff; }
+.hl { animation: hl 1.4s ease-out; } @keyframes hl { 0% { box-shadow: 0 0 0 3px rgba(255, 46, 136, 0.7); } 100% { box-shadow: 0 0 0 3px transparent; } }
+/* brighter small text (the faint grey was hard to read outdoors on a phone) */
+:root { --cl-faint: #8f8f99 !important; }
+.fine, .cx-note, .cbd-today, .sl-board h5 small { color: #9b9ba5 !important; }
+@media (prefers-reduced-motion: reduce) { .tick2, .toast:not([hidden]), .steps li.ok i, .steps li.ok i::after, .hl, .cd-flip { animation: none !important; transition: none !important; } }

@@ -57,8 +57,8 @@ export async function paintCards(box, { CFG }) {
 
 function zoom(c, n) {
   const el = document.createElement("div"); el.className = "cd-zoom";
-  el.innerHTML = `<div class="cd-zi" style="--r:${RARITY[c.rarity].color}"><img src="${img(c, true)}" alt="${esc(c.name)}"><p><b>${esc(c.name)}</b> · ${esc(t("rar_" + c.rarity, RARITY[c.rarity].label))}${n ? ` · ${esc(t("cdOwned", "you own"))} ${n}` : ""}</p></div>`;
-  el.onclick = () => el.remove(); document.body.appendChild(el);
+  el.innerHTML = `<div class="cd-zi" style="--r:${RARITY[c.rarity].color}"><div class="cd-flip"><div class="cd-fr"><img src="${img(c, true)}" alt="${esc(c.name)}"></div><div class="cd-bk"><img src="/images/logo-192.webp" alt=""><b>#${c.no} ${esc(c.name)}</b><span class="cd-bk-r">${esc(t("rar_" + c.rarity, RARITY[c.rarity].label))}</span><small>${esc(tf("cdExist2", "{n} in Season 1", { n: RARITY[c.rarity].each.toLocaleString("en-US") }))}</small><p>${esc(c.line || "")}</p></div></div><p><b>${esc(c.name)}</b> · ${esc(t("rar_" + c.rarity, RARITY[c.rarity].label))}${n ? ` · ${esc(t("cdOwned", "you own"))} ${n}` : ""}</p><small class="cd-hint">${esc(t("cdFlipHint", "Tap the card to flip it"))}</small></div>`;
+  el.onclick = (e) => { const f = e.target.closest(".cd-flip"); if (f) { f.classList.toggle("back"); return; } el.remove(); }; document.body.appendChild(el);
 }
 
 /// the opening: three face-down cards; each flips on a tap (or by itself), the rarer the brighter

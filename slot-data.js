@@ -19,3 +19,10 @@ export function payOf(line, mainId) {
   if (a === b || w(a) || w(b)) { const k = w(a) ? b : a; return k === mainId ? 40 : k === "seven" ? 30 : 15; }
   return 0;
 }
+/// the reels' symbol ids and how often each lands (shared by the page and the server's spins)
+export const weightOf = (id, mainId) => (id === "star" ? 1 : id === "seven" ? 2 : id === mainId ? 3 : 4);
+export function bagOf(ids, mainId) { return ids.flatMap((id) => Array(weightOf(id, mainId)).fill(id)); }
+/// the wallet's one signature a day to play for the weekly board
+export const slotMessage = (wallet, day, issued) => `GTAFUN City Slots\nWallet: ${wallet}\nDay (UTC): ${day}\nIssued: ${issued}`;
+/// the UTC Monday a moment belongs to (the board's week)
+export const weekOf = (t) => { const d = new Date(t); d.setUTCHours(0, 0, 0, 0); d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 6) % 7)); return d.toISOString().slice(0, 10); };

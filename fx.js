@@ -31,3 +31,11 @@ addEventListener("beforeinstallprompt", (e) => {
   }
 });
 addEventListener("appinstalled", () => document.querySelectorAll(".inst").forEach((x) => x.remove()));
+
+// pull to refresh on a phone (2026-11-26): pulled 80 px down at the top of the page → the coins read again
+{
+  let y0 = null, pulled = 0; const bar = document.createElement("div"); bar.className = "ptr"; bar.innerHTML = "<i></i>"; document.body.appendChild(bar);
+  addEventListener("touchstart", (e) => { y0 = scrollY <= 0 && !document.querySelector(".cmodal:not([hidden]), .sheet:not([hidden]), .sl-wrap, .cd-rev, .cd-zoom") ? e.touches[0].clientY : null; pulled = 0; }, { passive: true });
+  addEventListener("touchmove", (e) => { if (y0 == null) return; pulled = Math.max(0, Math.min(120, e.touches[0].clientY - y0)); bar.style.setProperty("--p", (pulled / 80).toFixed(2)); bar.classList.toggle("on", pulled > 4); bar.classList.toggle("ready", pulled >= 80); }, { passive: true });
+  addEventListener("touchend", () => { if (y0 != null && pulled >= 80) { bar.classList.add("spin"); dispatchEvent(new Event("dc:refresh")); setTimeout(() => bar.classList.remove("spin", "on", "ready"), 1200); } else bar.classList.remove("on", "ready"); y0 = null; pulled = 0; }, { passive: true });
+}

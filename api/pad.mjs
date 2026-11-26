@@ -16,6 +16,7 @@ import { makeLp } from "../lib/_lp.mjs";
 import { makeCashback } from "../lib/_cashback.mjs";
 import { makeFlows } from "../lib/_flows.mjs";
 import { makeProfile } from "../lib/_profile.mjs";
+import { makeSlots } from "../lib/_slots.mjs";
 import { makeCards } from "../lib/_cards.mjs";
 import { makeExtra } from "../lib/_extra.mjs";
 import { makeTg } from "../lib/_tg.mjs";
@@ -35,6 +36,7 @@ let CDX = null; const cards = () => (CDX = CDX || makeCards({ store: pad().store
 let CBX = null; const cb = () => (CBX = CBX || makeCashback({ store: pad().store, pad: pad() }));
 // the platform wallets whose moves the transparency list reads (2026-11-26)
 let FLX = null; const flows = () => (FLX = FLX || makeFlows({ store: pad().store, wallets: () => { const c = publicCfg(), e = (k) => String(process.env[k] || "").trim(); return [["vault", c.vault || e("PAD_VAULT")], ["buyer", c.buyer || e("PAD_BUYER")], ["agent", c.agent], ["rewards", e("PAD_LP_WALLET")], ["cards", e("PAD_CARDS_WALLET")]].filter((x) => x[1]); } }));
+let SLX = null; const slots = () => (SLX = SLX || makeSlots({ store: pad().store, pad: pad() }));
 let PFX = null; const prof = () => (PFX = PFX || makeProfile({ pad: pad(), cashback: cb(), lp: lp(), cards: cards() }));
 let LPX = null; const lp = () => (LPX = LPX || makeLp({ store: pad().store, pad: pad(), cashback: () => cb().earned() }));
 const agent = () => (AG = AG || makeAgent({ pad: pad(), extra: extra(), tg: makeTg({ pad: pad(), extra: extra() }) }));
@@ -149,6 +151,7 @@ export async function GET(req) {
       return json(r.status, r.body, "no-store");
     }
     if (q.has("cards")) return json(200, await cards().view(String(q.get("w") || "")), "public, max-age=10"); // GTAFUN CARDS: the machine, the board, a wallet's cards
+    if (q.has("slots")) return json(200, await slots().view(String(q.get("w") || "")), "no-store"); // CITY SLOTS' weekly board
     if (q.has("profile")) { if (limited("pf:" + ipOf(req), 30, 60e3)) return json(429, { error: "slow down" }); const r = await prof().view(String(q.get("profile") || "")); return json(r.status, r.body, "public, max-age=20"); } // a wallet's profile
     if (q.has("flows")) { if (limited("fl:" + ipOf(req), 20, 60e3)) return json(429, { error: "slow down" }); return json(200, await flows().view(), "public, max-age=60"); } // the platform wallets' latest moves
     if (q.has("cb")) return json(200, await cb().view(String(q.get("w") || "")), "public, max-age=20"); // trader cashback: the rate, the totals, the latest, a wallet's own
@@ -180,6 +183,7 @@ export async function POST(req) {
   if (b.action === "diag") { if (limited("diag:" + ip, 6, 60e3)) return json(429, { error: "slow down" }); const r = await diag().report(b, req.headers.get("user-agent") || ""); return json(r.status, r.body); }
   if (b.action === "vault") { if (limited("vault:" + ip, 12, 60e3)) return json(429, { error: "slow down" }); const r = await vault().open(b); return json(r.status, r.body); }
   if (b.action === "cards-setup" || b.action === "cards-minted") { if (limited("cards:" + ip, 20, 60e3)) return json(429, { error: "slow down" }); try { const r = b.action === "cards-setup" ? await cards().setup(b) : await cards().minted(b); return json(r.status, r.body); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 160) }); } }
+  if (b.action === "slot-start" || b.action === "slot-spin") { if (limited("sl:" + ip, b.action === "slot-spin" ? 40 : 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await (b.action === "slot-spin" ? slots().spin(b) : slots().start(b)); return json(r.status, r.body); } catch (e) { return json(500, { error: "the slots didn't answer" }); } }
   if (b.action === "cb-ref") { if (limited("cbr:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await cb().ref(b); return json(r.status, r.body); } catch (e) { return json(500, { error: "couldn't link the invite" }); } }
   if (b.action === "lp-paid") { if (limited("lpp:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); try { const r = await lp().paid(b); return json(r.status, r.body); } catch (e) { return json(502, { error: String((e && e.message) || e).slice(0, 160) }); } }
   if (b.action === "score") { if (limited("score:" + ip, 10, 60e3)) return json(429, { error: "slow down" }); const r = await street().score(b); return json(r.status, r.body); }

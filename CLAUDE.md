@@ -142,6 +142,15 @@ The owner's standing facts — keep every page, bot message, post and tweet true
   site → game → premium → cards → street → clean → motion (that cascade order, comments out, whitespace squeezed); the
   script also stamps index.html's ?v= hash. Edit the source sheets, then rebuild — tests/css.test.mjs fails on a stale
   build. city.html still loads its own sheets.
+- **CITY SLOTS' weekly board + the motion pass (the owner, 2026-11-26):** the slot window has Practice (device-only, as
+  before) and 🏆 Weekly board: a connected wallet signs slotMessage once a UTC day (POST slot-start → a day token, an
+  HMAC — PAD_SLOT_SECRET or derived), every board spin is drawn by the SERVER (POST slot-spin, lib/_slots.mjs,
+  crypto.randomInt, the same bag / pay table as slot-data.js), slot/u/<wallet>.json keeps the day's spins + streak,
+  slot/week/<monday>.json the week's points; ?slots=1&w= = the top 10. Still a toy score. Motion: the lever pulls, the
+  last reel lingers on a near miss, coins rain on 150+/500+; stats tick once when they change; the card zoom flips to
+  its back; toasts slide in; launch steps draw their checks; pull to refresh on phones (fx.js → dc:refresh); Explore's
+  Show all grows 24 at a time as you scroll; LP has section tabs; small grey text a little brighter. (The top nav isn't
+  sticky: html/body overflow makes body its own scroll box — left as it has always been.)
 - **Speed (2026-11-25):** the home page never loads the 1 MB Solana kit (vendor/pump-kit.js) — balances on first paint go
   through common.js rpc1 (one JSON-RPC call through ?solrpc); kit() loads only when a wallet action needs it. Inter is
   gone (Barlow Condensed reads everywhere).

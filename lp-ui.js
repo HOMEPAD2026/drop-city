@@ -36,7 +36,7 @@ export async function paintLp(box, { coins, CFG }) {
   };
   const me = V.me, ME = await sol().then((x) => (x && x.key) || "").catch(() => "");
   // the pools come first; the trader cashback card follows them (2026-11-26)
-  box.innerHTML = `
+  box.innerHTML = `<nav class="lp-nav"><a href="#" data-to=".lp-grid">${esc(t("lpNavPools", "Pools"))}</a><a href="#" data-to=".cb-card">${esc(t("lpNavCb", "Cashback"))}</a><a href="#" data-to=".cbd-inv">${esc(t("lpNavInv", "Invite"))}</a><a href="#" data-to=".lp-how">${esc(t("lpNavHow", "How it works"))}</a></nav>
     <div class="lp-stats"><div><b>${fmt(V.daily)}</b><small>$${esc(mainSym)} ${esc(t("lpPerDay", "a day to LPs"))}</small></div><div><b>${fmt(V.total)}</b><small>${esc(t("lpEarnedAll", "earned so far"))}</small></div><div><b>${fmt(V.paidTotal)}</b><small>${esc(t("lpPaidAll", "paid out"))}</small></div><div><b>${V.hours}</b><small>${esc(t("lpHours", "hours counted"))}</small></div></div>
     <div class="lp-me">${me ? `<div><span>${esc(t("lpEarned", "Earned"))}</span><b>${fmt(me.earned)}</b></div>${me.cashback ? `<div><span>${esc(t("cbMine", "Cashback"))}</span><b>${fmt(me.cashback)}</b></div>` : ""}<div><span>${esc(t("lpPaid", "Paid"))}</span><b>${fmt(me.paid)}</b></div><div class="hi"><span>${esc(t("lpPending", "Pending"))}</span><b>${fmt(me.pending)} $${esc(mainSym)}</b></div>`
       : `<p>${esc(t("lpConnect", "Connect your wallet to see what your liquidity has earned."))}</p><button type="button" class="btn ghost" data-lp="conn">${esc(t("connect", "Connect wallet"))}</button>`}</div>
@@ -52,6 +52,7 @@ export async function paintLp(box, { coins, CFG }) {
   // cashback that grew since this wallet last looked rises over its number once
   try { if (CB && CB.me) { const k = "dc.cbSeen", was = Number(localStorage.getItem(k) || 0), now = CB.me.earned || 0; localStorage.setItem(k, String(now)); const hi = box.querySelector(".cb-stats .hi"); if (hi && was > 0 && now > was) { const f = document.createElement("span"); f.className = "cb-up"; f.textContent = "+" + fmt(now - was); hi.appendChild(f); setTimeout(() => f.remove(), 2600); } } } catch {}
   wireDash(box, () => paintLp(box, { coins, CFG }));
+  box.querySelector(".lp-nav").onclick = (e) => { const a = e.target.closest("[data-to]"); if (!a) return; e.preventDefault(); e.stopPropagation(); const el = box.querySelector(a.dataset.to); if (el) { const y = el.getBoundingClientRect().top + scrollY - 130; scrollTo({ top: y, behavior: "smooth" }); el.classList.remove("hl"); void el.offsetWidth; el.classList.add("hl"); } };
   const cb = box.querySelector('[data-lp="conn"]'); if (cb) cb.onclick = async () => { await openWallet(); paintLp(box, { coins, CFG }); };
   // the rewards wallet sees the payout desk
   const W = await sol().catch(() => null);

@@ -144,6 +144,9 @@ $("sort").onclick = (e) => { const b = e.target.closest("[data-s]"); if (b) setS
 $("sortsel").onchange = (e) => setSort(e.target.value);
 $("filt").onclick = (e) => { const b = e.target.closest("[data-f]"); if (!b) return; S.filt = b.dataset.f; $("filt").querySelectorAll("button").forEach((x) => x.classList.toggle("on", x === b)); paintGrid(); };
 $("quiet").onchange = (e) => { S.quiet = e.target.checked; $("qnote").hidden = !S.quiet; paintGrid(); };
+// once opened, more coins come in as the end of the list comes into view (Explore grows in steps of 24)
+UI.step = 24;
+if ("IntersectionObserver" in window) new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting) && UI.all && (UI.more || 0) < coins.length) { UI.more = (UI.more || UI.cap) + UI.step; paintGrid(); } }, { rootMargin: "600px 0px" }).observe($("gmore").parentElement);
 $("gmore").onclick = () => {
   UI.all = !UI.all; try { sessionStorage.setItem("dc.all", UI.all ? "1" : "0"); } catch {}
   paintGrid();
@@ -168,7 +171,7 @@ function paintGrid() {
   UI.cap = capNow();
   // a search, a filter or Quiet means the visitor is looking for something: show every match
   const looking = !!S.q || S.filt !== "all" || S.quiet, cut = !looking && list.length > UI.cap;
-  const shown = cut && !UI.all ? list.slice(0, UI.cap) : list;
+  const shown = cut && !UI.all ? list.slice(0, UI.cap) : looking ? list : list.slice(0, Math.max(UI.more || 0, UI.cap + UI.step));
   if (!coins.length && loadCoins.failed) { $("grid").innerHTML = `<div class="empty err"><b>${esc(t("eErrH", "COULDN'T REACH THE CITY"))}</b>${esc(t("eErrP", "The coins didn't load — check your connection."))}<button type="button" class="btn hot" data-retry>${esc(t("retry", "Try again"))}</button></div>`; $("grid").querySelector("[data-retry]").onclick = () => refresh(); return; }
   $("grid").innerHTML = shown.length ? shown.map((c, i) => card(c, i)).join("") : `<div class="empty"><b>${esc(coins.length ? t("eNoneH", "NOTHING MATCHES") : t("eQuietH", "THE STREETS ARE QUIET"))}</b>${esc(coins.length ? t("eNoneP", "Try another search.") : t("eQuietP", "No coins yet — launch the first, or wait for the agent's next drop."))}</div>`;
   const g = $("gmore"); g.hidden = !cut; g.textContent = UI.all ? t("showLess", "Show fewer") : tf("showAll", "Show all {n} coins", { n: list.length }); g.setAttribute("aria-expanded", String(UI.all));
@@ -462,3 +465,4 @@ function openCoin(mint) {
 }
 // a coin watched / unwatched in its window: Explore's ★ marks and the Watching filter follow
 addEventListener("watch:change", () => { try { paintGrid(); } catch {} });
+addEventListener("dc:refresh", () => { refresh().catch(() => {}); });
